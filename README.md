@@ -237,4 +237,3 @@ MIT — see LICENSE
 Built by <a href="https://nirjxr.dev">Nirjar Goswami</a> · <a href="https://www.linkedin.com/in/nirjarbharthigoswami-b593633a7">LinkedIn</a>
 </div>
 
-MIT
