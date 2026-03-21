@@ -16,24 +16,24 @@ A comprehensive Identity & Access Management (IAM) authentication system built w
 ## ✨ Features
 
 ### Authentication
-- 📧 Email/password registration with email verification
-- 🔐 Login with JWT access + refresh tokens
-- 🔄 Automatic token refresh with rotation
-- 🔑 Password reset via email
-- 🌐 OAuth integration (Google + GitHub)
+- Email/password registration with email verification
+- Login with JWT access + refresh tokens
+- Automatic token refresh with rotation
+- Password reset via email
+- OAuth integration (Google + GitHub)
 
 ### Security
-- 🛡️ Multi-Factor Authentication (TOTP)
-- 🔒 Account lockout after failed attempts
-- ⏱️ Rate limiting on all auth endpoints
-- 🍪 httpOnly cookie + Bearer token support
-- 🪖 Helmet.js security headers
-- 📋 Comprehensive audit logging
+- Multi-Factor Authentication (TOTP)
+- Account lockout after failed attempts
+- Rate limiting on all auth endpoints
+- httpOnly cookie + Bearer token support
+- Helmet.js security headers
+- Comprehensive audit logging
 
 ### Session Management
-- 📱 View active sessions with device info
-- ❌ Revoke individual sessions
-- 🔄 Refresh token rotation (invalidates old tokens)
+- View active sessions with device info
+- Revoke individual sessions
+- Refresh token rotation (invalidates old tokens)
 
 ## 🚀 Quick Start
 
@@ -230,6 +230,11 @@ npx prisma db seed
 | POST | `/api/groups/:id/members` | Add user to group | `groups:write` |
 | GET | `/api/users/:id/permissions`| View user's effective permissions| *Authentication required* |
 
-## 📜 License
+License
+MIT — see LICENSE
+<div align="center">
+<br/>
+Built by <a href="https://nirjxr.dev">Nirjar Goswami</a> · <a href="https://www.linkedin.com/in/nirjarbharthigoswami-b593633a7">LinkedIn</a>
+</div>
 
 MIT
