@@ -1,0 +1,69 @@
+const rateLimit = require('express-rate-limit');
+const logger = require('../utils/logger');
+const { auditSecurity } = require('../utils/auditLog');
+
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: process.env.NODE_ENV === 'production' ? 10 : 1000,
+    message: {
+        success: false,
+        error: { code: 'RATE_LIMIT', message: 'Too many login attempts. Please try again in 15 minutes.' },
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res, next, options) => {
+        logger.warn('Rate limit exceeded for login', { ip: req.ip });
+        auditSecurity.rateLimitExceeded(req, 'auth/login').catch(() => { });
+        res.status(429).json(options.message);
+    },
+});
+
+const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: process.env.NODE_ENV === 'production' ? 5 : 1000,
+    message: {
+        success: false,
+        error: { code: 'RATE_LIMIT', message: 'Too many registration attempts. Please try again later.' },
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res, next, options) => {
+        logger.warn('Rate limit exceeded for register', { ip: req.ip });
+        auditSecurity.rateLimitExceeded(req, 'auth/register').catch(() => { });
+        res.status(429).json(options.message);
+    },
+});
+
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: process.env.NODE_ENV === 'production' ? 100 : 5000,
+    message: {
+        success: false,
+        error: { code: 'RATE_LIMIT', message: 'Too many requests. Please try again later.' },
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res, next, options) => {
+        logger.warn('Rate limit exceeded', { ip: req.ip, path: req.path });
+        auditSecurity.rateLimitExceeded(req, req.path).catch(() => { });
+        res.status(429).json(options.message);
+    },
+});
+
+const passwordResetLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: process.env.NODE_ENV === 'production' ? 3 : 1000,
+    message: {
+        success: false,
+        error: { code: 'RATE_LIMIT', message: 'Too many password reset attempts. Please try again later.' },
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res, next, options) => {
+        logger.warn('Rate limit exceeded for password reset', { ip: req.ip });
+        auditSecurity.rateLimitExceeded(req, 'auth/forgot-password').catch(() => { });
+        res.status(429).json(options.message);
+    },
+});
+
+module.exports = { loginLimiter, registerLimiter, generalLimiter, passwordResetLimiter };
