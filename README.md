@@ -4,6 +4,9 @@ A comprehensive Identity & Access Management (IAM) authentication system built w
 
 ![Tech Stack](https://img.shields.io/badge/React-18-blue) ![Node](https://img.shields.io/badge/Node.js-Express-green) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Prisma-purple) ![License](https://img.shields.io/badge/License-MIT-yellow)
 
+<img width="1919" height="910" alt="image" src="https://github.com/user-attachments/assets/b239cbfe-af6e-4aee-a8a2-957bc130d793" />
+
+
 ## 🏗️ Architecture
 
 ```
