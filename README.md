@@ -1,6 +1,6 @@
-# IAM Auth System — Production-Grade Authentication
+#AegisMesh - IAM Platform
 
-A comprehensive Identity & Access Management (IAM) authentication system built with React, Node.js, and PostgreSQL, featuring MFA, OAuth, session management, and enterprise-grade security.
+A comprehensive Identity & Access Management (IAM) authentication system built with React, Node.js, and PostgreSQL, featuring MFA, OAuth, session management, and enterprise-grade security. (In its initial version)
 
 ![Tech Stack](https://img.shields.io/badge/React-18-blue) ![Node](https://img.shields.io/badge/Node.js-Express-green) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Prisma-purple) ![License](https://img.shields.io/badge/License-MIT-yellow)
 
