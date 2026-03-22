@@ -1,4 +1,4 @@
-#AegisMesh - IAM Platform
+AegisMesh - IAM Platform
 
 A comprehensive Identity & Access Management (IAM) authentication system built with React, Node.js, and PostgreSQL, featuring MFA, OAuth, session management, and enterprise-grade security. (In its initial version)
 
