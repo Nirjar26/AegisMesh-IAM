@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
@@ -27,7 +27,6 @@ const AuditStatsPage = lazy(() => import('./pages/audit/AuditStatsPage'));
 const UserCreate = lazy(() => import('./pages/users/UserCreate'));
 const UserEdit = lazy(() => import('./pages/users/UserEdit'));
 const SecurityPage = lazy(() => import('./pages/security/SecurityPage'));
-const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,34 +52,6 @@ function LazyRoute({ children }) {
   return <Suspense fallback={<RouteLoader />}>{children}</Suspense>;
 }
 
-function NotFoundPage() {
-  return (
-    <div className="min-h-screen bg-aws-dark text-aws-text flex items-center justify-center px-4">
-      <div className="glass rounded-2xl p-8 sm:p-10 text-center max-w-md w-full">
-        <p className="text-xs font-semibold tracking-[0.2em] text-aws-text-dim mb-3">404</p>
-        <h1 className="text-2xl font-bold text-aws-text mb-2">Page Not Found</h1>
-        <p className="text-sm text-aws-text-dim mb-6">
-          The route you requested does not exist.
-        </p>
-        <div className="flex gap-3 justify-center">
-          <Link
-            to="/dashboard"
-            className="px-4 py-2 rounded-lg text-sm font-medium btn-accent-glow"
-          >
-            Go to Dashboard
-          </Link>
-          <Link
-            to="/login"
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-aws-navy-light text-aws-text border border-aws-border hover:border-aws-orange/30 transition-colors"
-          >
-            Go to Login
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -89,6 +60,7 @@ export default function App() {
         <AuthProvider>
           <Routes>
             {/* Public Routes */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -97,33 +69,35 @@ export default function App() {
             <Route path="/oauth/callback" element={<OAuthCallback />} />
 
             {/* Protected Shell + Routes */}
-            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-              <Route path="/dashboard" element={<Dashboard />} />
+            <Route element={<ProtectedRoute />}>
+              <Route element={<AppLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
 
-              {/* RBAC Dashboard Routes */}
-              <Route path="/dashboard/users" element={<UsersList />} />
-              <Route path="/dashboard/security" element={<LazyRoute><SecurityPage /></LazyRoute>} />
-              <Route path="/dashboard/users/new" element={<LazyRoute><UserCreate /></LazyRoute>} />
-              <Route path="/dashboard/users/:id" element={<LazyRoute><UserDetail /></LazyRoute>} />
-              <Route path="/dashboard/users/:id/edit" element={<LazyRoute><UserEdit /></LazyRoute>} />
-              <Route path="/dashboard/roles" element={<RolesList />} />
-              <Route path="/dashboard/roles/:id" element={<LazyRoute><RoleDetail /></LazyRoute>} />
-              <Route path="/dashboard/policies" element={<PoliciesList />} />
-              <Route path="/dashboard/policies/:id" element={<LazyRoute><PolicyDetail /></LazyRoute>} />
-              <Route path="/dashboard/groups" element={<GroupsList />} />
-              <Route path="/dashboard/groups/:id" element={<LazyRoute><GroupDetail /></LazyRoute>} />
-              <Route path="/dashboard/users/:id/permissions" element={<LazyRoute><UserPermissions /></LazyRoute>} />
-              <Route path="/dashboard/audit-logs" element={<LazyRoute><AuditLogsPage /></LazyRoute>} />
-              <Route path="/dashboard/audit-logs/stats" element={<LazyRoute><AuditStatsPage /></LazyRoute>} />
+                {/* RBAC Dashboard Routes */}
+                <Route path="/dashboard/users" element={<UsersList />} />
+                <Route path="/dashboard/security" element={<LazyRoute><SecurityPage /></LazyRoute>} />
+                <Route path="/dashboard/users/new" element={<LazyRoute><UserCreate /></LazyRoute>} />
+                <Route path="/dashboard/users/:id" element={<LazyRoute><UserDetail /></LazyRoute>} />
+                <Route path="/dashboard/users/:id/edit" element={<LazyRoute><UserEdit /></LazyRoute>} />
+                <Route path="/dashboard/roles" element={<RolesList />} />
+                <Route path="/dashboard/roles/:id" element={<LazyRoute><RoleDetail /></LazyRoute>} />
+                <Route path="/dashboard/policies" element={<PoliciesList />} />
+                <Route path="/dashboard/policies/:id" element={<LazyRoute><PolicyDetail /></LazyRoute>} />
+                <Route path="/dashboard/groups" element={<GroupsList />} />
+                <Route path="/dashboard/groups/:id" element={<LazyRoute><GroupDetail /></LazyRoute>} />
+                <Route path="/dashboard/users/:id/permissions" element={<LazyRoute><UserPermissions /></LazyRoute>} />
+                <Route path="/dashboard/audit-logs" element={<LazyRoute><AuditLogsPage /></LazyRoute>} />
+                <Route path="/dashboard/audit-logs/stats" element={<LazyRoute><AuditStatsPage /></LazyRoute>} />
 
-              <Route path="/settings" element={<LazyRoute><SettingsPage /></LazyRoute>} />
-              <Route path="/settings/mfa" element={<Navigate to="/dashboard/security" replace />} />
-              <Route path="/settings/security" element={<Navigate to="/dashboard/security" replace />} />
-              <Route path="/settings/:legacyTab" element={<LazyRoute><SettingsPage /></LazyRoute>} />
+                <Route path="/settings/mfa" element={<Navigate to="/dashboard/security" replace />} />
+                <Route path="/settings/security" element={<Navigate to="/dashboard/security" replace />} />
+                <Route path="/settings" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/settings/:legacyTab" element={<Navigate to="/dashboard" replace />} />
+              </Route>
             </Route>
 
-            {/* 404 Fallback */}
-            <Route path="*" element={<NotFoundPage />} />
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </AuthProvider>
       </Router>

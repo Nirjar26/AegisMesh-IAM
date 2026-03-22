@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import PermissionTree from '../../components/PermissionTree';
-import PermissionChecker from '../../components/PermissionChecker';
+import PermissionChecker from '../../components/users/PermissionChecker';
 import RoleSelector from '../../components/RoleSelector';
 
 export default function UserPermissions() {

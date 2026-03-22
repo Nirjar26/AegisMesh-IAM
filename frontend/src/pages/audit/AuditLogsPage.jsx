@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -16,6 +16,7 @@ import {
     ShieldOff,
 } from 'lucide-react';
 import { auditAPI } from '../../services/api';
+import { useDebounce } from '../../hooks/useDebounce';
 
 function toTitleCaseAction(action = '') {
     return action
@@ -141,12 +142,42 @@ export default function AuditLogsPage() {
         ipAddress: '',
     });
     const [page, setPage] = useState(1);
-    const [perPage, setPerPage] = useState(20);
+    const [perPage, setPerPage] = useState(25);
     const [autoRefresh, setAutoRefresh] = useState(false);
     const [expandedLogId, setExpandedLogId] = useState(null);
+    const [searchInput, setSearchInput] = useState('');
+    const debouncedSearch = useDebounce(searchInput, 400);
+
+    useEffect(() => {
+        setFilters((prev) => {
+            if (prev.search === debouncedSearch) {
+                return prev;
+            }
+            return { ...prev, search: debouncedSearch };
+        });
+        setPage(1);
+    }, [debouncedSearch]);
+
+    const toIsoDayStart = (value) => {
+        if (!value) return undefined;
+        const date = new Date(`${value}T00:00:00.000Z`);
+        return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+    };
+
+    const toIsoDayEnd = (value) => {
+        if (!value) return undefined;
+        const date = new Date(`${value}T23:59:59.999Z`);
+        return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+    };
 
     const queryParams = useMemo(() => {
-        const next = { page, limit: perPage, ...filters };
+        const next = {
+            page,
+            limit: perPage,
+            ...filters,
+            dateFrom: toIsoDayStart(filters.startDate),
+            dateTo: toIsoDayEnd(filters.endDate),
+        };
         Object.keys(next).forEach((key) => {
             if (!next[key]) delete next[key];
         });
@@ -205,6 +236,7 @@ export default function AuditLogsPage() {
             endDate: '',
             ipAddress: '',
         });
+        setSearchInput('');
         setPage(1);
     };
 
@@ -251,6 +283,11 @@ export default function AuditLogsPage() {
                             <RefreshCw size={14} className={autoRefresh ? 'animate-spin' : ''} />
                             Auto-Refresh
                         </button>
+                        {autoRefresh ? (
+                            <span className="inline-flex items-center rounded-xl border border-[#4f46e5]/20 bg-[#4f46e5]/5 px-3 py-2 text-xs text-[#4f46e5]">
+                                Refreshing every 30s
+                            </span>
+                        ) : null}
                         <button
                             onClick={() => navigate('/dashboard/audit-logs/stats')}
                             className="bg-[#4f46e5] hover:bg-[#3730a3] text-white rounded-xl px-4 py-2 text-sm flex items-center gap-2 transition-colors"
@@ -314,8 +351,8 @@ export default function AuditLogsPage() {
                         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7a87a8]" />
                         <input
                             type="text"
-                            value={filters.search}
-                            onChange={(e) => updateFilter('search', e.target.value)}
+                            value={searchInput}
+                            onChange={(e) => setSearchInput(e.target.value)}
                             placeholder="Search action, resource, IP..."
                             className="w-full border border-[#d0d7e8] rounded-xl pl-9 pr-4 py-2.5 text-sm text-[#3a4560] placeholder:text-[#7a87a8] focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] outline-none"
                         />
@@ -349,7 +386,8 @@ export default function AuditLogsPage() {
                             <option value="">Result</option>
                             <option value="SUCCESS">Success</option>
                             <option value="FAILURE">Failure</option>
-                            <option value="ERROR">Failure</option>
+                            <option value="ERROR">Error</option>
+                            <option value="WARNING">Warning</option>
                             <option value="BLOCKED">Denied</option>
                         </select>
                         <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a87a8] pointer-events-none" />
@@ -585,8 +623,7 @@ export default function AuditLogsPage() {
                                     }}
                                     className="appearance-none bg-[#f4f6fb] border border-[#d0d7e8] rounded-xl px-3 py-1.5 pr-6 text-sm text-[#3a4560] focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/25"
                                 >
-                                    <option value={10}>10</option>
-                                    <option value={20}>20</option>
+                                    <option value={25}>25</option>
                                     <option value={50}>50</option>
                                     <option value={100}>100</option>
                                 </select>

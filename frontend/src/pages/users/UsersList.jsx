@@ -47,6 +47,7 @@ export default function UsersList() {
     const [statusFilter, setStatusFilter] = useState('');
     const [mfaFilter, setMfaFilter] = useState('');
     const [roleFilter, setRoleFilter] = useState('');
+    const [roleSearch, setRoleSearch] = useState('');
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [dialogConfig, setDialogConfig] = useState(null);
@@ -155,6 +156,14 @@ export default function UsersList() {
         unverified: users.filter(u => !u.emailVerified).length,
     };
     const roles = rolesResponse?.data || [];
+    const visibleRoles = useMemo(() => {
+        const query = roleSearch.trim().toLowerCase();
+        if (!query) {
+            return roles;
+        }
+
+        return roles.filter((role) => role.name?.toLowerCase().includes(query));
+    }, [roleSearch, roles]);
 
     // Handlers
     const handleResetFilters = () => {
@@ -163,6 +172,7 @@ export default function UsersList() {
         setStatusFilter('');
         setMfaFilter('');
         setRoleFilter('');
+        setRoleSearch('');
         setPage(1);
         clearSelectedUsers();
     };
@@ -353,7 +363,14 @@ export default function UsersList() {
                         </div>
 
                         {/* Role Filter */}
-                        <div className="relative flex-1 sm:flex-none">
+                        <div className="relative flex-1 sm:flex-none sm:min-w-[210px]">
+                            <input
+                                type="text"
+                                value={roleSearch}
+                                onChange={(e) => setRoleSearch(e.target.value)}
+                                placeholder="Search roles"
+                                className="mb-2 w-full rounded-xl border border-[#d0d7e8] bg-white px-3 py-2 text-xs text-[#3a4560] placeholder-[#9aa4bb] focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/25"
+                            />
                             <select
                                 value={roleFilter}
                                 onChange={(e) => {
@@ -364,7 +381,7 @@ export default function UsersList() {
                                 className="w-full appearance-none rounded-xl border border-[#d0d7e8] bg-[#f4f6fb] px-4 py-2.5 pr-8 text-sm text-[#3a4560] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/25 sm:w-auto"
                             >
                                 <option value="">Role</option>
-                                {roles.map(r => (
+                                {visibleRoles.map(r => (
                                     <option key={r.id} value={r.id}>{r.name}</option>
                                 ))}
                             </select>

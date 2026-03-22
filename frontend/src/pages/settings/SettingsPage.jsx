@@ -2,6 +2,7 @@ import { createElement, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     AlertTriangle,
+    AppWindow,
     Bell,
     Building2,
     Clock,
@@ -19,14 +20,15 @@ import {
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { settingsAPI } from '../../services/api';
+import ConnectedApps from '../../components/security/ConnectedApps';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 
 const TAB_DEFS = [
     { id: 'profile', label: 'Profile', icon: User },
-    { id: 'sessions', label: 'Sessions', icon: Monitor },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'organization', label: 'Organization', icon: Building2 },
     { id: 'api-keys', label: 'API Keys', icon: Key },
+    { id: 'connected-apps', label: 'Connected Apps', icon: AppWindow },
 ];
 
 const LANG_OPTIONS = [
@@ -1866,10 +1868,18 @@ export default function SettingsPage() {
                                     onProfileUpdated={(nextProfile) => updateUser(nextProfile)}
                                 />
                             ) : null}
-                            {activeTab === 'sessions' ? <SessionsTab /> : null}
                             {activeTab === 'notifications' ? <NotificationsTab /> : null}
                             {activeTab === 'organization' && user?.role === 'SuperAdmin' ? <OrganizationTab /> : null}
                             {activeTab === 'api-keys' ? <ApiKeysTab /> : null}
+                            {activeTab === 'connected-apps' ? (
+                                <div className="w-full">
+                                    <div className="mb-5">
+                                        <h3 className="text-[18px] font-bold text-[#0f172a]">Connected Apps</h3>
+                                        <p className="mt-1 text-[13px] text-[#64748b]">Apps and API tokens with access to your account</p>
+                                    </div>
+                                    <ConnectedApps />
+                                </div>
+                            ) : null}
                         </div>
                     </div>
                 </div>

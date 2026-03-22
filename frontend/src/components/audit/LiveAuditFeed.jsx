@@ -1,37 +1,110 @@
 import { useState, useEffect, useRef } from 'react';
 import AuditLogTable from './AuditLogTable';
 
-export default function LiveAuditFeed({ onRowClick }) {
+const MAX_ATTEMPTS = 5;
+
+export default function LiveAuditFeed({ onRowClick, refetchAuditLogs }) {
     const [isLive, setIsLive] = useState(false);
     const [logs, setLogs] = useState([]);
+    const [connState, setConnState] = useState('connecting'); // connecting | connected | error | reconnecting
     const eventSourceRef = useRef(null);
+    const reconnectRef = useRef(null);
+    const attemptRef = useRef(0);
+    const pollRef = useRef(null);
 
-    useEffect(() => {
-        if (!isLive) {
-            eventSourceRef.current?.close();
-            eventSourceRef.current = null;
-            return;
+    const clearReconnect = () => {
+        if (reconnectRef.current) {
+            clearTimeout(reconnectRef.current);
+            reconnectRef.current = null;
         }
+    };
 
-        const es = new EventSource('/api/audit-logs/stream');
+    const clearPolling = () => {
+        if (pollRef.current) {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+        }
+    };
+
+    const stopConnection = () => {
+        clearReconnect();
+        clearPolling();
+        eventSourceRef.current?.close();
+        eventSourceRef.current = null;
+    };
+
+    const connect = () => {
+        stopConnection();
+        setConnState('connecting');
+
+        const token = localStorage.getItem('accessToken');
+        const streamUrl = token
+            ? `/api/audit-logs/stream?token=${encodeURIComponent(token)}`
+            : '/api/audit-logs/stream';
+
+        const es = new EventSource(streamUrl);
         eventSourceRef.current = es;
+
+        es.onopen = () => {
+            setConnState('connected');
+            attemptRef.current = 0;
+            clearPolling();
+        };
 
         es.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
                 if (data.type === 'ping' || data.type === 'connected') return;
-                setLogs(prev => [data, ...prev].slice(0, 100));
+                setLogs((prev) => [data, ...prev].slice(0, 50));
             } catch (parseError) {
                 console.debug('Failed to parse live audit event payload', parseError);
             }
         };
 
         es.onerror = () => {
-            // SSE will auto-reconnect after error for EventSource
-        };
+            es.close();
+            setConnState('error');
 
-        return () => { es.close(); };
+            if (attemptRef.current < MAX_ATTEMPTS) {
+                const delay = Math.min(1000 * (2 ** attemptRef.current), 30000);
+                setConnState('reconnecting');
+                reconnectRef.current = setTimeout(() => {
+                    attemptRef.current += 1;
+                    connect();
+                }, delay);
+                return;
+            }
+
+            clearPolling();
+            pollRef.current = setInterval(() => {
+                refetchAuditLogs?.();
+            }, 30000);
+        };
+    };
+
+    useEffect(() => {
+        if (!isLive) {
+            stopConnection();
+            setConnState('error');
+            return;
+        }
+
+        connect();
+
+        return () => {
+            stopConnection();
+        };
     }, [isLive]);
+
+    const statusConfig = {
+        connecting: { dotColor: '#fbbf24', text: 'Connecting...', textColor: '#92400e', pulse: true },
+        connected: { dotColor: '#34d399', text: 'Live', textColor: '#065f46', pulse: true },
+        reconnecting: { dotColor: '#fbbf24', text: 'Reconnecting...', textColor: '#92400e', pulse: true },
+        error: { dotColor: '#f87171', text: 'Disconnected', textColor: '#7f1d1d', pulse: false },
+    };
+
+    const status = statusConfig[connState] || statusConfig.error;
+    const inPollingMode = connState === 'error' && attemptRef.current >= MAX_ATTEMPTS;
 
     return (
         <div style={{
@@ -48,23 +121,56 @@ export default function LiveAuditFeed({ onRowClick }) {
                     <span style={{
                         width: '8px', height: '8px', borderRadius: '50%',
                         background: isLive ? '#10B981' : '#64748B',
-                        animation: isLive ? 'pulse 2s infinite' : 'none',
-                        boxShadow: isLive ? '0 0 8px #10B981' : 'none',
+                        animation: isLive && status.pulse ? 'pulse 2s infinite' : 'none',
+                        boxShadow: isLive && connState === 'connected' ? '0 0 8px #10B981' : 'none',
                     }} />
                     <span style={{ fontSize: '13px', fontWeight: 600, color: '#F1F5F9' }}>
                         Live Feed {isLive ? 'ON' : 'OFF'}
                     </span>
                     <span style={{ fontSize: '11px', color: '#64748B' }}>({logs.length} events)</span>
                 </div>
-                <button
-                    onClick={() => setIsLive(!isLive)}
-                    style={{
-                        padding: '6px 14px', fontSize: '12px', fontWeight: 600, borderRadius: '6px',
-                        border: 'none', cursor: 'pointer',
-                        background: isLive ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)',
-                        color: isLive ? '#EF4444' : '#10B981',
-                    }}
-                >{isLive ? 'Stop' : 'Start Live Feed'}</button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {isLive ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span
+                                style={{ width: 8, height: 8, borderRadius: '50%', background: status.dotColor }}
+                            />
+                            <span style={{ fontSize: '11px', color: status.textColor }}>{status.text}</span>
+                            {inPollingMode ? (
+                                <span style={{ fontSize: '11px', color: '#6366f1' }}>Polling mode</span>
+                            ) : null}
+                            {connState === 'error' ? (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        attemptRef.current = 0;
+                                        connect();
+                                    }}
+                                    style={{
+                                        border: 'none',
+                                        background: 'transparent',
+                                        color: '#6366f1',
+                                        fontSize: '11px',
+                                        cursor: 'pointer',
+                                        padding: 0,
+                                    }}
+                                >
+                                    ↺ Retry
+                                </button>
+                            ) : null}
+                        </div>
+                    ) : null}
+
+                    <button
+                        onClick={() => setIsLive(!isLive)}
+                        style={{
+                            padding: '6px 14px', fontSize: '12px', fontWeight: 600, borderRadius: '6px',
+                            border: 'none', cursor: 'pointer',
+                            background: isLive ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)',
+                            color: isLive ? '#EF4444' : '#10B981',
+                        }}
+                    >{isLive ? 'Stop' : 'Start Live Feed'}</button>
+                </div>
             </div>
 
             {isLive && <AuditLogTable logs={logs} onRowClick={onRowClick} />}

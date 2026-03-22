@@ -35,13 +35,6 @@ const TAB_DEFS = [
         subtitle: 'Update your name, email, and preferences',
     },
     {
-        id: 'sessions',
-        label: 'Sessions',
-        icon: Monitor,
-        title: 'Active Sessions',
-        subtitle: 'View and revoke your current login sessions',
-    },
-    {
         id: 'notifications',
         label: 'Notifications',
         icon: Bell,
@@ -63,27 +56,13 @@ const TAB_DEFS = [
         title: 'API Keys & Tokens',
         subtitle: 'Manage programmatic access credentials',
     },
-];
-
-const LANG_OPTIONS = [
-    { value: 'en', label: 'English' },
-    { value: 'es', label: 'Spanish' },
-    { value: 'fr', label: 'French' },
-    { value: 'de', label: 'German' },
-    { value: 'ja', label: 'Japanese' },
-    { value: 'zh', label: 'Mandarin' },
-];
-
-const TIMEZONE_OPTIONS = [
-    'UTC',
-    'America/New_York',
-    'America/Los_Angeles',
-    'Europe/London',
-    'Europe/Berlin',
-    'Asia/Tokyo',
-    'Asia/Singapore',
-    'Asia/Kolkata',
-    'Australia/Sydney',
+    {
+        id: 'connected-apps',
+        label: 'Connected Apps',
+        icon: AppWindow,
+        title: 'Connected Apps',
+        subtitle: 'Apps and API tokens with access to your account',
+    },
 ];
 
 const NOTIFICATION_ROWS = {
@@ -313,8 +292,6 @@ function ProfileTab({ user, onProfileUpdated }) {
         lastName: user?.lastName || '',
         jobTitle: user?.jobTitle || '',
         department: user?.department || '',
-        timezone: user?.timezone || 'UTC',
-        language: user?.language || 'en',
     });
     const [errors, setErrors] = useState({});
 
@@ -459,29 +436,6 @@ function ProfileTab({ user, onProfileUpdated }) {
                         />
                     </Field>
 
-                    <Field label="Timezone" error={errors.timezone}>
-                        <select
-                            value={form.timezone}
-                            onChange={(e) => setForm((prev) => ({ ...prev, timezone: e.target.value }))}
-                            className="w-full border border-[#d0d7e8] rounded-xl px-4 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5]"
-                        >
-                            {TIMEZONE_OPTIONS.map((option) => (
-                                <option key={option} value={option}>{option}</option>
-                            ))}
-                        </select>
-                    </Field>
-
-                    <Field label="Language" error={errors.language} className="col-span-2">
-                        <select
-                            value={form.language}
-                            onChange={(e) => setForm((prev) => ({ ...prev, language: e.target.value }))}
-                            className="w-full border border-[#d0d7e8] rounded-xl px-4 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5]"
-                        >
-                            {LANG_OPTIONS.map((option) => (
-                                <option key={option.value} value={option.value}>{option.label}</option>
-                            ))}
-                        </select>
-                    </Field>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-1">
@@ -492,8 +446,6 @@ function ProfileTab({ user, onProfileUpdated }) {
                             lastName: user?.lastName || '',
                             jobTitle: user?.jobTitle || '',
                             department: user?.department || '',
-                            timezone: user?.timezone || 'UTC',
-                            language: user?.language || 'en',
                         })}
                         className="px-4 py-2 rounded-lg text-sm border border-[#d0d7e8] text-[#3a4560] hover:bg-[#f4f6fb]"
                     >
@@ -1962,12 +1914,6 @@ export default function SettingsModal({ isOpen = false, onClose, initialTab = 'p
         enabled: isOpen,
     });
 
-    const { data: sessionsData = [] } = useQuery({
-        queryKey: ['settings-sessions'],
-        queryFn: () => settingsAPI.getSessions().then((res) => res.data?.data || []),
-        enabled: isOpen,
-    });
-
     const { data: apiKeysData = [] } = useQuery({
         queryKey: ['settings-api-keys'],
         queryFn: () => settingsAPI.getApiKeys().then((res) => res.data?.data || []),
@@ -2000,10 +1946,6 @@ export default function SettingsModal({ isOpen = false, onClose, initialTab = 'p
     const tabs = TAB_DEFS
         .filter((tab) => !(tab.adminOnly && !isSuperAdmin))
         .map((tab) => {
-            if (tab.id === 'sessions') {
-                return { ...tab, badge: sessionsData.length > 1 ? sessionsData.length : null };
-            }
-
             if (tab.id === 'api-keys') {
                 return { ...tab, badge: activeApiKeyCount > 0 ? activeApiKeyCount : null };
             }
@@ -2127,7 +2069,7 @@ export default function SettingsModal({ isOpen = false, onClose, initialTab = 'p
                                 onProfileUpdated={(nextProfile) => updateUser(nextProfile)}
                             />
                         ) : null}
-                        {selectedTabId === 'sessions' ? <SessionsTab /> : null}
+                        {selectedTabId === 'connected-apps' ? <ConnectedApps /> : null}
                         {selectedTabId === 'notifications' ? <NotificationsTab /> : null}
                         {selectedTabId === 'organization' && isSuperAdmin ? <OrganizationTab /> : null}
                         {selectedTabId === 'api-keys' ? <ApiKeysTab /> : null}

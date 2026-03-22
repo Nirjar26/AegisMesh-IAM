@@ -6,7 +6,6 @@ import {
     KeyRound,
     Layers,
     LayoutDashboard,
-    Monitor,
     ScrollText,
     ShieldCheck,
     Users,
@@ -36,12 +35,23 @@ function NavItem({ icon, label, path, active, collapsed, isLast = false, onClose
         }
     };
 
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            handleNavigation();
+        }
+    };
+
     if (collapsed) {
         return (
             <button
                 type="button"
                 onClick={handleNavigation}
+                onKeyDown={handleKeyDown}
                 title={label}
+                role="link"
+                tabIndex={0}
+                aria-current={active ? 'page' : undefined}
                 className={`group w-10 h-10 mx-auto rounded-lg flex items-center justify-center transition-all duration-150 ${active
                     ? 'bg-[rgba(99,102,241,0.18)] text-white'
                     : 'bg-transparent text-[rgba(255,255,255,0.55)] hover:bg-[rgba(255,255,255,0.06)] hover:text-[rgba(255,255,255,0.85)]'
@@ -56,6 +66,10 @@ function NavItem({ icon, label, path, active, collapsed, isLast = false, onClose
         <button
             type="button"
             onClick={handleNavigation}
+            onKeyDown={handleKeyDown}
+            role="link"
+            tabIndex={0}
+            aria-current={active ? 'page' : undefined}
             className={`group w-full flex items-center gap-[10px] px-[10px] py-2 rounded-lg text-[13px] cursor-pointer transition-all duration-150 ${active
                 ? 'bg-[rgba(99,102,241,0.18)] text-white font-semibold'
                 : 'bg-transparent text-[rgba(255,255,255,0.55)] hover:bg-[rgba(255,255,255,0.06)] hover:text-[rgba(255,255,255,0.85)] font-medium'
@@ -91,7 +105,6 @@ export default function Sidebar({ onClose }) {
     const [expandedSections, setExpandedSections] = useState({
         identity: true,
         monitoring: true,
-        settings: true,
     });
 
     const initials = useMemo(() => {
@@ -140,17 +153,11 @@ export default function Sidebar({ onClose }) {
         { label: 'Analytics', path: '/dashboard/audit-logs/stats', icon: BarChart2 },
     ];
 
-    const settingsItems = [
-        { label: 'Sessions', path: '/settings/sessions', icon: Monitor },
-    ];
-
     const identityActive = identityItems.some((item) => isSectionPathActive(item.path));
     const monitoringActive = monitoringItems.some((item) => isSectionPathActive(item.path));
-    const settingsActive = settingsItems.some((item) => isSectionPathActive(item.path));
 
     const identityExpanded = expandedSections.identity || identityActive;
     const monitoringExpanded = expandedSections.monitoring || monitoringActive;
-    const settingsExpanded = expandedSections.settings || settingsActive;
 
     const toggleSection = (key) => {
         setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -225,7 +232,6 @@ export default function Sidebar({ onClose }) {
                     <div className="mt-0">
                         {identityItems.map((item, index) => renderItem(item, index === identityItems.length - 1))}
                         {monitoringItems.map((item, index) => renderItem(item, index === monitoringItems.length - 1))}
-                        {settingsItems.map((item, index) => renderItem(item, index === settingsItems.length - 1))}
                     </div>
                 ) : (
                     <>
@@ -249,18 +255,6 @@ export default function Sidebar({ onClose }) {
                             />
                             <div style={{ maxHeight: monitoringExpanded ? '300px' : '0', overflow: 'hidden', transition: 'max-height 0.2s ease' }}>
                                 {monitoringItems.map((item, index) => renderItem(item, index === monitoringItems.length - 1))}
-                            </div>
-                            <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '16px 4px 0' }} />
-                        </div>
-
-                        <div style={{ marginTop: 20, marginBottom: 4 }}>
-                            <SectionToggle
-                                label="SETTINGS"
-                                expanded={settingsExpanded}
-                                onToggle={() => toggleSection('settings')}
-                            />
-                            <div style={{ maxHeight: settingsExpanded ? '200px' : '0', overflow: 'hidden', transition: 'max-height 0.2s ease' }}>
-                                {settingsItems.map((item, index) => renderItem(item, index === settingsItems.length - 1))}
                             </div>
                         </div>
                     </>

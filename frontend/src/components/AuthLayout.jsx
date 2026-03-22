@@ -26,22 +26,22 @@ export default function AuthLayout({ children, title, subtitle }) {
                             A
                         </div>
                         <div>
-                            <h1 className="text-2xl font-black tracking-tight text-white">AegisMesh</h1>
-                            <p className="mt-1 text-sm text-white/55">Enterprise Identity &amp; Access Management</p>
+                            <h1 className="text-2xl font-black tracking-tight text-black">AegisMesh</h1>
+                            <p className="mt-1 text-sm text-black/80">Enterprise Identity &amp; Access Management</p>
                         </div>
                     </Link>
 
                     <div className="max-w-xl">
-                        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-aws-orange/80">Identity Control Surface</p>
-                        <h2 className="mt-6 text-5xl font-black leading-[0.95] tracking-tight text-white">
+                        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-black">Identity Control Surface</p>
+                        <h2 className="mt-6 text-5xl font-black leading-[0.95] tracking-tight text-black">
                             Secure every login, session, and access decision.
                         </h2>
-                        <p className="mt-6 max-w-lg text-base leading-7 text-white/65">
+                        <p className="mt-6 max-w-lg text-base leading-7 text-black">
                             Operate identity with live audit visibility, adaptive security, and policy controls built for high-trust environments.
                         </p>
                     </div>
 
-                    <p className="text-xs text-aws-text-dim">© 2026 AegisMesh · Secure Authentication Platform</p>
+                    <p className="text-xs text-black/80">© 2026 AegisMesh · Secure Authentication Platform</p>
                 </div>
 
                 <div className="flex w-full items-center justify-center px-6 py-8 lg:w-1/2 lg:px-12 lg:py-12">
@@ -51,8 +51,8 @@ export default function AuthLayout({ children, title, subtitle }) {
                                 A
                             </div>
                             <div>
-                                <h1 className="text-xl font-black tracking-tight text-white">AegisMesh</h1>
-                                <p className="text-xs text-white/55">Enterprise Identity &amp; Access Management</p>
+                                <h1 className="text-xl font-black tracking-tight text-black">AegisMesh</h1>
+                                <p className="text-xs text-black/80">Enterprise Identity &amp; Access Management</p>
                             </div>
                         </Link>
 

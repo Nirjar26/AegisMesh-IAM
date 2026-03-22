@@ -41,12 +41,19 @@ function getRating(score) {
 }
 
 export function calculateSecurityScore(user = {}, sessions = [], apiKeys = [], connectedApps = []) {
+    const activeSessions = sessions?.filter((session) => session.isActive !== false) || [];
+    const staleApiKeys = apiKeys?.filter((key) => key.isActive && key.lastUsedAt && daysSince(key.lastUsedAt) > 30) || [];
+    const failedLoginsLast7Days = user.failedLoginsLast7Days ?? user.failedLoginCountLast7Days ?? user.failedLoginCount7d ?? 0;
+    const connectedAppsReviewed =
+        (connectedApps?.length || 0) === 0
+        || connectedApps.every((app) => Boolean(app.reviewedAt || app.lastReviewedAt || app.isReviewed));
+
     const checks = [
         {
             id: 'mfa_enabled',
             label: 'Two-factor authentication',
             description: 'Your account is protected with an authenticator app',
-            points: 25,
+            points: 20,
             passed: user.mfaEnabled === true,
             action: 'Enable MFA',
             actionPath: '/dashboard/security',
@@ -57,7 +64,7 @@ export function calculateSecurityScore(user = {}, sessions = [], apiKeys = [], c
             id: 'email_verified',
             label: 'Email address verified',
             description: 'Your recovery email is confirmed and active',
-            points: 15,
+            points: 10,
             passed: user.emailVerified === true,
             action: 'Verify Email',
             actionPath: '/settings',
@@ -86,7 +93,7 @@ export function calculateSecurityScore(user = {}, sessions = [], apiKeys = [], c
             label: 'No excessive active sessions',
             description: 'You have a manageable number of active sessions',
             points: 10,
-            passed: (sessions?.length || 0) <= 5,
+            passed: activeSessions.length <= 3,
             action: 'Review Sessions',
             actionPath: '/settings',
             actionTab: 'sessions',
@@ -97,10 +104,7 @@ export function calculateSecurityScore(user = {}, sessions = [], apiKeys = [], c
             label: 'No stale API keys',
             description: 'All active API keys are recently used or newly created',
             points: 10,
-            passed: (() => {
-                const stale = apiKeys?.filter((key) => key.isActive && key.lastUsedAt && daysSince(key.lastUsedAt) > 90);
-                return (stale?.length || 0) === 0;
-            })(),
+            passed: staleApiKeys.length === 0,
             action: 'Review API Keys',
             actionPath: '/settings',
             actionTab: 'api-keys',
@@ -122,7 +126,7 @@ export function calculateSecurityScore(user = {}, sessions = [], apiKeys = [], c
             label: 'Connected apps reviewed',
             description: 'No suspicious or unused app connections',
             points: 10,
-            passed: (connectedApps?.length || 0) === 0 || connectedApps.every((app) => daysSince(app.connectedAt || app.createdAt) <= 180),
+            passed: connectedAppsReviewed,
             action: 'Review Connected Apps',
             actionPath: '/dashboard/security',
             actionTab: 'connected-apps',
@@ -132,8 +136,8 @@ export function calculateSecurityScore(user = {}, sessions = [], apiKeys = [], c
             id: 'no_failed_logins',
             label: 'No recent failed logins',
             description: 'No suspicious login attempts on your account',
-            points: 5,
-            passed: (user.failedLoginCount || 0) === 0,
+            points: 15,
+            passed: failedLoginsLast7Days === 0,
             action: 'View Login History',
             actionPath: '/dashboard/security',
             actionTab: 'history',

@@ -63,6 +63,10 @@ const isPublicAuthRequest = (url = '') => PUBLIC_AUTH_PATHS.some((path) => url.i
 // Request interceptor to attach access token
 api.interceptors.request.use(
     (config) => {
+        if (config.skipAuth) {
+            return config;
+        }
+
         const token = localStorage.getItem('accessToken');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -121,6 +125,7 @@ api.interceptors.response.use(
             error.response?.status === 401
             && originalRequest
             && !originalRequest._retry
+            && !originalRequest.skipAuth
             && hasRefreshToken
             && !isRefreshRequest(requestUrl)
             && !isPublicAuthRequest(requestUrl)
@@ -143,10 +148,18 @@ api.interceptors.response.use(
 
             try {
                 const refreshToken = localStorage.getItem('refreshToken');
-                const payload = refreshToken ? { refreshToken } : {};
+                if (!refreshToken) {
+                    clearStoredAuth();
+                    notifyAuthExpired();
+                    if (typeof window !== 'undefined') {
+                        window.location.href = '/login';
+                    }
+                    return Promise.reject(error);
+                }
 
-                const { data } = await axios.post('/api/auth/refresh-token', payload, {
+                const { data } = await axios.post('/api/auth/refresh-token', { refreshToken }, {
                     withCredentials: true,
+                    skipAuth: true,
                 });
 
                 const { accessToken, refreshToken: newRefreshToken } = data.data;
@@ -164,6 +177,9 @@ api.interceptors.response.use(
                 processQueue(refreshError, null);
                 clearStoredAuth();
                 notifyAuthExpired();
+                if (typeof window !== 'undefined') {
+                    window.location.href = '/login';
+                }
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;

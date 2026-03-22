@@ -1,20 +1,30 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, Layers, Copy, Check, Edit2, Trash2, X, ChevronDown, KeyRound } from 'lucide-react';
-import { rbacAPI } from '../../services/api';
+import { rbacAPI, userAPI } from '../../services/api';
+import { useDebounce } from '../../hooks/useDebounce';
 
 export default function GroupDetail() {
-    const { id } = useParams();
+    const { id: groupId } = useParams();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [selectedRole, setSelectedRole] = useState('');
     const [searchInput, setSearchInput] = useState('');
+    const [selectedMemberId, setSelectedMemberId] = useState('');
     const [copiedArn, setCopiedArn] = useState(false);
+    const debouncedUserSearch = useDebounce(searchInput, 300);
 
-    const { data: groupData, isLoading: groupLoading } = useQuery({
-        queryKey: ['group', id],
-        queryFn: () => rbacAPI.getGroup(id),
+    useEffect(() => {
+        if (!groupId) {
+            navigate('/dashboard/groups');
+        }
+    }, [groupId, navigate]);
+
+    const { data: groupData, isLoading: groupLoading, error: groupError, refetch: refetchGroup } = useQuery({
+        queryKey: ['group', groupId],
+        queryFn: () => rbacAPI.getGroup(groupId),
+        enabled: !!groupId,
     });
 
     const { data: rolesData } = useQuery({
@@ -22,35 +32,42 @@ export default function GroupDetail() {
         queryFn: () => rbacAPI.getRoles({ limit: 100 }),
     });
 
+    const { data: usersData, isFetching: isSearchingUsers } = useQuery({
+        queryKey: ['group-member-search', debouncedUserSearch],
+        queryFn: () => userAPI.getUsers({ search: debouncedUserSearch, page: 1, limit: 8 }).then((res) => res.data?.data || []),
+        enabled: debouncedUserSearch.trim().length >= 2,
+    });
+
     const addMemberMutation = useMutation({
-        mutationFn: (userId) => rbacAPI.addGroupMember(id, userId),
+        mutationFn: (userId) => rbacAPI.addGroupMember(groupId, userId),
         onSuccess: () => {
-            queryClient.invalidateQueries(['group', id]);
+            queryClient.invalidateQueries({ queryKey: ['group', groupId] });
             setSearchInput('');
+            setSelectedMemberId('');
         },
         onError: (err) => alert(err.response?.data?.error?.message || 'Error adding member')
     });
 
     const removeMemberMutation = useMutation({
-        mutationFn: (userId) => rbacAPI.removeGroupMember(id, userId),
-        onSuccess: () => queryClient.invalidateQueries(['group', id]),
+        mutationFn: (userId) => rbacAPI.removeGroupMember(groupId, userId),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['group', groupId] }),
     });
 
     const attachRoleMutation = useMutation({
-        mutationFn: (roleId) => rbacAPI.attachRoleToGroup(id, roleId),
+        mutationFn: (roleId) => rbacAPI.attachRoleToGroup(groupId, roleId),
         onSuccess: () => {
-            queryClient.invalidateQueries(['group', id]);
+            queryClient.invalidateQueries({ queryKey: ['group', groupId] });
             setSelectedRole('');
         },
     });
 
     const detachRoleMutation = useMutation({
-        mutationFn: (roleId) => rbacAPI.detachRoleFromGroup(id, roleId),
-        onSuccess: () => queryClient.invalidateQueries(['group', id]),
+        mutationFn: (roleId) => rbacAPI.detachRoleFromGroup(groupId, roleId),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['group', groupId] }),
     });
 
     const deleteGroupMutation = useMutation({
-        mutationFn: () => rbacAPI.deleteGroup(id),
+        mutationFn: () => rbacAPI.deleteGroup(groupId),
         onSuccess: () => navigate('/dashboard/groups'),
         onError: (err) => alert(err.response?.data?.error?.message || 'Error deleting group')
     });
@@ -62,8 +79,19 @@ export default function GroupDetail() {
         setTimeout(() => setCopiedArn(false), 1500);
     };
 
-    const group = groupData?.data?.data;
+    const group = groupData?.data?.data || null;
     const allRoles = rolesData?.data?.data || [];
+    const existingMemberIds = useMemo(() => {
+        return new Set((group?.userGroups || []).map((entry) => entry.user?.id).filter(Boolean));
+    }, [group]);
+    const availableUsers = useMemo(() => {
+        const items = usersData || [];
+        return items.filter((user) => !existingMemberIds.has(user.id));
+    }, [existingMemberIds, usersData]);
+
+    if (!groupId) {
+        return null;
+    }
 
     if (groupLoading) {
         return (
@@ -76,10 +104,36 @@ export default function GroupDetail() {
         );
     }
 
+    if (groupError) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center px-4">
+                <div className="text-center">
+                    <p className="text-red-500 text-sm">Failed to load group</p>
+                    <button
+                        type="button"
+                        onClick={() => refetchGroup()}
+                        className="mt-3 px-3 py-1.5 rounded-lg border border-[#d0d7e8] text-sm text-[#3a4560] hover:bg-[#f4f6fb]"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     if (!group) {
         return (
             <div className="min-h-screen bg-white flex items-center justify-center px-4">
-                <p className="text-red-500 text-sm">Group not found</p>
+                <div className="text-center">
+                    <p className="text-red-500 text-sm">Group not found</p>
+                    <button
+                        type="button"
+                        onClick={() => navigate('/dashboard/groups')}
+                        className="mt-3 px-3 py-1.5 rounded-lg border border-[#d0d7e8] text-sm text-[#3a4560] hover:bg-[#f4f6fb]"
+                    >
+                        Back to Groups
+                    </button>
+                </div>
             </div>
         );
     }
@@ -146,8 +200,10 @@ export default function GroupDetail() {
                         {/* Right Cluster - Action Buttons */}
                         <div className="flex gap-2">
                             <button
-                                className="border border-[#d0d7e8] text-[#3a4560] hover:bg-[#f4f6fb] rounded-xl px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1.5"
-                                title="Edit Group"
+                                type="button"
+                                disabled
+                                className="border border-[#d0d7e8] text-[#9aa4bb] rounded-xl px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1.5 cursor-not-allowed"
+                                title="Edit Group is not available yet"
                             >
                                 <Edit2 size={14} />
                                 Edit Group
@@ -182,16 +238,52 @@ export default function GroupDetail() {
 
                         {/* Add Member Row */}
                         <div className="px-6 py-4 border-b border-[#f0f2f8] flex gap-2">
-                            <input
-                                type="text"
-                                placeholder="Search by name or email"
-                                value={searchInput}
-                                onChange={(e) => setSearchInput(e.target.value)}
-                                className="flex-1 border border-[#d0d7e8] rounded-xl px-4 py-2.5 text-sm placeholder:text-[#7a87a8] focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] text-[#0f1623]"
-                            />
+                            <div className="relative flex-1">
+                                <input
+                                    type="text"
+                                    placeholder="Search users by name or email"
+                                    value={searchInput}
+                                    onChange={(e) => {
+                                        setSearchInput(e.target.value);
+                                        setSelectedMemberId('');
+                                    }}
+                                    className="w-full border border-[#d0d7e8] rounded-xl px-4 py-2.5 text-sm placeholder:text-[#7a87a8] focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] text-[#0f1623]"
+                                />
+
+                                {searchInput.trim().length >= 2 ? (
+                                    <div className="absolute z-20 mt-2 w-full rounded-xl border border-[#d0d7e8] bg-white shadow-lg overflow-hidden">
+                                        {isSearchingUsers ? (
+                                            <div className="px-3 py-2 text-xs text-[#7a87a8]">Searching users...</div>
+                                        ) : availableUsers.length > 0 ? (
+                                            availableUsers.map((user) => {
+                                                const isSelected = selectedMemberId === user.id;
+                                                const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email;
+
+                                                return (
+                                                    <button
+                                                        key={user.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSelectedMemberId(user.id);
+                                                            setSearchInput(fullName);
+                                                        }}
+                                                        className={`w-full px-3 py-2 text-left text-sm border-b border-[#f0f2f8] last:border-b-0 ${isSelected ? 'bg-[#4f46e5]/8 text-[#4f46e5]' : 'hover:bg-[#f8f9fd] text-[#3a4560]'}`}
+                                                    >
+                                                        <div className="font-medium">{fullName}</div>
+                                                        <div className="text-xs text-[#7a87a8]">{user.email}</div>
+                                                    </button>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="px-3 py-2 text-xs text-[#7a87a8]">No matching users found</div>
+                                        )}
+                                    </div>
+                                ) : null}
+                            </div>
+
                             <button
-                                onClick={() => searchInput && addMemberMutation.mutate(searchInput)}
-                                disabled={!searchInput || addMemberMutation.isPending}
+                                onClick={() => selectedMemberId && addMemberMutation.mutate(selectedMemberId)}
+                                disabled={!selectedMemberId || addMemberMutation.isPending}
                                 className="bg-[#4f46e5] hover:bg-[#3730a3] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
                             >
                                 Add

@@ -6,7 +6,7 @@ const FILTERS = [
     { id: 'critical', label: 'Critical' },
 ];
 
-function FilterPill({ active, label, onClick }) {
+function FilterPill({ active, label, count, onClick }) {
     return (
         <button
             type="button"
@@ -16,7 +16,7 @@ function FilterPill({ active, label, onClick }) {
                 : 'bg-[#eef2ff] text-[#4f46e5] hover:bg-[#e0e7ff]'
                 }`}
         >
-            {label}
+            {label} ({count})
         </button>
     );
 }
@@ -57,6 +57,7 @@ function LoadingState() {
 
 export default function NotificationCenter({
     notifications,
+    allNotifications,
     unreadCount,
     activeFilter,
     connectionMode,
@@ -72,6 +73,17 @@ export default function NotificationCenter({
     onOpenPreferences,
     onOpenSecurity,
 }) {
+    const sourceNotifications = allNotifications || notifications;
+    const allCount = sourceNotifications.length;
+    const unreadOnlyCount = sourceNotifications.filter((n) => !n.read).length;
+    const criticalCount = sourceNotifications.filter((n) => n.metadata?.severity === 'critical').length;
+
+    const filterCountMap = {
+        all: allCount,
+        unread: unreadOnlyCount,
+        critical: criticalCount,
+    };
+
     return (
         <div className="absolute right-0 top-full z-50 mt-3 w-[min(26rem,calc(100vw-1.5rem))] overflow-hidden rounded-3xl border border-[#dbe4f0] bg-white shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
             <div className="border-b border-[#eef2f7] bg-[linear-gradient(135deg,#f8faff_0%,#ffffff_65%)] px-4 py-4">
@@ -105,6 +117,7 @@ export default function NotificationCenter({
                             <FilterPill
                                 key={filter.id}
                                 label={filter.label}
+                                count={filterCountMap[filter.id] ?? 0}
                                 active={activeFilter === filter.id}
                                 onClick={() => onFilterChange?.(filter.id)}
                             />
@@ -123,7 +136,7 @@ export default function NotificationCenter({
                 {!isLoading && notifications.length === 0 ? <EmptyState activeFilter={activeFilter} /> : null}
 
                 {!isLoading && notifications.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-3 transition-opacity duration-150">
                         {notifications.map((notification) => (
                             <NotificationItem
                                 key={notification.id}

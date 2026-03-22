@@ -6,17 +6,25 @@ const InputField = forwardRef(({
     error,
     icon: Icon,
     className = '',
+    id,
+    name,
+    required,
     ...props
 }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
     const isPassword = type === 'password';
     const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
+    const inputId = id || name || `field-${(label || 'input').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+    const errorId = `${inputId}-error`;
 
     return (
         <div className={`space-y-1.5 ${className}`}>
             {label && (
-                <label className="block text-sm font-medium text-aws-text-dim">
+                <label htmlFor={inputId} className="block text-sm font-medium text-aws-text-dim">
                     {label}
+                    {required ? (
+                        <span aria-hidden="true" className="text-red-500 ml-1">*</span>
+                    ) : null}
                 </label>
             )}
             <div className="relative group">
@@ -27,7 +35,13 @@ const InputField = forwardRef(({
                 )}
                 <input
                     ref={ref}
+                    id={inputId}
+                    name={name}
                     type={inputType}
+                    aria-describedby={error ? errorId : undefined}
+                    aria-invalid={Boolean(error)}
+                    aria-required={Boolean(required)}
+                    required={required}
                     className={`w-full bg-aws-input border rounded-lg px-4 py-3 text-[#0f1623] placeholder:text-aws-text-dim/50 text-sm
             transition-all duration-200
             focus:outline-none focus:ring-2 focus:ring-aws-orange/30 focus:border-aws-orange
@@ -59,7 +73,13 @@ const InputField = forwardRef(({
                 )}
             </div>
             {error && (
-                <p className="text-aws-red text-xs flex items-center gap-1 animate-fade-in-up" style={{ animationDuration: '0.2s' }}>
+                <p
+                    id={errorId}
+                    role="alert"
+                    aria-live="polite"
+                    className="text-aws-red text-xs flex items-center gap-1 animate-fade-in-up"
+                    style={{ animationDuration: '0.2s' }}
+                >
                     <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>

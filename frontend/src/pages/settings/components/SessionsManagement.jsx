@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { authAPI } from '../../../services/api';
-import SessionCard from '../../../components/SessionCard';
+import { settingsAPI } from '../../../services/api';
+import toast from 'react-hot-toast';
+import SessionCard from '../../../components/users/SessionCard';
 
 export default function SessionsManagement() {
     const [sessions, setSessions] = useState([]);
@@ -13,11 +14,11 @@ export default function SessionsManagement() {
 
     const fetchSessions = async () => {
         try {
-            // In a real app we'd fetch devices here. Re-using existing Auth API.
-            const { data } = await authAPI.getSessions();
+            const { data } = await settingsAPI.getSessions();
             setSessions(data.data);
         } catch (err) {
             console.error('Failed to fetch sessions', err);
+            toast.error('Failed to load sessions');
         } finally {
             setLoading(false);
         }
@@ -26,19 +27,26 @@ export default function SessionsManagement() {
     const handleRevokeSession = async (sessionId) => {
         setRevokingSession(sessionId);
         try {
-            await authAPI.revokeSession(sessionId);
+            await settingsAPI.revokeSession(sessionId);
             setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+            toast.success('Session revoked');
         } catch (err) {
             console.error('Failed to revoke session', err);
+            toast.error('Failed to revoke session');
         } finally {
             setRevokingSession(null);
         }
     };
 
-    // Feature placeholder
     const handleRevokeAllOtherSessions = async () => {
-        console.log("Not implemented yet. Need backend support for revoke all.");
-        alert("Not fully implemented in the backend schema yet.");
+        try {
+            await settingsAPI.revokeAllOtherSessions();
+            await fetchSessions();
+            toast.success('Signed out from all other devices');
+        } catch (err) {
+            console.error('Failed to revoke other sessions', err);
+            toast.error('Failed to revoke other sessions');
+        }
     };
 
     return (

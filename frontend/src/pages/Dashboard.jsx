@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { auditAPI, authAPI, rbacAPI, userAPI } from '../services/api';
-import SessionCard from '../components/SessionCard';
+import SessionCard from '../components/users/SessionCard';
 import UsersList from './users/UsersList';
 import RolesList from './rbac/RolesList';
 import PoliciesList from './rbac/PoliciesList';

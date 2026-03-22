@@ -1,6 +1,29 @@
+import { useEffect, useRef } from 'react';
 import { CATEGORY_CONFIG, RESULT_CONFIG } from './auditConfig';
 
 export default function AuditLogDetailModal({ log, onClose }) {
+    const modalRef = useRef(null);
+
+    useEffect(() => {
+        if (!log) return undefined;
+
+        const firstFocusable = modalRef.current?.querySelector(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        firstFocusable?.focus();
+
+        const keyHandler = (event) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        document.addEventListener('keydown', keyHandler);
+        return () => {
+            document.removeEventListener('keydown', keyHandler);
+        };
+    }, [log, onClose]);
+
     if (!log) return null;
     const cat = CATEGORY_CONFIG[log.category] || {};
     const res = RESULT_CONFIG[log.result] || {};
@@ -13,9 +36,14 @@ export default function AuditLogDetailModal({ log, onClose }) {
             <div style={{
                 background: '#1E293B', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)',
                 maxWidth: '700px', width: '100%', maxHeight: '85vh', overflow: 'auto', padding: '28px',
-            }} onClick={e => e.stopPropagation()}>
+            }}
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="audit-log-modal-title"
+            onClick={e => e.stopPropagation()}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h2 style={{ margin: 0, fontSize: '18px', color: '#F1F5F9' }}>Audit Log Details</h2>
+                    <h2 id="audit-log-modal-title" style={{ margin: 0, fontSize: '18px', color: '#F1F5F9' }}>Audit Log Details</h2>
                     <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: '20px', cursor: 'pointer' }}>✕</button>
                 </div>
 

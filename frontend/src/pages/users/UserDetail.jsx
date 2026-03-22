@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-    ArrowLeft, Edit, AlertCircle, Shield, Globe, Clock, ShieldCheck,
-    Smartphone, History, LayoutDashboard, Fingerprint, Lock, ShieldX
+    ArrowLeft, Edit, AlertCircle, Shield, Globe, ShieldCheck,
+    Smartphone, History, LayoutDashboard, Fingerprint, Lock, ShieldX, Users
 } from 'lucide-react';
 import { userAPI, rbacAPI, auditAPI } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -14,56 +14,63 @@ import PermissionChecker from '../../components/users/PermissionChecker';
 import SessionCard from '../../components/users/SessionCard';
 
 export default function UserDetail() {
-    const { id } = useParams();
+    const { id: userId } = useParams();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState('overview');
     const [revokingId, setRevokingId] = useState(null);
     const [showRevokeAll, setShowRevokeAll] = useState(false);
 
+    useEffect(() => {
+        if (!userId) {
+            navigate('/dashboard/users');
+        }
+    }, [navigate, userId]);
+
     // Queries
-    const { data: userRes, isLoading: userLoading } = useQuery({
-        queryKey: ['user', id],
-        queryFn: () => userAPI.getUser(id).then(res => res.data),
+    const { data: userRes, isLoading: userLoading, error: userError, refetch: refetchUser } = useQuery({
+        queryKey: ['user', userId],
+        queryFn: () => userAPI.getUser(userId),
+        enabled: !!userId,
     });
 
     const { data: rolesRes } = useQuery({
-        queryKey: ['user-roles', id],
-        queryFn: () => rbacAPI.getUserRoles(id).then(res => res.data).catch(() => ({ data: [] })),
-        enabled: activeTab === 'roles',
+        queryKey: ['user-roles', userId],
+        queryFn: () => rbacAPI.getUserRoles(userId).then(res => res.data).catch(() => ({ data: [] })),
+        enabled: activeTab === 'roles' && !!userId,
     });
 
     const { data: groupRes } = useQuery({
-        queryKey: ['user-groups', id],
-        queryFn: () => rbacAPI.getUserGroups(id).then(res => res.data).catch(() => ({ data: [] })),
-        enabled: activeTab === 'overview',
+        queryKey: ['user-groups', userId],
+        queryFn: () => rbacAPI.getUserGroups(userId).then(res => res.data).catch(() => ({ data: [] })),
+        enabled: activeTab === 'overview' && !!userId,
     });
 
     const { data: permissionsRes } = useQuery({
-        queryKey: ['user-permissions', id],
-        queryFn: () => rbacAPI.getUserPermissions(id).then(res => res.data).catch(() => ({ data: [] })),
-        enabled: activeTab === 'roles',
+        queryKey: ['user-permissions', userId],
+        queryFn: () => rbacAPI.getUserPermissions(userId).then(res => res.data).catch(() => ({ data: [] })),
+        enabled: activeTab === 'roles' && !!userId,
     });
 
     const { data: sessionsRes, isLoading: sessionsLoading } = useQuery({
-        queryKey: ['user-sessions', id],
-        queryFn: () => userAPI.getUserSessions(id).then(res => res.data).catch(() => ({ data: [] })),
-        enabled: activeTab === 'security',
+        queryKey: ['user-sessions', userId],
+        queryFn: () => userAPI.getUserSessions(userId).then(res => res.data).catch(() => ({ data: [] })),
+        enabled: activeTab === 'security' && !!userId,
     });
 
     // We can assume auditAPI has a getLogs function with queryParams
     // Using simple fetch to ensure it doesn't break if auditAPI.getLogs isn't there
     const { data: auditRes, isLoading: auditLoading } = useQuery({
-        queryKey: ['user-audit', id],
-        queryFn: () => auditAPI.getLogs({ userId: id, limit: 10 }).then(res => res.data).catch(() => ({ data: [] })),
-        enabled: activeTab === 'audit',
+        queryKey: ['user-audit', userId],
+        queryFn: () => auditAPI.getLogs({ userId, limit: 10 }).then(res => res.data).catch(() => ({ data: [] })),
+        enabled: activeTab === 'audit' && !!userId,
     });
 
     // Mutations
     const revokeSessionMutation = useMutation({
-        mutationFn: (sessionId) => userAPI.revokeSession(id, sessionId),
+        mutationFn: (sessionId) => userAPI.revokeSession(userId, sessionId),
         onSuccess: () => {
-            queryClient.invalidateQueries(['user-sessions', id]);
+            queryClient.invalidateQueries({ queryKey: ['user-sessions', userId] });
             toast.success('Session revoked');
             setRevokingId(null);
         },
@@ -74,9 +81,9 @@ export default function UserDetail() {
     });
 
     const revokeAllSessionsMutation = useMutation({
-        mutationFn: () => userAPI.revokeAllSessions(id),
+        mutationFn: () => userAPI.revokeAllSessions(userId),
         onSuccess: () => {
-            queryClient.invalidateQueries(['user-sessions', id]);
+            queryClient.invalidateQueries({ queryKey: ['user-sessions', userId] });
             toast.success('All sessions revoked');
             setShowRevokeAll(false);
         },
@@ -86,13 +93,41 @@ export default function UserDetail() {
         }
     });
 
-    const user = userRes?.data;
+    const user = userRes?.data?.data?.user
+        || userRes?.data?.data
+        || userRes?.data?.user
+        || userRes?.data
+        || null;
+    const roles = Array.isArray(rolesRes) ? rolesRes : (Array.isArray(rolesRes?.data) ? rolesRes.data : []);
+    const groups = Array.isArray(groupRes) ? groupRes : (Array.isArray(groupRes?.data) ? groupRes.data : []);
+    const permissions = Array.isArray(permissionsRes) ? permissionsRes : (Array.isArray(permissionsRes?.data) ? permissionsRes.data : []);
+    const sessions = Array.isArray(sessionsRes) ? sessionsRes : (Array.isArray(sessionsRes?.data) ? sessionsRes.data : []);
+    const auditLogs = Array.isArray(auditRes) ? auditRes : (Array.isArray(auditRes?.data) ? auditRes.data : []);
+
+    if (!userId) {
+        return null;
+    }
 
     if (userLoading) {
         return (
             <div className="min-h-screen bg-[#f4f6fb] flex items-center justify-center text-[#7a87a8]">
                 <Globe className="animate-spin mb-4" size={32} />
                 <p className="ml-3">Loading user details...</p>
+            </div>
+        );
+    }
+
+    if (userError) {
+        return (
+            <div className="min-h-screen bg-[#f4f6fb] p-6 flex flex-col items-center justify-center text-[#7a87a8]">
+                <AlertCircle size={48} className="text-red-500 mb-4" />
+                <h2 className="text-xl font-bold text-[#0f1623] mb-2">Failed to load user</h2>
+                <button
+                    onClick={() => refetchUser()}
+                    className="mt-2 px-4 py-2 rounded-lg text-sm border border-[#d0d7e8] text-[#3a4560] hover:bg-[#eef1f8]"
+                >
+                    Retry
+                </button>
             </div>
         );
     }
@@ -146,7 +181,7 @@ export default function UserDetail() {
                             <div className="flex items-center justify-center sm:justify-start gap-3">
                                 <UserStatusBadge status={user.status} />
                                 <span className="text-xs text-[#7a87a8] border border-[#d0d7e8] px-2 py-0.5 rounded-full font-mono bg-[#f4f6fb]">
-                                    ID: {user.id.split('-')[0]}
+                                    ID: {String(user?.id || 'N/A').split('-')[0]}
                                 </span>
                             </div>
                         </div>
@@ -170,12 +205,14 @@ export default function UserDetail() {
                             <div className="col-span-2">
                                 <h4 className="text-[11px] uppercase tracking-wider text-[#7a87a8] font-semibold mb-1">Member Since</h4>
                                 <div className="text-sm font-medium text-[#3a4560]">
-                                    {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                    {user?.createdAt
+                                        ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                                        : 'Unknown'}
                                 </div>
                             </div>
                         </div>
                         <button
-                            onClick={() => navigate(`/dashboard/users/${id}/edit`)}
+                            onClick={() => navigate(`/dashboard/users/${userId}/edit`)}
                             className="w-full flex items-center justify-center gap-2 bg-[#dde2f0] hover:bg-[#d0d7e8] text-[#0f1623] py-2 rounded-lg font-medium text-sm transition-colors border border-[#b8c2d8]"
                         >
                             <Edit size={16} /> Edit Profile
@@ -226,9 +263,9 @@ export default function UserDetail() {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-bold text-[#0f1623] mb-4 border-b border-[#d0d7e8] pb-2">Assigned Groups</h3>
-                                    {groupRes?.data?.length > 0 ? (
+                                    {groups.length > 0 ? (
                                         <div className="flex flex-wrap gap-2">
-                                            {groupRes.data.map(g => (
+                                            {groups.map(g => (
                                                 <div key={g.id} className="bg-[#ffffff] border border-[#d0d7e8] px-3 py-1.5 rounded-lg text-sm text-[#3a4560] flex items-center gap-2">
                                                     <Users size={14} className="text-[#4f46e5]" />
                                                     {g.name}
@@ -241,7 +278,7 @@ export default function UserDetail() {
                                 </div>
                             </div>
                             <div>
-                                <PermissionChecker userId={id} />
+                                <PermissionChecker userId={userId} />
                             </div>
                         </div>
                     )}
@@ -253,9 +290,9 @@ export default function UserDetail() {
                                 <h3 className="text-lg font-bold text-[#0f1623] mb-4 flex items-center gap-2 border-b border-[#d0d7e8] pb-2">
                                     <ShieldCheck className="text-green-400" /> Assigned Roles
                                 </h3>
-                                {rolesRes?.data?.length > 0 ? (
+                                {roles.length > 0 ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {rolesRes.data.map(r => (
+                                        {roles.map(r => (
                                             <div key={r.id} className="bg-[#ffffff] border border-[#d0d7e8] rounded-lg p-4">
                                                 <h4 className="font-bold text-slate-200 mb-1">{r.name}</h4>
                                                 <p className="text-xs text-[#7a87a8] line-clamp-2">{r.description || 'No description provided.'}</p>
@@ -273,7 +310,7 @@ export default function UserDetail() {
                                 <h3 className="text-lg font-bold text-[#0f1623] mb-4 flex items-center gap-2 border-b border-[#d0d7e8] pb-2">
                                     <Lock className="text-[#4f46e5]" /> Direct Permissions
                                 </h3>
-                                {permissionsRes?.data?.length > 0 ? (
+                                {permissions.length > 0 ? (
                                     <div className="bg-[#ffffff] border border-[#d0d7e8] rounded-lg overflow-hidden">
                                         <table className="w-full text-sm">
                                             <thead className="bg-[#f4f6fb]">
@@ -284,7 +321,7 @@ export default function UserDetail() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-800">
-                                                {permissionsRes.data.map((p, i) => (
+                                                {permissions.map((p, i) => (
                                                     <tr key={i}>
                                                         <td className="px-4 py-2 text-[#3a4560] font-mono text-xs text-left">{p.action}</td>
                                                         <td className="px-4 py-2 text-[#7a87a8] font-mono text-xs text-center">{p.resource}</td>
@@ -335,7 +372,7 @@ export default function UserDetail() {
                             <div>
                                 <div className="flex items-center justify-between mb-4 border-b border-[#d0d7e8] pb-2">
                                     <h3 className="text-lg font-bold text-[#0f1623]">Active Sessions</h3>
-                                    {(sessionsRes?.data?.length > 0) && (
+                                    {(sessions.length > 0) && (
                                         <button
                                             onClick={() => setShowRevokeAll(true)}
                                             className="text-xs font-semibold uppercase text-red-400 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded transition-colors"
@@ -347,8 +384,8 @@ export default function UserDetail() {
                                 <div className="space-y-3">
                                     {sessionsLoading ? (
                                         <p className="text-[#7a87a8] text-sm text-center py-4">Loading sessions...</p>
-                                    ) : sessionsRes?.data?.length > 0 ? (
-                                        sessionsRes.data.map((session) => (
+                                    ) : sessions.length > 0 ? (
+                                        sessions.map((session) => (
                                             <SessionCard
                                                 key={session.id}
                                                 session={session}
@@ -376,9 +413,9 @@ export default function UserDetail() {
                             <h3 className="text-lg font-bold text-[#0f1623] mb-4 border-b border-[#d0d7e8] pb-2">Activity Feed</h3>
                             {auditLoading ? (
                                 <p className="text-[#7a87a8] py-4 text-center">Loading activity feed...</p>
-                            ) : auditRes?.data?.length > 0 ? (
+                            ) : auditLogs.length > 0 ? (
                                 <div className="space-y-4">
-                                    {auditRes.data.map(log => (
+                                    {auditLogs.map(log => (
                                         <div key={log.id} className="flex gap-4 p-4 bg-[#ffffff] border border-[#d0d7e8] rounded-lg">
                                             <div className="text-[#7a87a8] mt-0.5"><History size={16} /></div>
                                             <div>

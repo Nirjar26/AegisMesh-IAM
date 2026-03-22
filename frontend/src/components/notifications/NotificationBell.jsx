@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { notificationsAPI } from '../../services/api';
 
 const INBOX_QUERY_KEY = ['notifications', 'inbox'];
+const COUNT_QUERY_KEY = ['notifications-count'];
 const RELEVANT_AUDIT_ACTIONS = new Set([
     'LOGIN',
     'PASSWORD_CHANGED',
@@ -123,6 +124,13 @@ export default function NotificationBell() {
         refetchInterval: isOpen ? 15 * 1000 : 30 * 1000,
     });
 
+    const countQuery = useQuery({
+        queryKey: COUNT_QUERY_KEY,
+        queryFn: () => notificationsAPI.getAll({ unreadOnly: true, limit: 1 }).then((res) => res.data?.data?.unreadCount || 0),
+        staleTime: 15 * 1000,
+        refetchInterval: 30 * 1000,
+    });
+
     useEffect(() => {
         if (!isOpen) {
             return undefined;
@@ -192,6 +200,8 @@ export default function NotificationBell() {
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: INBOX_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: COUNT_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: ['notifications'] });
         },
     });
 
@@ -210,6 +220,8 @@ export default function NotificationBell() {
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: INBOX_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: COUNT_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: ['notifications'] });
         },
     });
 
@@ -228,6 +240,8 @@ export default function NotificationBell() {
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: INBOX_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: COUNT_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: ['notifications'] });
         },
     });
 
@@ -245,7 +259,7 @@ export default function NotificationBell() {
         return items;
     }, [activeFilter, inboxQuery.data]);
 
-    const unreadCount = inboxQuery.data?.unreadCount || 0;
+    const unreadCount = countQuery.data ?? inboxQuery.data?.unreadCount ?? 0;
 
     const handleOpenNotification = async (notification) => {
         if (!notification.read) {
@@ -296,6 +310,7 @@ export default function NotificationBell() {
                 <div className="relative">
                     <NotificationCenter
                         notifications={notifications}
+                        allNotifications={inboxQuery.data?.items || []}
                         unreadCount={unreadCount}
                         activeFilter={activeFilter}
                         connectionMode={sseDisabled ? 'Polling' : 'Live'}

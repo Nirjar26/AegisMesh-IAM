@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AuthLayout from '../components/AuthLayout';
 import InputField from '../components/InputField';
@@ -14,12 +14,14 @@ const loginSchema = z.object({
 });
 
 export default function Login() {
-    const { login } = useAuth();
+    const { user, login } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [mfaRequired, setMfaRequired] = useState(false);
+
+    if (user) return <Navigate to="/dashboard" replace />;
 
     const from = location.state?.from?.pathname || '/dashboard';
 

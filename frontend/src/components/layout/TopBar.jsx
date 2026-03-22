@@ -43,7 +43,7 @@ export default function TopBar({ onMenuClick, onOpenSettings, onSignOut }) {
     };
 
     return (
-        <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-[#1f2937] bg-[#0b1220]/95 px-4 backdrop-blur-md md:px-6">
+        <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-[#1f2937] bg-[#0f172a] px-4 md:px-6">
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                 <button
                     type="button"

@@ -1,11 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { authAPI } from '../services/api';
 
 const AuthContext = createContext(null);
 const AUTH_EXPIRED_EVENT = 'iam:auth-expired';
 
 export function AuthProvider({ children }) {
+    const queryClient = useQueryClient();
     const [user, setUser] = useState(null);
     const [accessToken, setAccessToken] = useState(() => localStorage.getItem('accessToken'));
     const [isLoading, setIsLoading] = useState(true);
@@ -104,9 +106,10 @@ export function AuthProvider({ children }) {
             // Continue logout even if API fails
         } finally {
             clearAuthState();
+            queryClient.clear();
             setIsLoading(false);
         }
-    }, [clearAuthState]);
+    }, [clearAuthState, queryClient]);
 
     // Refresh token
     const refreshToken = useCallback(async () => {
@@ -142,11 +145,13 @@ export function AuthProvider({ children }) {
 
     // Initialize auth state
     useEffect(() => {
-        const bootstrapAuth = async () => {
+        const checkAuth = async () => {
             const token = localStorage.getItem('accessToken');
             const storedRefreshToken = localStorage.getItem('refreshToken');
 
             if (!token && !storedRefreshToken) {
+                setUser(null);
+                setIsAuthenticated(false);
                 setIsLoading(false);
                 return;
             }
@@ -163,11 +168,15 @@ export function AuthProvider({ children }) {
 
                 await loadProfile();
             } catch {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                setUser(null);
+                setIsAuthenticated(false);
                 setIsLoading(false);
             }
         };
 
-        bootstrapAuth();
+        checkAuth();
 
         return () => {
             clearRefreshTimer();
@@ -191,6 +200,7 @@ export function AuthProvider({ children }) {
         accessToken,
         isAuthenticated,
         isLoading,
+        loading: isLoading,
         login,
         logout,
         refreshToken,

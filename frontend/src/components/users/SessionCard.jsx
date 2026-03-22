@@ -1,67 +1,113 @@
 import React from 'react';
-import { Monitor, Smartphone, Tablet, Globe, Clock, ShieldX } from 'lucide-react';
+import { Loader2, Monitor, Smartphone, Tablet } from 'lucide-react';
+
+function parseDevice(userAgent) {
+    if (!userAgent) return { name: 'Unknown Device', type: 'desktop' };
+
+    if (/tablet|ipad/i.test(userAgent)) {
+        return { name: 'Tablet', type: 'tablet' };
+    }
+
+    if (/mobile/i.test(userAgent)) {
+        return { name: 'Mobile Browser', type: 'mobile' };
+    }
+
+    if (/chrome/i.test(userAgent)) {
+        return { name: 'Chrome Browser', type: 'desktop' };
+    }
+
+    if (/firefox/i.test(userAgent)) {
+        return { name: 'Firefox Browser', type: 'desktop' };
+    }
+
+    if (/safari/i.test(userAgent)) {
+        return { name: 'Safari Browser', type: 'desktop' };
+    }
+
+    return { name: 'Desktop Browser', type: 'desktop' };
+}
+
+function formatRelativeTime(dateValue) {
+    if (!dateValue) return 'just now';
+
+    const value = new Date(dateValue).getTime();
+    const now = Date.now();
+    const diffSeconds = Math.round((value - now) / 1000);
+    const ranges = [
+        ['year', 31536000],
+        ['month', 2592000],
+        ['day', 86400],
+        ['hour', 3600],
+        ['minute', 60],
+    ];
+
+    const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+
+    for (const [unit, secondsInUnit] of ranges) {
+        if (Math.abs(diffSeconds) >= secondsInUnit) {
+            return rtf.format(Math.round(diffSeconds / secondsInUnit), unit);
+        }
+    }
+
+    return rtf.format(diffSeconds, 'second');
+}
 
 export default function SessionCard({ session, isCurrent, onRevoke, isRevoking }) {
     if (!session) return null;
 
-    const deviceName = session.device || 'Desktop Device';
-    const browserName = session.browser || 'Unknown Browser';
-    const osName = session.os || 'Unknown OS';
-    const ipAddress = session.ipAddress || '127.0.0.1';
+    const parsed = parseDevice(session.deviceInfo || '');
+    const currentSession = Boolean(session.isCurrent || isCurrent);
+    const ipAddress = session.ipAddress || 'Unknown IP';
+    const startedAt = session.createdAt;
+    const lastActiveAt = session.lastUsedAt || session.lastActiveAt || session.createdAt;
 
-    // Determine Icon based on device
     let DeviceIcon = Monitor;
-    const lowerDevice = deviceName.toLowerCase();
-    if (lowerDevice.includes('mobile') || lowerDevice.includes('iphone') || lowerDevice.includes('android')) {
+    if (parsed.type === 'mobile') {
         DeviceIcon = Smartphone;
-    } else if (lowerDevice.includes('tablet') || lowerDevice.includes('ipad')) {
+    } else if (parsed.type === 'tablet') {
         DeviceIcon = Tablet;
     }
 
-    const timeAgo = (dateString) => {
-        if (!dateString) return 'Never';
-        const date = new Date(dateString);
-        const now = new Date();
-        const seconds = Math.floor((now - date) / 1000);
-        let interval = seconds / 31536000;
-        if (interval > 1) return Math.floor(interval) + " years ago";
-        interval = seconds / 2592000;
-        if (interval > 1) return Math.floor(interval) + " months ago";
-        interval = seconds / 86400;
-        if (interval > 1) return Math.floor(interval) + " days ago";
-        interval = seconds / 3600;
-        if (interval > 1) return Math.floor(interval) + " hours ago";
-        interval = seconds / 60;
-        if (interval > 1) return Math.floor(interval) + " mins ago";
-        return Math.floor(seconds) + " secs ago";
-    };
-
     return (
-        <div className={`p-4 rounded-xl border ${isCurrent ? 'bg-blue-900/10 border-[#4f46e5]/30' : 'bg-[#eef1f8] border-[#d0d7e8]/50'} flex justify-between items-center transition-colors hover:bg-[#f4f6fb]`}>
-            <div className="flex gap-4 items-center">
-                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${isCurrent ? 'bg-blue-500/20 text-[#4f46e5]' : 'bg-[#dde2f0] text-[#7a87a8]'}`}>
-                    <DeviceIcon className="w-6 h-6" />
-                </div>
-                <div>
-                    <h4 className="text-[#0f1623] font-medium flex items-center gap-2">
-                        {browserName} on {osName}
-                        {isCurrent && <span className="bg-blue-500/20 text-[#4f46e5] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Current</span>}
+        <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 text-slate-500">
+                <DeviceIcon className="w-[18px] h-[18px]" />
+            </div>
+
+            <div className="min-w-0 flex-1">
+                <div className="flex items-center flex-wrap gap-2">
+                    <h4 className="text-[13px] font-semibold text-slate-900">
+                        {parsed.name}
                     </h4>
-                    <div className="mt-1 flex gap-3 text-xs text-[#7a87a8]">
-                        <span className="flex flex-row gap-1 items-center"><Globe className="w-3 h-3" /> {ipAddress}</span>
-                        <span className="flex flex-row gap-1 items-center"><Clock className="w-3 h-3" /> Active {timeAgo(session.lastActiveAt || session.createdAt)}</span>
-                    </div>
+                    {currentSession ? (
+                        <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full px-2.5 py-0.5 text-[10px] font-semibold">
+                            Current Session
+                        </span>
+                    ) : null}
+                </div>
+
+                <p className="mt-1 text-[12px] text-slate-500 font-mono">{ipAddress}</p>
+
+                <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-slate-400">
+                    <span>Started {formatRelativeTime(startedAt)}</span>
+                    <span>Last active {formatRelativeTime(lastActiveAt)}</span>
                 </div>
             </div>
-            {!isCurrent && (
+
+            {!currentSession ? (
                 <button
                     onClick={() => onRevoke(session.id)}
                     disabled={isRevoking}
-                    className="p-2 text-[#7a87a8] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors disabled:opacity-50"
-                    title="Revoke Session"
+                    className="border border-red-200 text-red-600 bg-white hover:bg-red-50 rounded-lg px-3 py-1.5 text-[12px] font-medium disabled:opacity-50 inline-flex items-center gap-2"
                 >
-                    <ShieldX className="w-5 h-5" />
+                    {isRevoking ? <Loader2 size={12} className="animate-spin" /> : null}
+                    Revoke
                 </button>
+            ) : (
+                <span className="text-[11px] text-emerald-500 inline-flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    Active now
+                </span>
             )}
         </div>
     );
