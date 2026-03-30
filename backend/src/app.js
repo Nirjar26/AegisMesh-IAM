@@ -4,6 +4,7 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const csurf = require('csurf');
 const passport = require('passport');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { generalLimiter } = require('./middleware/rateLimiter');
@@ -30,7 +31,7 @@ app.use(cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
 }));
 
 // ═══════════════════════════════════════
@@ -39,6 +40,37 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+const csrfProtection = csurf({
+    cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+    },
+});
+
+const csrfExemptPaths = new Set([
+    '/api/health',
+    '/api/csrf-token',
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/auth/refresh-token',
+    '/api/auth/forgot-password',
+    '/api/auth/reset-password',
+    '/api/auth/verify-email',
+    '/api/auth/oauth/google',
+    '/api/auth/oauth/google/callback',
+    '/api/auth/oauth/github',
+    '/api/auth/oauth/github/callback',
+]);
+
+app.use((req, res, next) => {
+    const isMutating = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
+    if (!isMutating || csrfExemptPaths.has(req.path)) {
+        return next();
+    }
+    return csrfProtection(req, res, next);
+});
 
 // ═══════════════════════════════════════
 // RATE LIMITING
@@ -72,6 +104,15 @@ app.get('/api/health', (req, res) => {
             status: 'healthy',
             timestamp: new Date().toISOString(),
             version: '1.0.0',
+        },
+    });
+});
+
+app.get('/api/csrf-token', csrfProtection, (req, res) => {
+    res.json({
+        success: true,
+        data: {
+            csrfToken: req.csrfToken(),
         },
     });
 });

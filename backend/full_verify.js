@@ -44,10 +44,7 @@ async function verify() {
       console.log(`   - Org Name: ${org.orgName}`);
       console.log(`   - Plan: ${org.plan}`);
       console.log(`   - Region: ${org.region}`);
-      console.log(`   - Min Password Length: ${org.minPasswordLength}`);
-      console.log(`   - Require MFA for All: ${org.requireMfaForAll}`);
-      console.log(`   - Max Failed Attempts: ${org.maxFailedAttempts}`);
-      console.log(`   - Session Timeout: ${org.sessionTimeoutMinutes} minutes`);
+      console.log('   - Security policy fields: [redacted]');
     } else {
       console.log('❌ No OrganizationSettings found');
     }

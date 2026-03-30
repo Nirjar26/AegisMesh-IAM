@@ -35,11 +35,11 @@ function derivePrimaryRole(user) {
 }
 
 async function authenticateApiKeyToken(req, rawToken) {
-    if (!rawToken || !rawToken.startsWith('iam_')) {
+    if (typeof rawToken !== 'string' || rawToken.length < 16 || rawToken.length > 4096 || !rawToken.startsWith('iam_')) {
         return null;
     }
 
-    const lookupPrefix = rawToken.slice(0, 12);
+    const lookupPrefix = rawToken.substring(0, 12);
 
     const candidates = await prisma.apiToken.findMany({
         where: {

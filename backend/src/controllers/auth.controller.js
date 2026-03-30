@@ -26,15 +26,15 @@ async function login(req, res, next) {
 
         res.cookie('accessToken', result.accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'strict',
             maxAge: 15 * 60 * 1000,
         });
 
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'strict',
             path: '/api/auth/refresh-token',
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
@@ -83,15 +83,15 @@ async function refreshToken(req, res, next) {
 
         res.cookie('accessToken', result.accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'strict',
             maxAge: 15 * 60 * 1000,
         });
 
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'strict',
             path: '/api/auth/refresh-token',
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
