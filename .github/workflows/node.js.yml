@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 22.x] # remove 20 (deprecated)
+        node-version: [22.x]  # ONLY use 22
 
     steps:
       - uses: actions/checkout@v4
