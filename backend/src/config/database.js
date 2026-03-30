@@ -3,15 +3,20 @@ require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 const logger = require('../utils/logger');
 
-// Singleton PrismaClient to prevent multiple instances
-const prisma = new PrismaClient({
+const prismaClientOptions = {
     ...(process.env.DATABASE_URL
         ? { datasourceUrl: process.env.DATABASE_URL }
         : {}),
-    log: process.env.NODE_ENV === 'development'
-        ? [{ emit: 'event', level: 'error' }]
-        : [{ emit: 'event', level: 'error' }],
-});
+    log: [{ emit: 'event', level: 'error' }],
+};
+
+// Reuse a global instance in non-production to avoid multiple clients during reloads/tests
+const globalForPrisma = global;
+const prisma = globalForPrisma.prisma || new PrismaClient(prismaClientOptions);
+
+if (process.env.NODE_ENV !== 'production') {
+    globalForPrisma.prisma = prisma;
+}
 
 prisma.$on('error', (e) => {
     logger.error('Prisma error', { message: e.message });
