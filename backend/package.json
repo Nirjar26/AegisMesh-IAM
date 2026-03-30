@@ -4,8 +4,13 @@
   "description": "Production-Grade IAM Backend",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:api": "node test_endpoint.js",
+    "build": "echo \"No build step\"",
     "migrate": "prisma migrate dev",
     "generate": "prisma generate",
     "prisma:generate": "npx prisma generate",
@@ -49,6 +54,10 @@
     "winston": "^3.19.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "@babel/preset-env": "^7.29.2",
+    "babel-jest": "^30.3.0",
+    "jest": "^30.3.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
   }
 }

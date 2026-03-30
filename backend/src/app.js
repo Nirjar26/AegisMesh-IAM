@@ -92,16 +92,4 @@ app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// ═══════════════════════════════════════
-// START SERVER
-// ═══════════════════════════════════════
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-    logger.info(`🚀 IAM Auth Server running on port ${PORT}`);
-    logger.info(`📋 Environment: ${process.env.NODE_ENV || 'development'}`);
-    logger.info(`🌐 Frontend URL: ${process.env.FRONTEND_URL}`);
-    scheduleCleanup();
-});
-
 module.exports = app;
