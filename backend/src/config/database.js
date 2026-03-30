@@ -1,8 +1,13 @@
+require('dotenv').config();
+
 const { PrismaClient } = require('@prisma/client');
 const logger = require('../utils/logger');
 
 // Singleton PrismaClient to prevent multiple instances
 const prisma = new PrismaClient({
+    ...(process.env.DATABASE_URL
+        ? { datasourceUrl: process.env.DATABASE_URL }
+        : {}),
     log: process.env.NODE_ENV === 'development'
         ? [{ emit: 'event', level: 'error' }]
         : [{ emit: 'event', level: 'error' }],
