@@ -3,6 +3,7 @@ const prisma = require('../config/database');
 const { createError } = require('../utils/errors');
 const { authenticateApiKeyToken } = require('./apiKeyAuth');
 const { enforceOrgPolicyForRequest } = require('./orgPolicy');
+const { decryptText } = require('../utils/crypto');
 
 function derivePrimaryRole(user) {
     const roleNames = (user.userRoles || []).map((ur) => ur.role?.name).filter(Boolean);
@@ -26,7 +27,8 @@ async function authenticate(req, res, next) {
 
         // Fall back to cookies
         if (!token && req.cookies && req.cookies.accessToken) {
-            token = req.cookies.accessToken;
+            const rawCookieToken = req.cookies.accessToken;
+            token = decryptText(rawCookieToken) || rawCookieToken;
         }
 
         // EventSource cannot set custom Authorization headers, so allow

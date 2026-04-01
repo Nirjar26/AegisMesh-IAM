@@ -2,6 +2,7 @@ const authService = require('../services/auth.service');
 const tokenService = require('../services/token.service');
 const prisma = require('../config/database');
 const logger = require('../utils/logger');
+const { encryptText, decryptText } = require('../utils/crypto');
 
 /**
  * POST /api/auth/register
@@ -24,14 +25,14 @@ async function login(req, res, next) {
         const { email, password, totpCode } = req.body;
         const result = await authService.login({ email, password, totpCode, req });
 
-        res.cookie('accessToken', result.accessToken, {
+        res.cookie('accessToken', encryptText(result.accessToken), {
             httpOnly: true,
             secure: true,
             sameSite: 'strict',
             maxAge: 15 * 60 * 1000,
         });
 
-        res.cookie('refreshToken', result.refreshToken, {
+        res.cookie('refreshToken', encryptText(result.refreshToken), {
             httpOnly: true,
             secure: true,
             sameSite: 'strict',
@@ -50,7 +51,8 @@ async function login(req, res, next) {
  */
 async function logout(req, res, next) {
     try {
-        const refreshToken = req.body.refreshToken || req.cookies?.refreshToken;
+        const rawRefreshToken = req.body.refreshToken || req.cookies?.refreshToken;
+        const refreshToken = rawRefreshToken ? (decryptText(rawRefreshToken) || rawRefreshToken) : null;
         const result = await authService.logout({
             refreshToken,
             userId: req.user.id,
@@ -71,7 +73,8 @@ async function logout(req, res, next) {
  */
 async function refreshToken(req, res, next) {
     try {
-        const token = req.body.refreshToken || req.cookies?.refreshToken;
+        const rawToken = req.body.refreshToken || req.cookies?.refreshToken;
+        const token = rawToken ? (decryptText(rawToken) || rawToken) : null;
         if (!token) {
             return res.status(400).json({
                 success: false,
@@ -81,14 +84,14 @@ async function refreshToken(req, res, next) {
 
         const result = await authService.refreshAccessToken({ refreshToken: token, req });
 
-        res.cookie('accessToken', result.accessToken, {
+        res.cookie('accessToken', encryptText(result.accessToken), {
             httpOnly: true,
             secure: true,
             sameSite: 'strict',
             maxAge: 15 * 60 * 1000,
         });
 
-        res.cookie('refreshToken', result.refreshToken, {
+        res.cookie('refreshToken', encryptText(result.refreshToken), {
             httpOnly: true,
             secure: true,
             sameSite: 'strict',
