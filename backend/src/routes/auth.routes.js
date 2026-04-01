@@ -9,18 +9,19 @@ const schemas = require('../config/validationSchemas');
 const tokenService = require('../services/token.service');
 const { auditAuth } = require('../utils/auditLog');
 const { getOrganizationSettings } = require('../services/organizationSettings.service');
+const { encryptText } = require('../utils/crypto');
 
 const router = express.Router();
 
 function setAuthCookies(res, accessToken, refreshToken) {
-    res.cookie('accessToken', accessToken, {
+    res.cookie('accessToken', encryptText(accessToken), {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
         maxAge: 15 * 60 * 1000,
     });
 
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie('refreshToken', encryptText(refreshToken), {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
