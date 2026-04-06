@@ -46,7 +46,7 @@ Managing authentication, authorization, and security governance across modern ap
 ## Flow
 
 <p align="center">
-  <img src="./diagrams/Flow.png" alt="Request Flow" width="420" height="380" style="object-fit: contain;" />
+  <img src="./diagrams/Flow.png" alt="Request Flow" width="340" height="400" style="object-fit: contain;" />
 </p>
 
 ## Tech Stack
