@@ -43,15 +43,29 @@ Managing authentication, authorization, and security governance across modern ap
 
 ![Architecture](./diagrams/Architecture.png)
 
-## Flow
+## Application Flow
 
-<p align="center">
-<<<<<<< HEAD
-  <img src="./diagrams/Flow.png" alt="Request Flow" width="380" height="600" />
-=======
-  <img src="./diagrams/Flow.png" alt="Request Flow" width="380" height="600" style="object-fit: contain;" />
->>>>>>> 97e314c484a9c7ae080eadc3424bd71f02921b99
-</p>
+1. User opens the frontend and lands on public routes (login, register, password reset, verify email, or OAuth callback).
+2. On login/register/OAuth success, backend returns access and refresh tokens plus user profile data.
+3. Frontend stores tokens, sets auth state, and schedules silent token refresh before access-token expiry.
+4. Protected routes are enforced in the client; unauthenticated users are redirected to login.
+5. For protected API calls, backend receives requests through security middleware (Helmet, CORS, parsing, CSRF checks for mutating routes, and rate limiting).
+6. Authentication middleware validates JWT (or scoped API key token), loads the active user/session, and applies organization-level policy checks.
+7. Authorization logic evaluates effective permissions from direct role assignments, group-inherited roles, and attached policies; explicit DENY takes precedence over ALLOW.
+8. If authorized, controller/service layers execute the action (user management, roles, policies, groups, settings, notifications, or security operations).
+9. Sensitive and administrative actions are written to audit logs; audit endpoints provide stream, stats, filtering, export, and cleanup support.
+10. Frontend updates views using React Query and route-level modules, keeping dashboard state synchronized with backend responses.
+
+### Sensitive Action Flow
+
+1. User triggers a high-risk operation (for example: password change, account deletion, or privileged API key creation).
+2. Backend enforces reauthentication requirements for the operation.
+3. After reauth succeeds, the action proceeds through the same authentication and authorization pipeline.
+4. Result is returned to frontend and the event is captured in audit logs for traceability.
+
+### Core Request Pipeline
+
+`Client Request -> Security Middleware -> Authentication -> Org Policy Checks -> RBAC Evaluation -> Controller/Service -> Prisma/PostgreSQL -> Audit/Response -> Frontend Refresh`
 
 ## Tech Stack
 
