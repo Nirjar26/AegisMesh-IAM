@@ -1,74 +1,74 @@
 <div align="center">
-
-# AegisMesh - IAM Platform
-
+  <h1>AegisMesh</h1>
+  <p>Enterprise-ready IAM platform with MFA, OAuth, session control, audit logs, and dynamic RBAC in one unified admin console.</p>
 </div>
 
-AegisMesh is an Identity & Access Management platform built with React, Node.js, and PostgreSQL. It combines MFA, OAuth, session management, audit logging, and policy-driven RBAC in a single admin console.
 
-## Architecture
+## Problem Statement
 
-![Architecture diagram](diagrams/Architecture.png)
+Managing authentication, authorization, and security governance across modern applications is often fragmented and difficult to scale. Teams need centralized identity controls, policy-based permissions, and clear auditability for sensitive operations. AegisMesh solves this by combining auth, MFA, RBAC, and audit logging into a single platform.
 
-The app is organized as a React frontend, an Express API layer, and a PostgreSQL database accessed through Prisma.
-
-## Request Flow
-
-
-![Request flow diagram](diagrams/Flow.png)
-
-The request flow covers public auth, protected API access, token refresh, and permission checks before sensitive operations are allowed.
-
-## Main Feature
-
-### Dynamic RBAC Engine
-
-AegisMesh’s standout capability is its dynamic, AWS IAM-style RBAC engine. It evaluates permissions in real time using roles, groups, policies, and wildcard action/resource matching, with explicit `DENY` rules always taking priority over `ALLOW` rules.
 
 ## Features
 
-### Authentication
+### Authentication & Sessions
 
-- Email/password registration with email verification
-- Login with JWT access and refresh tokens
-- Automatic token refresh with rotation
-- Password reset via email
-- OAuth integration with Google and GitHub
+- **Secure Authentication:** Supports email/password auth, JWT access and refresh tokens, secure cookies, and token refresh flow.
+- **OAuth Sign-In:** Google and GitHub OAuth login with organization policy enforcement to allow or block OAuth.
+- **Multi-Factor Authentication (MFA):** TOTP setup, verification, disable flow, and backup-code regeneration for stronger account security.
+- **Session Control:** View active sessions, revoke specific sessions, revoke all other sessions, and monitor device-level access.
 
-### Security
+### Authorization & Access Control
 
-- Multi-factor authentication (TOTP)
-- Account lockout after failed attempts
-- Rate limiting on all auth endpoints
-- `httpOnly` cookie and Bearer token support
-- Helmet.js security headers
-- Comprehensive audit logging
+- **Dynamic RBAC Engine:** Evaluates permissions in real time across users, roles, groups, and policies, with explicit DENY always overriding ALLOW.
+- **Policy Simulation:** Lets admins test policy outcomes before rollout to validate access behavior and reduce permission mistakes.
+- **Role Management:** Create, update, delete, template, and assign roles, including attaching and detaching policies per role.
+- **Group Management:** Organize users into groups, then attach roles to groups for scalable permission inheritance.
+- **Granular User Permissions View:** Inspect effective user permissions, assigned roles, and group memberships for fast access audits.
 
-### Session Management
+### User & Organization Management
 
-- View active sessions with device info
-- Revoke individual sessions
-- Refresh token rotation that invalidates old tokens
+- **User Lifecycle Management:** Create users, update status, verify email, delete users, and perform bulk operations (status, roles, groups, delete, export).
+- **Organization Administration:** SuperAdmin controls for organization settings, policy reset, and organization data export.
+- **API Key Management:** Create scoped API keys/tokens with extra reauth for privileged scopes, plus key revocation.
 
-### Role-Based Access Control
+### Security, Monitoring & Operations
 
-- JSON-based permission rules with `ALLOW` and `DENY`
-- Role and group inheritance
-- Real-time permission evaluation
-- Explicit `DENY` precedence
+- **Reauthentication for Sensitive Actions:** Requires fresh identity verification for high-risk operations like password change, account deletion, and privileged token creation.
+- **Audit & Security Monitoring:** Centralized audit logs with stream, stats, security alerts, user-specific history, export, and cleanup actions.
+- **Notification Center:** Fetch notifications, mark single/all as read, and delete notification entries.
+- **Security Hardening:** Built-in validation, rate limiting, account protection controls, and middleware-driven authorization on protected routes.
 
-## Quick Start
+## Architecture 
 
-### Prerequisites
+![Architecture](./diagrams/Architecture.png)
 
-- Node.js 18+
-- PostgreSQL 14+
-- npm or yarn
+## Flow
 
-### 1. Install Dependencies
+<p align="center">
+  <img src="./diagrams/Flow.png" alt="Request Flow" width="450" />
+</p>
+
+## Tech Stack
+
+**Frontend:** React, Vite, Tailwind CSS  
+**Backend:** Node.js, Express  
+**Database:** PostgreSQL, Prisma  
+**Security & Auth:** JWT, Passport, TOTP MFA, OAuth
+
+## How It Works
+
+1. Users authenticate via email/password or OAuth, with MFA where enabled.
+2. Backend issues JWT access/refresh tokens and tracks active sessions.
+3. RBAC engine evaluates user permissions from roles, groups, and policies.
+4. Protected routes enforce auth + authorization middleware before actions are executed.
+5. Sensitive actions are written to audit logs for traceability and compliance.
+
+## Installation / Setup
 
 ```bash
-cd IAM
+git clone https://github.com/<your-username>/aegismesh-iam.git
+cd aegismesh-iam
 
 cd backend
 npm install
@@ -77,120 +77,81 @@ cd ../frontend
 npm install
 ```
 
-### 2. Configure Environment
-
 ```bash
-cd backend
-cp .env.example .env
-```
-
-Edit `.env` with your database credentials and secrets.
-
-### 3. Set Up the Database
-
-```bash
-cd backend
-npx prisma generate
-npx prisma migrate dev --name init
-npx prisma db seed
-```
-
-### 4. Start Development Servers
-
-```bash
-# Backend on port 5000
+# Run backend (default: port 5000)
 cd backend
 npm run dev
 
-# Frontend on port 5173
-cd frontend
+# Run frontend (default: port 5173)
+cd ../frontend
 npm run dev
 ```
 
-## Project Structure
+## Environment Variables
 
-```text
-backend/
-├── prisma/schema.prisma
-├── src/
-│   ├── app.js
-│   ├── config/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── routes/
-│   ├── services/
-│   └── utils/
+Configure environment values (primarily in `backend/.env`):
 
-frontend/
-├── src/
-│   ├── App.jsx
-│   ├── components/
-│   ├── context/
-│   ├── pages/
-│   └── services/
+```env
+DATABASE_URL=
+
+JWT_SECRET=
+JWT_REFRESH_SECRET=
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+
+SMTP_HOST=
+SMTP_USER=
+SMTP_PASS=
 ```
 
 ## API Endpoints
 
-### Auth
+- `POST /api/auth/login`
+- `POST /api/auth/register`
+- `POST /api/auth/refresh-token`
+- `GET /api/auth/me`
+- `GET /api/roles`
+- `POST /api/policies`
+- `GET /api/users/:id/permissions`
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/api/auth/register` | No | Register a new user |
-| POST | `/api/auth/login` | No | Login, including MFA support |
-| POST | `/api/auth/logout` | Yes | Logout and invalidate session |
-| POST | `/api/auth/refresh-token` | No | Refresh the access token |
-| POST | `/api/auth/forgot-password` | No | Request a password reset |
-| POST | `/api/auth/reset-password` | No | Reset password with token |
-| POST | `/api/auth/verify-email` | No | Verify email address |
-| GET | `/api/auth/me` | Yes | Get current user profile |
-| GET | `/api/auth/sessions` | Yes | List active sessions |
-| DELETE | `/api/auth/sessions/:id` | Yes | Revoke a session |
+## Folder Structure
 
-### RBAC
-
-| Method | Endpoint | Description | Permission |
-|---|---|---|---|
-| GET | `/api/roles` | List roles | `roles:read` |
-| POST | `/api/roles` | Create a role | `roles:write` |
-| POST | `/api/roles/:id/policies` | Attach a policy to a role | `roles:write` |
-| GET | `/api/policies` | List policies | `policies:read` |
-| POST | `/api/policies` | Create a policy | `policies:write` |
-| POST | `/api/policies/simulate` | Test the permission engine | `policies:read` |
-| POST | `/api/groups/:id/members` | Add a user to a group | `groups:write` |
-| GET | `/api/users/:id/permissions` | View effective permissions | Authentication required |
-
-## Security Features
-
-- Password hashing with bcrypt
-- JWT access tokens with rotating refresh tokens
-- Account lockout after repeated failures
-- Rate limiting on sensitive routes
-- Helmet.js and CORS protection
-- Audit logging for authentication and authorization events
-- Joi validation on request payloads
-
-## Error Codes
-
-| Code | Description |
-|---|---|
-| AUTH_001 | Invalid credentials |
-| AUTH_002 | Account locked |
-| AUTH_003 | Email not verified |
-| AUTH_004 | MFA code required |
-| AUTH_005 | Invalid MFA code |
-| AUTH_006 | Token expired |
-| AUTH_007 | Token invalid |
-| AUTH_008 | Account inactive |
-| AUTH_009 | Email already registered |
-| AUTH_010 | Invalid reset token |
+```text
+.
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma
+│   │   └── migrations/
+│   ├── src/
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── utils/
+│   └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── utils/
+│   └── package.json
+├── diagrams/
+└── README.md
+```
 
 ## License
 
-MIT — see LICENSE
+MIT License
 
-<div align="center">
-<br />
-Built by <a href="https://nirjxr.dev">Nirjar Goswami</a> · <a href="https://www.linkedin.com/in/nirjarbharthigoswami-b593633a7">LinkedIn</a>
-</div>
+## Author / Contact
+
+Nirjar Goswami  
+GitHub: https://github.com/Nirjar26
 
