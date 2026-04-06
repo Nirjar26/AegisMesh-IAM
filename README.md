@@ -66,9 +66,6 @@ Managing authentication, authorization, and security governance across modern ap
 ### Core Request Pipeline
 
 `Client Request -> Security Middleware -> Authentication -> Org Policy Checks -> RBAC Evaluation -> Controller/Service -> Prisma/PostgreSQL -> Audit/Response -> Frontend Refresh`
-<p align="center">
-  <img src="./diagrams/Flow.png" alt="Request Flow" width="380" height="600"/>
-</p>
 
 ## Tech Stack
 
