@@ -85,8 +85,7 @@ Managing authentication, authorization, and security governance across modern ap
 ## Installation / Setup
 
 ```bash
-git clone https://github.com/<your-username>/aegismesh-iam.git
-cd aegismesh-iam
+git clone https://github.com/Nirjar26/Aegismesh-IAM.git
 
 cd backend
 npm install
