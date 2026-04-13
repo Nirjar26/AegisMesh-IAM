@@ -9,11 +9,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install TruffleHog
-        run: pip install trufflehog
+        run: curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh | sh
 
-      - name: Run TruffleHog scan
-        run: trufflehog filesystem . --no-update
+      - name: Scan repo
+        run: trufflehog filesystem . --only-verified --fail
