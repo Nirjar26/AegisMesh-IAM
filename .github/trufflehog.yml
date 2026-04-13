@@ -1,0 +1,19 @@
+name: Secret Scan (TruffleHog)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install TruffleHog
+        run: pip install trufflehog
+
+      - name: Run TruffleHog scan
+        run: trufflehog filesystem . --no-update
