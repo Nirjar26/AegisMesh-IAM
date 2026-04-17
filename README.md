@@ -82,48 +82,93 @@ Managing authentication, authorization, and security governance across modern ap
 4. Protected routes enforce auth + authorization middleware before actions are executed.
 5. Sensitive actions are written to audit logs for traceability and compliance.
 
-## Installation / Setup
+## Installation & Setup
+
+### Option 1: Docker (Recommended)
+
+**Requirements:** Docker & Docker Compose
 
 ```bash
 git clone https://github.com/Nirjar26/Aegismesh-IAM.git
+cd AegisMesh-IAM
 
+# Copy and configure environment variables
+cp .env.example .env
+
+# Start all services (PostgreSQL, Backend, Frontend)
+docker-compose up --build
+```
+
+**Access the application:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:5000
+- Database: localhost:5432
+
+**Development mode with hot reload:**
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+```
+
+For detailed Docker setup instructions, see [Docker_Setup.md](./DOCKER_SETUP.md).
+
+### Option 2: Local Development
+
+**Requirements:** Node.js 18+, PostgreSQL 15+
+
+```bash
+git clone https://github.com/Nirjar26/Aegismesh-IAM.git
+cd AegisMesh-IAM
+
+# Backend setup
 cd backend
 npm install
+npm run prisma:generate
 
+# Frontend setup
 cd ../frontend
 npm install
 ```
 
+**Run services:**
 ```bash
-# Run backend (default: port 5000)
+# Terminal 1: Backend (default: port 5000)
 cd backend
 npm run dev
 
-# Run frontend (default: port 5173)
-cd ../frontend
+# Terminal 2: Frontend (default: port 5173)
+cd frontend
 npm run dev
 ```
 
 ## Environment Variables
 
-Configure environment values (primarily in `backend/.env`):
+Copy `.env.example` to `.env` and configure:
 
 ```env
-DATABASE_URL=
+# Database (Docker uses 'db' as hostname, local uses 'localhost')
+DATABASE_URL=""
 
-JWT_SECRET=
-JWT_REFRESH_SECRET=
+# JWT
+JWT_SECRET="your-secret-key"
+JWT_REFRESH_SECRET="your-refresh-secret"
 
+# OAuth (Google & GitHub)
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
 
-SMTP_HOST=
+# Email
+SMTP_HOST=smtp.ethereal.email
 SMTP_USER=
 SMTP_PASS=
+
+# Frontend API URL
+VITE_API_URL="http://localhost:5000"
 ```
+
+See [`.env.example`](./.env.example) for all available options.
 
 ## API Endpoints
 
