@@ -21,6 +21,9 @@ RUN npm ci
 # Copy prisma schema and migrations
 COPY prisma ./prisma
 
+# Provide build-time database URL required for prisma generate validation.
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+
 # Generate Prisma client
 RUN npm run prisma:generate
 
@@ -30,8 +33,8 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install runtime utilities used by container startup and healthchecks
+RUN apk add --no-cache dumb-init curl
 
 # Copy production dependencies
 COPY --from=dependencies /app/node_modules ./node_modules

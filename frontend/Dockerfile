@@ -28,11 +28,6 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Create a non-root user for nginx
-RUN addgroup -g 1001 -S nginx
-RUN adduser -S nginx -u 1001
-USER nginx
-
 EXPOSE 3000
 
 # Health check
