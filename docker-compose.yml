@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   db:
@@ -35,8 +33,11 @@ services:
     environment:
       NODE_ENV: production
       PORT: 5000
+      BACKEND_PORT: ${BACKEND_PORT:-5000}
+      FRONTEND_PORT: ${FRONTEND_PORT:-3000}
+      DB_PORT: ${DB_PORT:-5432}
       DATABASE_URL: postgresql://${DB_USER:-admin}:${DB_PASSWORD:-securepwd123}@db:5432/${DB_NAME:-aegismesh}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      FRONTEND_URL: http://localhost:${FRONTEND_PORT:-3000}
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
       JWT_EXPIRY: ${JWT_EXPIRY:-7d}
       REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-your-refresh-token-secret}
@@ -46,6 +47,12 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM: ${SMTP_FROM:-noreply@aegismesh.com}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost:${BACKEND_PORT:-5000}/api/auth/oauth/google/callback}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GITHUB_CALLBACK_URL: ${GITHUB_CALLBACK_URL:-http://localhost:${BACKEND_PORT:-5000}/api/auth/oauth/github/callback}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     ports:
       - "${BACKEND_PORT:-5000}:5000"

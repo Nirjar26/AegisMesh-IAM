@@ -19,5 +19,3 @@ README.md
 .editorconfig
 .eslintrc
 .prettierrc
-vite.config.js
-tailwind.config.js
