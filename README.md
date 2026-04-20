@@ -140,6 +140,22 @@ cd frontend
 npm run dev
 ```
 
+### Option 3: Kubernetes (Minikube)
+
+This repository now includes Kubernetes manifests for PostgreSQL, backend, frontend, and ingress routing.
+
+Quick start:
+
+```bash
+minikube start
+minikube addons enable ingress
+minikube image build -t aegismesh-backend:local ./backend
+minikube image build -t aegismesh-frontend:local ./frontend
+kubectl apply -k ./k8s
+```
+
+Full guide: [k8s/README.md](./k8s/README.md)
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and configure:

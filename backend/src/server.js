@@ -43,7 +43,7 @@ function getServiceUrls(port) {
 // ═══════════════════════════════════════
 const PORT = process.env.PORT || 5000;
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
     const urls = getServiceUrls(PORT);
 
     logger.info(`🚀 IAM Auth Server running on port ${PORT}`);
