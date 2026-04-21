@@ -140,18 +140,17 @@ cd frontend
 npm run dev
 ```
 
-### Option 3: Kubernetes (Minikube)
+### Option 3: Kubernetes (Docker Desktop)
 
-This repository now includes Kubernetes manifests for PostgreSQL, backend, frontend, and ingress routing.
+This repository includes Kubernetes manifests for PostgreSQL, backend, and frontend, configured for Docker Desktop Kubernetes.
 
 Quick start:
 
 ```bash
-minikube start
-minikube addons enable ingress
-minikube image build -t aegismesh-backend:local ./backend
-minikube image build -t aegismesh-frontend:local ./frontend
+docker build -t aegismesh-backend:local-v2 ./backend
+docker build -t aegismesh-frontend:local ./frontend
 kubectl apply -k ./k8s
+kubectl -n aegismesh port-forward svc/frontend 3000:3000
 ```
 
 Full guide: [k8s/README.md](./k8s/README.md)

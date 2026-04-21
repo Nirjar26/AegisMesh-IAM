@@ -49,6 +49,16 @@ spec:
                   key: DB_PASSWORD
             - name: POSTGRES_INITDB_ARGS
               value: --encoding=UTF8 --locale=C
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1
+              memory: 1Gi
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
           readinessProbe:
             exec:
               command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
@@ -63,9 +73,6 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 6
-          volumeMounts:
-            - name: postgres-data
-              mountPath: /var/lib/postgresql/data
       volumes:
         - name: postgres-data
           persistentVolumeClaim:

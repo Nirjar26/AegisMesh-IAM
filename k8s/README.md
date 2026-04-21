@@ -1,86 +1,91 @@
-# AegisMesh IAM on Kubernetes (Minikube)
+# Kubernetes Setup (Docker Desktop)
 
-This directory contains a complete Kubernetes migration for the Docker Compose stack:
-- PostgreSQL
-- Backend API (with Prisma migration init step)
-- Frontend (Nginx)
-- Ingress routing for UI + API
+This setup is designed for **Docker Desktop Kubernetes** (single-node local cluster), not Minikube or cloud-managed Kubernetes.
 
-## 1. Prerequisites
+## Prerequisites
 
-- Minikube
-- kubectl
-- Docker available to Minikube runtime
+- Docker Desktop with **Kubernetes enabled**
+- `kubectl` configured to use `docker-desktop` context
+- Local Docker images built from this repository
 
-## 2. Start Minikube and Ingress
+Check context:
 
 ```powershell
-minikube start
-minikube addons enable ingress
+kubectl config current-context
 ```
 
-## 3. Build Images into Minikube
+It should return `docker-desktop`.
 
-Run these from repository root:
+## 1. Build Images
+
+From repository root:
 
 ```powershell
-minikube image build -t aegismesh-backend:local .\backend
-minikube image build -t aegismesh-frontend:local .\frontend
+docker build -t aegismesh-backend:local-v2 ./backend
+docker build -t aegismesh-frontend:local ./frontend
 ```
 
-These image tags are already referenced by the manifests.
-
-## 4. Configure Secrets
-
-Edit [manifests/secret.yaml](manifests/secret.yaml) and replace placeholders, at minimum:
-- DB_PASSWORD
-- JWT_SECRET
-- JWT_ACCESS_SECRET
-- JWT_REFRESH_SECRET
-- OAuth and SMTP credentials as needed
-
-## 5. Deploy
+## 2. Deploy to Kubernetes
 
 ```powershell
-kubectl apply -k .\k8s
+kubectl apply -k ./k8s
 ```
 
-## 6. Verify
+Verify:
 
 ```powershell
-kubectl get all -n aegismesh
-kubectl get ingress -n aegismesh
-kubectl logs deployment/backend -n aegismesh
+kubectl get pods -n aegismesh
+kubectl get svc -n aegismesh
 ```
 
-## 7. Access the App
+## 3. Access the App Locally
 
-Get Minikube IP:
+Use `aegismesh.localhost` as the browser hostname. This resolves to `127.0.0.1` automatically, so no hosts-file edit is required.
+
+Use port-forward to expose services exactly like Docker Compose ports:
+
+Terminal 1:
 
 ```powershell
-minikube ip
+kubectl -n aegismesh port-forward svc/frontend 3000:3000
 ```
 
-Add a hosts entry (Windows file: C:\Windows\System32\drivers\etc\hosts):
+Terminal 2:
 
-```text
-<MINIKUBE_IP> aegismesh.local
+```powershell
+kubectl -n aegismesh port-forward svc/backend 5000:5000
 ```
 
 Then open:
 
-- http://aegismesh.local
+- Frontend: http://aegismesh.localhost:3000
+- Backend health: http://aegismesh.localhost:5000/api/health
 
-## Notes
+The frontend Nginx config proxies `/api` and `/uploads` to the backend service internally, matching your Docker setup behavior.
 
-- Backend runs `npx prisma migrate deploy` in an initContainer, so migrations are applied before app start.
-- Postgres data persists via PVC (`postgres-data`).
-- Ingress routes:
-  - `/api` and `/uploads` -> backend service
-  - `/` -> frontend service
+## 4. Update Secrets Before Production-like Use
 
-## Cleanup
+Edit `k8s/manifests/secret.yaml` and change at least:
+
+- `DB_PASSWORD`
+- `JWT_SECRET`
+- `JWT_ACCESS_SECRET`
+- `JWT_REFRESH_SECRET`
+
+Re-apply after edits:
 
 ```powershell
-kubectl delete -k .\k8s
+kubectl apply -k ./k8s
+```
+
+## 5. Cleanup
+
+```powershell
+kubectl delete -k ./k8s
+```
+
+## Optional One-Command Deploy Script
+
+```powershell
+./k8s/deploy-docker-desktop.ps1
 ```
