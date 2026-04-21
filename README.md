@@ -151,7 +151,10 @@ docker build -t aegismesh-backend:local-v2 ./backend
 docker build -t aegismesh-frontend:local ./frontend
 kubectl apply -k ./k8s
 kubectl -n aegismesh port-forward svc/frontend 3000:3000
+kubectl -n aegismesh port-forward svc/backend 5000:5000
 ```
+
+Open the app at `http://aegismesh.localhost:3000`.
 
 Full guide: [k8s/README.md](./k8s/README.md)
 
@@ -219,6 +222,11 @@ See [`.env.example`](./.env.example) for all available options.
 │   │   ├── services/
 │   │   └── utils/
 │   └── package.json
+├── k8s/
+│   ├── manifests/
+│   ├── deploy-docker-desktop.ps1
+│   ├── kustomization.yaml
+│   └── README.md
 ├── diagrams/
 └── README.md
 ```

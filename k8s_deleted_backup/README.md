@@ -1,1 +1,0 @@
-This folder was moved from k8s/ as a backup before deletion.
