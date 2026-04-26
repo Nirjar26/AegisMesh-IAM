@@ -1,4 +1,18 @@
+def withNodeTool(Closure body) {
+    def nodeHome = tool(name: params.JENKINS_NODEJS_TOOL, type: 'nodejs')
+    if (isUnix()) {
+        withEnv(["PATH+NODE=${nodeHome}/bin"]) {
+            body()
+        }
+    } else {
+        withEnv(["PATH+NODE=${nodeHome}"]) {
+            body()
+        }
+    }
+}
+
 def installNodeDependencies() {
+    withNodeTool {
     if (fileExists('package-lock.json') || fileExists('npm-shrinkwrap.json')) {
         if (isUnix()) {
             sh 'npm ci --no-audit --no-fund'
@@ -12,13 +26,16 @@ def installNodeDependencies() {
             bat 'call npm install --no-audit --no-fund'
         }
     }
+    }
 }
 
 def runNpmScript(String scriptName) {
-    if (isUnix()) {
-        sh "npm run ${scriptName}"
-    } else {
-        bat "call npm run ${scriptName}"
+    withNodeTool {
+        if (isUnix()) {
+            sh "npm run ${scriptName}"
+        } else {
+            bat "call npm run ${scriptName}"
+        }
     }
 }
 
@@ -46,6 +63,7 @@ pipeline {
         string(name: 'BACKEND_IMAGE', defaultValue: 'aegismesh/backend', description: 'Backend Docker image name')
         string(name: 'FRONTEND_IMAGE', defaultValue: 'aegismesh/frontend', description: 'Frontend Docker image name')
         string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Docker image tag')
+        string(name: 'JENKINS_NODEJS_TOOL', defaultValue: 'NodeJS_22', description: 'Name of configured Jenkins NodeJS tool installation')
     }
 
     environment {
@@ -64,6 +82,20 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Node Toolchain Check') {
+            steps {
+                script {
+                    withNodeTool {
+                        if (isUnix()) {
+                            sh 'node --version && npm --version'
+                        } else {
+                            bat 'call node --version && call npm --version'
+                        }
+                    }
+                }
             }
         }
 

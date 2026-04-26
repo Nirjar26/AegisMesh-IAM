@@ -27,8 +27,21 @@ Install these plugins:
 - Pipeline
 - Git
 - Credentials Binding
+- NodeJS
 - Timestamper
 - Docker Pipeline (only if you will build/push Docker images)
+
+## Configure NodeJS Tool in Jenkins (Required)
+
+The pipeline now expects a Jenkins-managed NodeJS tool so npm is always available.
+
+1. Go to **Manage Jenkins -> Tools -> NodeJS installations**.
+2. Click **Add NodeJS**.
+3. Name it `NodeJS_22` (or choose another name and pass it via the `JENKINS_NODEJS_TOOL` build parameter).
+4. Select Node.js **22.x**.
+5. Save.
+
+If this is not configured, the `Node Toolchain Check` stage will fail before dependency installation.
 
 ## Jenkins Node Requirements
 
