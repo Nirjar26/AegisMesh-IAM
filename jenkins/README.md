@@ -75,6 +75,20 @@ At build time, set parameters:
 
 Current pipeline builds images only. If you want push/deploy stages, add registry login and deployment steps in your Jenkins job or extend the `Jenkinsfile`.
 
+## Lint Behavior Controls
+
+The pipeline includes parameters to control frontend lint strictness:
+
+- `RUN_FRONTEND_LINT=true` to execute lint stage (set false to skip it).
+- `FAIL_ON_LINT=false` keeps the build running even when lint fails (stage is marked unstable).
+- `FAIL_ON_LINT=true` makes lint failures break the build.
+
+Recommended rollout while fixing existing lint debt:
+
+1. Keep `RUN_FRONTEND_LINT=true`.
+2. Keep `FAIL_ON_LINT=false` temporarily.
+3. Switch `FAIL_ON_LINT=true` after frontend lint errors are resolved.
+
 ## Suggested Triggers
 
 - GitHub webhook: trigger on push/PR

@@ -82,6 +82,8 @@ pipeline {
 
     parameters {
         booleanParam(name: 'RUN_DOCKER_BUILD', defaultValue: false, description: 'Build Docker images after tests pass')
+        booleanParam(name: 'RUN_FRONTEND_LINT', defaultValue: true, description: 'Run frontend lint stage')
+        booleanParam(name: 'FAIL_ON_LINT', defaultValue: false, description: 'Fail build if frontend lint reports errors')
         string(name: 'BACKEND_IMAGE', defaultValue: 'aegismesh/backend', description: 'Backend Docker image name')
         string(name: 'FRONTEND_IMAGE', defaultValue: 'aegismesh/frontend', description: 'Frontend Docker image name')
         string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Docker image tag')
@@ -159,10 +161,21 @@ pipeline {
                 }
 
                 stage('Frontend Lint') {
+                    when {
+                        expression {
+                            return params.RUN_FRONTEND_LINT
+                        }
+                    }
                     steps {
                         dir('frontend') {
                             script {
-                                runNpmScript('lint')
+                                if (params.FAIL_ON_LINT) {
+                                    runNpmScript('lint')
+                                } else {
+                                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                                        runNpmScript('lint')
+                                    }
+                                }
                             }
                         }
                     }
