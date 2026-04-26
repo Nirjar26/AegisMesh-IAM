@@ -55,14 +55,40 @@ If you use Jenkins tool management for Node, define a Node.js installation at 22
 
 ## Environment and Secrets
 
-The pipeline includes safe CI defaults for required backend env vars (for unit-style checks).
+The pipeline supports secure credentials via Jenkins Credentials.
 
-For production-like CI/CD, define Jenkins credentials and inject them as environment variables in the job or global Jenkins configuration:
+### Manual credentials setup (required for secure runs)
 
-- `DATABASE_URL`
-- `JWT_ACCESS_SECRET`
-- `JWT_REFRESH_SECRET`
-- Any OAuth/SMTP variables you need for integration tests or deployments
+1. Go to **Manage Jenkins -> Credentials -> System -> Global credentials (unrestricted)**.
+2. Click **Add Credentials**.
+3. Create these credentials with **Kind: Secret text**:
+	 - ID: `aegismesh-database-url`
+		 - Secret example: `postgresql://user:password@host:5432/aegismesh_ci`
+	 - ID: `aegismesh-jwt-access-secret`
+		 - Secret: long random string
+	 - ID: `aegismesh-jwt-refresh-secret`
+		 - Secret: long random string
+4. Save each credential.
+
+### Pipeline parameters for credentials
+
+When running the job, use:
+
+- `USE_JENKINS_CREDENTIALS=true`
+- `DATABASE_URL_CREDENTIAL_ID=aegismesh-database-url`
+- `JWT_ACCESS_SECRET_CREDENTIAL_ID=aegismesh-jwt-access-secret`
+- `JWT_REFRESH_SECRET_CREDENTIAL_ID=aegismesh-jwt-refresh-secret`
+
+If credentials are not configured yet, you can temporarily set `USE_JENKINS_CREDENTIALS=false` to use non-production fallback values.
+
+### Optional additional credentials (if you extend pipeline)
+
+- Docker registry credentials (Username with password):
+	- ID example: `aegismesh-docker-registry`
+- SMTP or OAuth secrets (Secret text):
+	- `aegismesh-smtp-password`
+	- `aegismesh-google-client-secret`
+	- `aegismesh-github-client-secret`
 
 ## Optional Docker Build
 

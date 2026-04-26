@@ -33,6 +33,47 @@ def verifyNodeVersion() {
     }
 }
 
+def withCiEnvironment(Closure body) {
+    def sharedEnv = [
+        'CI=true',
+        'NODE_ENV=test',
+        'FRONTEND_URL=http://localhost:5173',
+        'VITE_API_URL=http://localhost:5000/api',
+        'JWT_ACCESS_EXPIRY=15m',
+        'JWT_REFRESH_EXPIRY=7d',
+    ]
+
+    if (params.USE_JENKINS_CREDENTIALS) {
+        def databaseId = params.DATABASE_URL_CREDENTIAL_ID?.trim()
+        def accessSecretId = params.JWT_ACCESS_SECRET_CREDENTIAL_ID?.trim()
+        def refreshSecretId = params.JWT_REFRESH_SECRET_CREDENTIAL_ID?.trim()
+
+        if (!databaseId || !accessSecretId || !refreshSecretId) {
+            error('Credential IDs are required when USE_JENKINS_CREDENTIALS is enabled.')
+        }
+
+        withCredentials([
+            string(credentialsId: databaseId, variable: 'DATABASE_URL'),
+            string(credentialsId: accessSecretId, variable: 'JWT_ACCESS_SECRET'),
+            string(credentialsId: refreshSecretId, variable: 'JWT_REFRESH_SECRET'),
+        ]) {
+            withEnv(sharedEnv) {
+                body()
+            }
+        }
+        return
+    }
+
+    // Local fallback for quick CI smoke runs when Jenkins credentials are not configured.
+    withEnv(sharedEnv + [
+        'DATABASE_URL=postgresql://ci_user:ci_password@localhost:5432/aegismesh_ci',
+        'JWT_ACCESS_SECRET=ci-access-secret',
+        'JWT_REFRESH_SECRET=ci-refresh-secret',
+    ]) {
+        body()
+    }
+}
+
 def installNodeDependencies() {
     withNodeTool {
     if (fileExists('package-lock.json') || fileExists('npm-shrinkwrap.json')) {
@@ -84,6 +125,10 @@ pipeline {
         booleanParam(name: 'RUN_DOCKER_BUILD', defaultValue: false, description: 'Build Docker images after tests pass')
         booleanParam(name: 'RUN_FRONTEND_LINT', defaultValue: true, description: 'Run frontend lint stage')
         booleanParam(name: 'FAIL_ON_LINT', defaultValue: false, description: 'Fail build if frontend lint reports errors')
+        booleanParam(name: 'USE_JENKINS_CREDENTIALS', defaultValue: true, description: 'Use Jenkins credentials for backend secrets')
+        string(name: 'DATABASE_URL_CREDENTIAL_ID', defaultValue: 'aegismesh-database-url', description: 'Credential ID for DATABASE_URL (Secret text)')
+        string(name: 'JWT_ACCESS_SECRET_CREDENTIAL_ID', defaultValue: 'aegismesh-jwt-access-secret', description: 'Credential ID for JWT_ACCESS_SECRET (Secret text)')
+        string(name: 'JWT_REFRESH_SECRET_CREDENTIAL_ID', defaultValue: 'aegismesh-jwt-refresh-secret', description: 'Credential ID for JWT_REFRESH_SECRET (Secret text)')
         string(name: 'BACKEND_IMAGE', defaultValue: 'aegismesh/backend', description: 'Backend Docker image name')
         string(name: 'FRONTEND_IMAGE', defaultValue: 'aegismesh/frontend', description: 'Frontend Docker image name')
         string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Docker image tag')
@@ -93,11 +138,8 @@ pipeline {
     environment {
         CI = 'true'
         NODE_ENV = 'test'
-        DATABASE_URL = 'postgresql://ci_user:ci_password@localhost:5432/aegismesh_ci'
         FRONTEND_URL = 'http://localhost:5173'
         VITE_API_URL = 'http://localhost:5000/api'
-        JWT_ACCESS_SECRET = 'ci-access-secret'
-        JWT_REFRESH_SECRET = 'ci-refresh-secret'
         JWT_ACCESS_EXPIRY = '15m'
         JWT_REFRESH_EXPIRY = '7d'
     }
@@ -154,7 +196,9 @@ pipeline {
                     steps {
                         dir('backend') {
                             script {
-                                runNpmScript('test')
+                                withCiEnvironment {
+                                    runNpmScript('test')
+                                }
                             }
                         }
                     }
