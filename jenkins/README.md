@@ -27,7 +27,6 @@ Install these plugins:
 - Pipeline
 - Git
 - Credentials Binding
-- ANSI Color
 - Timestamper
 - Docker Pipeline (only if you will build/push Docker images)
 
