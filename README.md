@@ -158,6 +158,28 @@ Open the app at `http://aegismesh.localhost:3000`.
 
 Full guide: [k8s/README.md](./k8s/README.md)
 
+## Jenkins CI/CD
+
+This repository includes a ready-to-use Jenkins pipeline at `Jenkinsfile`.
+
+### Pipeline stages
+
+1. Checkout code
+2. Install dependencies (`backend` + `frontend`) in parallel
+3. Run backend tests, frontend lint, and frontend build in parallel
+4. Optionally build Docker images for backend and frontend
+5. Archive frontend build artifacts
+
+### Quick start
+
+1. Create a Jenkins **Pipeline** job.
+2. Set **Pipeline script from SCM** and point to this repository.
+3. Set **Script Path** to `Jenkinsfile`.
+4. Run a build.
+
+Detailed Jenkins setup (plugins, node requirements, parameters, and first-run checklist):
+[jenkins/README.md](./jenkins/README.md)
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and configure:
