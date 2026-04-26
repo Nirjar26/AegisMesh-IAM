@@ -39,33 +39,22 @@ Managing authentication, authorization, and security governance across modern ap
 - **Notification Center:** Fetch notifications, mark single/all as read, and delete notification entries.
 - **Security Hardening:** Built-in validation, rate limiting, account protection controls, and middleware-driven authorization on protected routes.
 
-## Architecture 
 
-![Architecture](./diagrams/Architecture.png)
+## Architecture
 
-## Application Flow
+![Architecture](./diagrams/Architecture_.png)
 
-1. User opens the frontend and lands on public routes (login, register, password reset, verify email, or OAuth callback).
-2. On login/register/OAuth success, backend returns access and refresh tokens plus user profile data.
-3. Frontend stores tokens, sets auth state, and schedules silent token refresh before access-token expiry.
-4. Protected routes are enforced in the client; unauthenticated users are redirected to login.
-5. For protected API calls, backend receives requests through security middleware (Helmet, CORS, parsing, CSRF checks for mutating routes, and rate limiting).
-6. Authentication middleware validates JWT (or scoped API key token), loads the active user/session, and applies organization-level policy checks.
-7. Authorization logic evaluates effective permissions from direct role assignments, group-inherited roles, and attached policies; explicit DENY takes precedence over ALLOW.
-8. If authorized, controller/service layers execute the action (user management, roles, policies, groups, settings, notifications, or security operations).
-9. Sensitive and administrative actions are written to audit logs; audit endpoints provide stream, stats, filtering, export, and cleanup support.
-10. Frontend updates views using React Query and route-level modules, keeping dashboard state synchronized with backend responses.
 
-### Sensitive Action Flow
+## Application Flow 
 
-1. User triggers a high-risk operation (for example: password change, account deletion, or privileged API key creation).
-2. Backend enforces reauthentication requirements for the operation.
-3. After reauth succeeds, the action proceeds through the same authentication and authorization pipeline.
-4. Result is returned to frontend and the event is captured in audit logs for traceability.
+1. User authenticates (email/password, OAuth, MFA) via frontend.
+2. Backend issues JWT tokens and manages sessions.
+3. Each API call passes through security, authentication, and RBAC checks.
+4. Authorized actions are performed; sensitive actions require reauthentication and are logged.
+5. Frontend updates state based on backend responses.
 
-### Core Request Pipeline
-
-`Client Request -> Security Middleware -> Authentication -> Org Policy Checks -> RBAC Evaluation -> Controller/Service -> Prisma/PostgreSQL -> Audit/Response -> Frontend Refresh`
+**CI/CD:**
+- Jenkins pipeline runs on code changes: installs dependencies, lints, tests, builds, and (optionally) builds/pushes Docker images and deploys to Kubernetes.
 
 ## Tech Stack
 
