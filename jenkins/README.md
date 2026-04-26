@@ -37,8 +37,8 @@ The pipeline now expects a Jenkins-managed NodeJS tool so npm is always availabl
 
 1. Go to **Manage Jenkins -> Tools -> NodeJS installations**.
 2. Click **Add NodeJS**.
-3. Name it `NodeJS_22` (or choose another name and pass it via the `JENKINS_NODEJS_TOOL` build parameter).
-4. Select Node.js **22.x**.
+3. Name it `NodeJS_22_12` (or choose another name and pass it via the `JENKINS_NODEJS_TOOL` build parameter).
+4. Select Node.js **22.12+** (or 24.x).
 5. Save.
 
 If this is not configured, the `Node Toolchain Check` stage will fail before dependency installation.
@@ -47,11 +47,11 @@ If this is not configured, the `Node Toolchain Check` stage will fail before dep
 
 Your Jenkins agent must have:
 
-- Node.js 22.x and npm
+- Node.js 22.12+ and npm (or Node.js 24+)
 - Git
 - Docker (only for `RUN_DOCKER_BUILD=true`)
 
-If you use Jenkins tool management for Node, define a Node.js installation and keep the version at 22.x.
+If you use Jenkins tool management for Node, define a Node.js installation at 22.12+.
 
 ## Environment and Secrets
 
@@ -82,7 +82,7 @@ Current pipeline builds images only. If you want push/deploy stages, add registr
 
 ## First Run Checklist
 
-1. Ensure Jenkins agent has Node.js 22.x.
+1. Ensure Jenkins agent has Node.js 22.12+.
 2. Run one build with `RUN_DOCKER_BUILD=false`.
 3. Fix any lint/test issues surfaced by CI.
 4. Enable Docker build parameter and verify image build if needed.

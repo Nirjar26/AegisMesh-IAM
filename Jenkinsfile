@@ -11,6 +11,28 @@ def withNodeTool(Closure body) {
     }
 }
 
+def verifyNodeVersion() {
+    def versionOutput
+    if (isUnix()) {
+        versionOutput = sh(returnStdout: true, script: 'node --version').trim()
+    } else {
+        versionOutput = bat(returnStdout: true, script: '@echo off\r\nnode --version').trim()
+    }
+
+    def match = (versionOutput =~ /v?(\d+)\.(\d+)\.(\d+)/)
+    if (!match) {
+        error("Unable to parse Node.js version output: ${versionOutput}")
+    }
+
+    int major = match[0][1] as int
+    int minor = match[0][2] as int
+    boolean supported = (major == 20 && minor >= 19) || (major == 22 && minor >= 12) || (major >= 24)
+
+    if (!supported) {
+        error("Unsupported Node.js version ${versionOutput}. Prisma requires 20.19+, 22.12+, or 24.0+.")
+    }
+}
+
 def installNodeDependencies() {
     withNodeTool {
     if (fileExists('package-lock.json') || fileExists('npm-shrinkwrap.json')) {
@@ -63,7 +85,7 @@ pipeline {
         string(name: 'BACKEND_IMAGE', defaultValue: 'aegismesh/backend', description: 'Backend Docker image name')
         string(name: 'FRONTEND_IMAGE', defaultValue: 'aegismesh/frontend', description: 'Frontend Docker image name')
         string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Docker image tag')
-        string(name: 'JENKINS_NODEJS_TOOL', defaultValue: 'NodeJS_22', description: 'Name of configured Jenkins NodeJS tool installation')
+        string(name: 'JENKINS_NODEJS_TOOL', defaultValue: 'NodeJS_22_12', description: 'Name of configured Jenkins NodeJS tool installation')
     }
 
     environment {
@@ -94,6 +116,7 @@ pipeline {
                         } else {
                             bat 'call node --version && call npm --version'
                         }
+                        verifyNodeVersion()
                     }
                 }
             }
