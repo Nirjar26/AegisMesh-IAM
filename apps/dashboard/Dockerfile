@@ -29,7 +29,7 @@ COPY --chown=root:root --chmod=555 apps/dashboard/src ./apps/dashboard/src
 RUN npx turbo run build --filter=frontend
 
 # Production stage - Nginx
-FROM nginxinc/nginx-unprivileged:1.27-alpine
+FROM nginxinc/nginx-unprivileged:1.31-alpine
 
 USER root
 # Install curl for healthcheck
