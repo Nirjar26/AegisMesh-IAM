@@ -81,7 +81,6 @@ backups/
 .turbo/
 .datadog/
 .kpatch/
-.continue/
 
 # ── Agent / CLI Artifacts ──────────────────────────────────────
 .aider*
@@ -90,6 +89,8 @@ backups/
 .agents/
 .sonarqube_report/
 .code-quality/
+.codex/
+.continue/
 .archive/
 .jenkins/
 

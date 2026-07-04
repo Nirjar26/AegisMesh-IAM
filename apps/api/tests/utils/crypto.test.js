@@ -9,15 +9,16 @@ describe('encryptText', () => {
         expect(encryptText('')).toBeNull();
     });
 
-    it('returns a colon-delimited string with three hex parts', () => {
+    it('returns a colon-delimited string with four hex parts (salt:iv:authTag:ciphertext)', () => {
         const result = encryptText('hello');
         expect(typeof result).toBe('string');
         const parts = result.split(':');
-        expect(parts).toHaveLength(3);
-        // iv (12 bytes = 24 hex chars), auth tag (16 bytes = 32 hex chars)
-        expect(parts[0]).toHaveLength(24);
-        expect(parts[1]).toHaveLength(32);
-        expect(parts[2].length).toBeGreaterThan(0);
+        expect(parts).toHaveLength(4);
+        // salt (16 bytes = 32 hex), iv (12 bytes = 24 hex), auth tag (16 bytes = 32 hex)
+        expect(parts[0]).toHaveLength(32);
+        expect(parts[1]).toHaveLength(24);
+        expect(parts[2]).toHaveLength(32);
+        expect(parts[3].length).toBeGreaterThan(0);
     });
 
     it('produces different ciphertext for the same plaintext (random IV)', () => {
@@ -29,7 +30,7 @@ describe('encryptText', () => {
     it('coerces non-string values to string before encrypting', () => {
         const result = encryptText(42);
         expect(typeof result).toBe('string');
-        expect(result.split(':')).toHaveLength(3);
+        expect(result.split(':')).toHaveLength(4);
     });
 });
 
@@ -64,16 +65,16 @@ describe('decryptText', () => {
     it('returns null when the auth tag is tampered', () => {
         const cipher = encryptText('data');
         const parts = cipher.split(':');
-        // Corrupt the auth tag (second part)
-        parts[1] = 'a'.repeat(parts[1].length);
+        // Corrupt the auth tag (third part, index 2)
+        parts[2] = 'a'.repeat(parts[2].length);
         expect(decryptText(parts.join(':'))).toBeNull();
     });
 
     it('returns null when ciphertext is corrupted', () => {
         const cipher = encryptText('data');
         const parts = cipher.split(':');
-        // Corrupt the encrypted body
-        parts[2] = 'deadbeef'.repeat(4);
+        // Corrupt the encrypted body (fourth part, index 3)
+        parts[3] = 'deadbeef'.repeat(4);
         expect(decryptText(parts.join(':'))).toBeNull();
     });
 

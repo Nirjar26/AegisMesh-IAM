@@ -26,6 +26,18 @@ function getRequiredScope(method, fullPath) {
         return 'read:audit';
     }
 
+    if (path.startsWith('/api/settings')) {
+        return verb === 'GET' ? 'read:settings' : 'write:settings';
+    }
+
+    if (path.startsWith('/api/notifications')) {
+        return verb === 'GET' ? 'read:notifications' : 'write:notifications';
+    }
+
+    if (path.startsWith('/api/analytics')) {
+        return verb === 'GET' ? 'read:analytics' : 'write:analytics';
+    }
+
     return null;
 }
 

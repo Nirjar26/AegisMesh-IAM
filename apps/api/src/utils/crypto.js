@@ -1,32 +1,33 @@
 const crypto = require('node:crypto');
 
 const ALGO = 'aes-256-gcm';
+const LEGACY_SALT = 'aegismesh-mfa-key-v1';
 
 let mfaFallbackKey;
-function buildKey() {
-    let seed = process.env.MFA_SECRET_ENCRYPTION_KEY || process.env.JWT_REFRESH_SECRET;
+function buildKey(salt) {
+    let seed = process.env.MFA_SECRET_ENCRYPTION_KEY;
     if (!seed) {
         if (process.env.NODE_ENV === 'production') {
-            throw new Error('MFA_SECRET_ENCRYPTION_KEY or JWT_REFRESH_SECRET must be configured');
+            throw new Error('MFA_SECRET_ENCRYPTION_KEY must be configured');
         }
         if (!mfaFallbackKey) {
             mfaFallbackKey = crypto.randomBytes(32).toString('hex');
         }
         seed = mfaFallbackKey;
     }
-    const key = crypto.pbkdf2Sync(seed, 'aegismesh-mfa-key-v1', 100000, 32, 'sha512');
-    return key;
+    return crypto.pbkdf2Sync(seed, salt || LEGACY_SALT, 100000, 32, 'sha512');
 }
 
 function encryptText(plainText) {
     if (!plainText) return null;
 
+    const salt = crypto.randomBytes(16).toString('hex');
     const iv = crypto.randomBytes(12);
-    const cipher = crypto.createCipheriv(ALGO, buildKey(), iv);
+    const cipher = crypto.createCipheriv(ALGO, buildKey(salt), iv);
     const encrypted = Buffer.concat([cipher.update(String(plainText), 'utf8'), cipher.final()]);
     const authTag = cipher.getAuthTag();
 
-    return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted.toString('hex')}`;
+    return `${salt}:${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted.toString('hex')}`;
 }
 
 function decryptText(payload) {
@@ -35,16 +36,22 @@ function decryptText(payload) {
     const text = String(payload);
     const parts = text.split(':');
 
-    // Backward compatibility for legacy plaintext secrets.
-    if (parts.length !== 3) {
+    // Legacy plaintext — backward compat for pre-encryption secrets.
+    if (parts.length < 3) {
         return text;
     }
 
     try {
-        const [ivHex, tagHex, encryptedHex] = parts;
+        // New format (4 parts): salt:iv:authTag:ciphertext
+        // Legacy format (3 parts): iv:authTag:ciphertext
+        const salt = parts.length === 4 ? parts[0] : LEGACY_SALT;
+        const ivHex = parts.length === 4 ? parts[1] : parts[0];
+        const tagHex = parts.length === 4 ? parts[2] : parts[1];
+        const encryptedHex = parts.length === 4 ? parts[3] : parts[2];
+
         const decipher = crypto.createDecipheriv(
             ALGO,
-            buildKey(),
+            buildKey(salt),
             Buffer.from(ivHex, 'hex')
         );
         decipher.setAuthTag(Buffer.from(tagHex, 'hex'));
