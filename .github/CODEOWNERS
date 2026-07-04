@@ -1,0 +1,11 @@
+# Global owners
+* @nirjxr26
+
+# CI/CD changes require careful review
+/.github/ @nirjxr26
+/platform/ @nirjxr26
+
+# Security-sensitive code
+apps/api/src/middleware/ @nirjxr26
+apps/api/src/config/ @nirjxr26
+apps/security-engine/ @nirjxr26

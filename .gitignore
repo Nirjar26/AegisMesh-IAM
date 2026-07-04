@@ -18,6 +18,7 @@ credentials-*
 
 # ── Dependencies ────────────────────────────────────────────────
 node_modules/
+.turbo/cache
 
 # ── Build Outputs ───────────────────────────────────────────────
 dist/

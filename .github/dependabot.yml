@@ -1,0 +1,45 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+    open-pull-requests-limit: 10
+    groups:
+      production-deps:
+        dependency-type: "production"
+        update-types: ["patch", "minor"]
+      dev-deps:
+        dependency-type: "development"
+        update-types: ["patch", "minor"]
+
+  - package-ecosystem: "pip"
+    directory: "/apps/security-engine"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+    open-pull-requests-limit: 5
+    groups:
+      python-deps:
+        update-types: ["patch", "minor"]
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/apps/api"
+      - "/apps/dashboard"
+      - "/apps/security-engine"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ["*"]

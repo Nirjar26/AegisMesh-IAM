@@ -5,6 +5,10 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'platform/terraform/**'
   workflow_dispatch:
     inputs:
       action:
@@ -21,7 +25,7 @@ permissions:
 
 jobs:
   terraform-plan:
-    if: ${{ github.event.inputs.action == 'plan' }}
+    if: ${{ github.event_name == 'pull_request' || github.event.inputs.action == 'plan' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -44,10 +48,26 @@ jobs:
           cd platform/terraform
           terraform plan -out=plan.tfplan
       - name: Upload plan
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: terraform-plan
           path: platform/terraform/plan.tfplan
+
+      - name: Comment plan on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdeb # v7.0.1
+        with:
+          script: |
+            const fs = require('fs');
+            const output = fs.readFileSync('platform/terraform/plan.tfplan', 'utf-8');
+            const encoded = Buffer.from(output).toString('base64');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform Plan\n\`\`\`\n${output}\n\`\`\``
+            });
 
   terraform-apply:
     if: ${{ github.event.inputs.action == 'apply' }}
