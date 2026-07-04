@@ -92,7 +92,10 @@ function getOAuthFailureUrl() {
     return `${getFrontendUrl()}/login?error=oauth_failed`;
 }
 
-const OAUTH_STATE_SECRET = process.env.JWT_SECRET || 'oauth-state-secret';
+const OAUTH_STATE_SECRET = process.env.OAUTH_STATE_SECRET;
+if (!OAUTH_STATE_SECRET) {
+    throw new Error('OAUTH_STATE_SECRET environment variable must be set');
+}
 
 function generateOAuthState() {
     const state = crypto.randomBytes(16).toString('hex');

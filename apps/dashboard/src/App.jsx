@@ -1,5 +1,6 @@
 import { Component, Suspense, lazy } from 'react';
 import PropTypes from 'prop-types';
+import { logger } from './utils/logger';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
@@ -65,7 +66,7 @@ class AppErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Application runtime error:', error, errorInfo);
+    logger.error('Application runtime error:', error, errorInfo);
   }
 
   handleReload = () => {

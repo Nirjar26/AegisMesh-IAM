@@ -32,19 +32,19 @@ async function handleCacheInvalidation(model, operation, args) {
 
     const permissionModels = ['UserRole', 'UserGroup', 'GroupRole', 'RolePolicy', 'Policy', 'Role', 'Group'];
     if (permissionModels.includes(model)) {
-        redis.incr('user:permissions:version').catch(() => {});
+        redis.incr('user:permissions:version').catch(err => logger.warn('Cache invalidation failed', { model: 'permissions', error: err.message }));
     }
     if (model === 'OrganizationSettings') {
-        redis.del('org:settings').catch(() => {});
+        redis.del('org:settings').catch(err => logger.warn('Cache invalidation failed', { model: 'org:settings', error: err.message }));
     }
     if (model === 'User') {
         const userId = args?.where?.id;
         if (userId && typeof userId === 'string') {
             // Invalidating specific user cache
-            redis.del(`user:profile:${userId}`).catch(() => {});
+            redis.del(`user:profile:${userId}`).catch(err => logger.warn('Cache invalidation failed', { model: 'user:profile', userId, error: err.message }));
         } else {
             // Invalidate all user profiles on bulk changes
-            redis.incr('user:profile:version').catch(() => {});
+            redis.incr('user:profile:version').catch(err => logger.warn('Cache invalidation failed', { model: 'user:profile:version', error: err.message }));
         }
     }
 }

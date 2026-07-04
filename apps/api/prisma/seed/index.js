@@ -5,7 +5,10 @@ const prisma = require('../../src/config/database');
 const { IP_POOL } = require('../seed.config');
 const { USER_AGENTS, COUNTRY_CITY, now, hoursAgo, daysAgo, hoursFrom, toIso } = require('../seed.common');
 
-const SEED_USER_PASSWORD = process.env.SEED_USER_PASSWORD || 'Seed-Demo-Pass-2024-Dev'; // NOSONAR
+const SEED_USER_PASSWORD = process.env.SEED_USER_PASSWORD;
+if (!SEED_USER_PASSWORD) {
+    throw new Error('SEED_USER_PASSWORD environment variable must be set to run seed');
+}
 
 function toPrismaUserStatus(status) {
     if (status === 'active') return 'ACTIVE';

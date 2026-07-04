@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { settingsAPI } from '../../../services/api';
 import toast from 'react-hot-toast';
+import { logger } from '../../../utils/logger';
 import SessionCard from '../../../components/users/SessionCard';
 
 export default function SessionsManagement() {
@@ -17,7 +18,7 @@ export default function SessionsManagement() {
             const { data } = await settingsAPI.getSessions();
             setSessions(data.data);
         } catch (err) {
-            console.error('Failed to fetch sessions', err);
+            logger.error('Failed to fetch sessions', err);
             toast.error('Failed to load sessions');
         } finally {
             setLoading(false);
@@ -31,7 +32,7 @@ export default function SessionsManagement() {
             setSessions((prev) => prev.filter((s) => s.id !== sessionId));
             toast.success('Session revoked');
         } catch (err) {
-            console.error('Failed to revoke session', err);
+            logger.error('Failed to revoke session', err);
             toast.error('Failed to revoke session');
         } finally {
             setRevokingSession(null);
@@ -44,7 +45,7 @@ export default function SessionsManagement() {
             await fetchSessions();
             toast.success('Signed out from all other devices');
         } catch (err) {
-            console.error('Failed to revoke other sessions', err);
+            logger.error('Failed to revoke other sessions', err);
             toast.error('Failed to revoke other sessions');
         }
     };

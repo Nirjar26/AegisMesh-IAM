@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { logger } from '../utils/logger';
 
 const AUTH_EXPIRED_EVENT = 'iam:auth-expired';
 const REAUTH_HEADER = 'x-reauth-token';
@@ -39,7 +40,7 @@ export const fetchCsrfToken = async () => {
             api.defaults.headers.common[CSRF_TOKEN_HEADER] = csrfToken;
             return csrfToken;
         } catch (error) {
-            console.error('Failed to fetch CSRF token', error);
+            logger.error('Failed to fetch CSRF token', error);
             return null;
         } finally {
             csrfPromise = null;
@@ -106,11 +107,12 @@ let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-    failedQueue.forEach((prom) => {
+    const queue = failedQueue;
+    failedQueue = [];
+    queue.forEach((prom) => {
         if (error) prom.reject(error);
         else prom.resolve(token);
     });
-    failedQueue = [];
 };
 
 api.interceptors.response.use(
@@ -144,7 +146,8 @@ api.interceptors.response.use(
         if (shouldRetry) {
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
-                    failedQueue.push({ resolve, reject });
+                    if (failedQueue.length < 100) failedQueue.push({ resolve, reject });
+                    else reject(new Error('Too many queued requests'));
                 }).then(() => api(originalRequest));
             }
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { logger } from '../../utils/logger';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 
@@ -36,7 +37,7 @@ export default function AppLayout() {
             await logout();
             navigate('/login');
         } catch (error) {
-            console.error('Failed to sign out', error);
+            logger.error('Failed to sign out', error);
         }
     };
 

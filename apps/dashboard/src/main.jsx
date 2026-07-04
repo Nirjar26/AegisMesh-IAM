@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { logger } from './utils/logger'
 import App from './App.jsx'
 import './index.css'
 
@@ -27,7 +28,7 @@ try {
     </div>
   `)
   document.getElementById('startup-error').textContent = message
-  console.error('Fatal startup error:', error)
+  logger.error('Fatal startup error:', error)
 }
 
 
