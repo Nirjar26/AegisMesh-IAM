@@ -14,7 +14,7 @@ const REAUTH_WINDOW_SECONDS = 10 * 60;
  * validated on first middleware invocation, not at import time.
  */
 function getReauthSecret() {
-    const secret = process.env.JWT_REAUTH_SECRET || process.env.JWT_ACCESS_SECRET;
+    const secret = process.env.JWT_REAUTH_SECRET;
     if (!secret) {
         throw new Error('Missing required authentication secret configuration');
     }

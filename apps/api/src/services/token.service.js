@@ -6,14 +6,10 @@ const logger = require('../utils/logger');
 const { auditSession } = require('../utils/auditLog');
 const { getOrganizationSettings } = require('./organizationSettings.service');
 
-const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || (process.env.NODE_ENV === 'test' ? 'test-access-secret' : null);
-const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || (process.env.NODE_ENV === 'test' ? 'test-refresh-secret' : null);
-
+const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
+const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 if (!ACCESS_SECRET || !REFRESH_SECRET) {
-    if (process.env.NODE_ENV === 'production') {
-        throw new Error('JWT secrets must be provided in production environment');
-    }
-    logger.warn('⚠️ Using unstable JWT secrets. Set JWT_ACCESS_SECRET and JWT_REFRESH_SECRET in .env');
+    throw new Error('JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must be set');
 }
 
 const ACCESS_EXPIRY = process.env.JWT_ACCESS_EXPIRY || '15m';
@@ -26,7 +22,7 @@ async function getSessionTimeoutMinutes() {
             return settings.sessionTimeoutMinutes;
         }
     } catch {
-        // Fall back to default when org settings are unavailable.
+        logger.warn('Failed to get session timeout from org settings, using default');
     }
 
     return 7 * 24 * 60; // 7 days
@@ -212,6 +208,7 @@ async function deleteSession(refreshToken) {
         });
         return true;
     } catch {
+        logger.warn('Failed to delete session', { refreshToken });
         return false;
     }
 }

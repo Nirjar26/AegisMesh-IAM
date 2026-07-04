@@ -28,6 +28,7 @@ import RolesList from './rbac/RolesList';
 import PoliciesList from './rbac/PoliciesList';
 import GroupsList from './rbac/GroupsList';
 import { formatDate, formatRelativeTime, toTitleCase as toTitleCaseAction } from '../utils/formatters';
+import { logger } from '../utils/logger';
 
 function NavItem({
     icon: Icon,
@@ -1042,7 +1043,7 @@ export default function Dashboard() {
             const { data } = await authAPI.getSessions();
             setSessions(data.data);
         } catch (err) {
-            console.error('Failed to fetch sessions', err);
+            logger.error('Failed to fetch sessions', err);
         } finally {
             setSessionsLoading(false);
         }
@@ -1062,7 +1063,7 @@ export default function Dashboard() {
             await authAPI.revokeSession(sessionId);
             setSessions((prev) => prev.filter((s) => s.id !== sessionId));
         } catch (err) {
-            console.error('Failed to revoke session', err);
+            logger.error('Failed to revoke session', err);
         } finally {
             setRevokingSession(null);
         }

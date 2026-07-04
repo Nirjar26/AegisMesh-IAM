@@ -15,9 +15,19 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+ALLOWED_MODEL_DIR = os.getenv("MODEL_DIR", "models")
+
+
+def _resolve_model_path(model_path):
+    safe = os.path.normpath(os.path.join(ALLOWED_MODEL_DIR, os.path.basename(model_path)))
+    if not safe.startswith(os.path.normpath(ALLOWED_MODEL_DIR)):
+        raise ValueError(f"Model path {model_path} is outside allowed directory {ALLOWED_MODEL_DIR}")
+    return safe
+
+
 class AnomalyDetector:
     def __init__(self, model_path="models/isolation_forest.joblib"):
-        self.model_path = model_path
+        self.model_path = _resolve_model_path(model_path)
         self.categorical_features = ['action', 'category', 'result']
         self.numeric_features = ['duration']
         self.contamination = 0.05

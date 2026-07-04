@@ -22,6 +22,7 @@ function extractRequestToken(req) {
             const { decryptText } = require('./utils/crypto');
             return decryptText(rawCookieToken) || rawCookieToken;
         } catch {
+            logger.warn('Failed to decrypt cookie token, using raw');
             return rawCookieToken;
         }
     }
@@ -40,7 +41,7 @@ const {
                 const payload = jwt.decode(token);
                 if (payload?.sessionId) return `session:${payload.sessionId}`;
             } catch {
-                // fall through to IP+UA fallback
+                logger.warn('Failed to decode token for session identifier, falling back to IP+UA');
             }
         }
         return req.ip + (req.headers['user-agent'] || '');
@@ -54,16 +55,10 @@ const {
     getTokenFromRequest: (req) => req.headers['x-csrf-token'],
 });
 
-function doubleCsrfProtection(req, res, next) {
-    baseDoubleCsrfProtection(req, res, (err) => {
-        if (err) return next(err);
-        generateCsrfToken(req, res);
-        next();
-    });
-}
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { initializePassport } = require('./config/passport');
+const { authenticate } = require('./middleware/authenticate');
 const authRoutes = require('./routes/auth.routes');
 const rolesRoutes = require('./routes/roles.routes');
 const policiesRoutes = require('./routes/policies.routes');
@@ -86,21 +81,7 @@ app.set('trust proxy', 1);
 // ═══════════════════════════════════════
 // SECURITY MIDDLEWARE
 // ═══════════════════════════════════════
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
-            imgSrc: ["'self'", "data:", "blob:"],
-            connectSrc: ["'self'", process.env.FRONTEND_URL || 'http://localhost:3000'],
-            fontSrc: ["'self'"],
-            objectSrc: ["'none'"],
-            frameAncestors: ["'none'"],
-            upgradeInsecureRequests: [],
-        },
-    },
-}));
+app.use(helmet());
 
 const ALLOWED_ORIGINS = process.env.FRONTEND_URL
     ? process.env.FRONTEND_URL.split(',').map((s) => s.trim())
@@ -147,7 +128,11 @@ app.use((req, res, next) => {
     if (!isMutating || csrfExemptPaths.has(req.path)) {
         return next();
     }
-    return doubleCsrfProtection(req, res, next);
+    baseDoubleCsrfProtection(req, res, (err) => {
+        if (err) return next(err);
+        generateCsrfToken(req, res);
+        next();
+    });
 });
 
 // ═══════════════════════════════════════
@@ -226,7 +211,7 @@ app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/analytics', analyticsRoutes);
-app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+app.use('/uploads', generalLimiter, authenticate, express.static(path.join(__dirname, '../../uploads')));
 
 // ═══════════════════════════════════════
 // ERROR HANDLING

@@ -12,7 +12,7 @@ function sanitizeValue(value) {
   if (typeof value === 'string') {
     let sanitized = value;
     for (const key of SENSITIVE_KEYS) {
-      const regex = new RegExp(`(decodeURIComponent\\()?("${key}"|'${key}'|\\\\"${key}\\\\"|\\b${key}\\b)\\s*[:=]\\s*(?:"[^"]*"|'[^']*'|\\\\"[^\\\\"]*\\\\"|\\b[a-zA-Z0-9_\\/\\+\\=\\-\\.\\*]+\\b)`, 'gi');
+      const regex = new RegExp(`(decodeURIComponent\\()?("${key}"|'${key}'|\\\\"${key}\\\\"|\\b${key}\\b)\\s*[:=]\\s*(?:"[^"]{0,500}"|'[^']{0,500}'|\\\\"[^\\\\"]{0,500}\\\\"|[\\w/+=-]{0,200})`, 'gi');
       sanitized = sanitized.replace(regex, (match, p1, p2) => {
         return p1 ? `${p1}${p2}: "[REDACTED]"` : `${p2}: "[REDACTED]"`;
       });

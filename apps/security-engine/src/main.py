@@ -2,11 +2,22 @@ import os
 from contextlib import asynccontextmanager
 if os.getenv("DD_APM_ENABLED") == "true":
     from ddtrace import patch_all; patch_all()
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.security import APIKeyHeader
 from .models import AnalyzeRequest, AnalyzeResponse, HealthResponse, TrainResponse
 from .anomaly_detector import AnomalyDetector
 from prometheus_client import Counter, Histogram, Gauge, make_asgi_app
 import time
+
+API_KEY_HEADER = APIKeyHeader(name="X-Api-Key", auto_error=False)
+SECURITY_ENGINE_API_KEY = os.getenv("SECURITY_ENGINE_API_KEY", "")
+
+
+def verify_api_key(api_key: str = Depends(API_KEY_HEADER)):
+    if not SECURITY_ENGINE_API_KEY:
+        return
+    if not api_key or api_key != SECURITY_ENGINE_API_KEY:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing API key")
 
 
 @asynccontextmanager
@@ -78,7 +89,7 @@ app.mount("/metrics", metrics_app)
 
 @app.get("/health", response_model=HealthResponse, responses={
     500: {"description": "Internal Server Error"}})
-def health():
+def health(_auth = Depends(verify_api_key)):
     return {
         "status": "healthy",
         "model_loaded": detector.model is not None,
@@ -89,7 +100,7 @@ def health():
 @app.post("/analyze", response_model=AnalyzeResponse, responses={
     400: {"description": "Bad Request"},
     500: {"description": "Internal Server Error"}})
-async def analyze(data: AnalyzeRequest):
+async def analyze(data: AnalyzeRequest, _auth = Depends(verify_api_key)):
     start_total = time.time()
     try:
         risk_score, prep_time, inf_time = detector.predict_risk(data.model_dump())
@@ -116,7 +127,7 @@ async def analyze(data: AnalyzeRequest):
 
 @app.post("/train", response_model=TrainResponse, responses={
     500: {"description": "Internal Server Error"}})
-def train():
+def train(_auth = Depends(verify_api_key)):
     try:
         detector.train()
         sync_metrics()

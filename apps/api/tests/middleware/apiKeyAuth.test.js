@@ -33,7 +33,7 @@ describe('getRequiredScope', () => {
         ['GET',    '/api/audit-logs',      'read:audit'],
         ['GET',    '/api/audit-logs/123',  'read:audit'],
         ['GET',    '/api/unknown',         null],
-        ['POST',   '/api/settings',        null],
+        ['POST',   '/api/settings',        'write:settings'],
     ];
 
     it.each(cases)('%s %s → %s', (method, path, expected) => {

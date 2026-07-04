@@ -126,7 +126,7 @@ export function AuthProvider({ children }) {
     }, [refreshToken]);
 
     const updateUser = useCallback((updates) => {
-        setUser((prev) => (prev ? { ...prev, ...updates } : null));
+        setUser((prev) => (prev ? { ...prev, ...Object.fromEntries(Object.entries(updates).filter(([k]) => k !== '__proto__')) } : null));
     }, []);
 
     // Initialize auth state

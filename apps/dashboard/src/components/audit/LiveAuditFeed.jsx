@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import AuditLogTable from './AuditLogTable';
+import { logger } from '../../utils/logger';
 
 const MAX_ATTEMPTS = 5;
 
@@ -57,7 +58,7 @@ export default function LiveAuditFeed({ onRowClick, refetchAuditLogs }) {
                 if (data.type === 'ping' || data.type === 'connected') return;
                 setLogs((prev) => [data, ...prev].slice(0, 50));
             } catch (parseError) {
-                console.debug('Failed to parse live audit event payload', parseError);
+                logger.debug('Failed to parse live audit event payload', parseError);
             }
         };
 
