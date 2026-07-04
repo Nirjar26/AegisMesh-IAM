@@ -42,14 +42,12 @@ jobs:
         with:
           node-version: '22.16.0'
           cache: 'npm'
-      - name: Cache turbo
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e4b1e # v4.2.3
+      - name: Cache turbo build
+        id: turbo-cache
+        uses: actions/cache@v4
         with:
           path: .turbo/cache
-          key: turbo-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
-            turbo-${{ runner.os }}-
+          key: turbo-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - run: npm ci --no-audit --no-fund
       - run: npx turbo run build --filter=@aegismesh/shared
       - run: npx turbo run lint
@@ -65,14 +63,12 @@ jobs:
         with:
           node-version: '22.16.0'
           cache: 'npm'
-      - name: Cache turbo
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e4b1e # v4.2.3
+      - name: Cache turbo build
+        id: turbo-cache
+        uses: actions/cache@v4
         with:
           path: .turbo/cache
-          key: turbo-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
-            turbo-${{ runner.os }}-
+          key: turbo-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - run: npm ci --no-audit --no-fund
       - run: npx turbo run build --filter=@aegismesh/shared
       - run: npx turbo run test --filter=backend
@@ -88,8 +84,9 @@ jobs:
         with:
           node-version: '22.16.0'
           cache: 'npm'
-      - name: Cache turbo
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e4b1e # v4.2.3
+      - name: Cache turbo build
+        id: turbo-cache
+        uses: actions/cache@v4
         with:
           path: .turbo/cache
           key: turbo-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
@@ -114,7 +111,7 @@ jobs:
 
       - name: Configure AWS credentials
         if: github.ref == 'refs/heads/main'
-        uses: aws-actions/configure-aws-credentials@e3bb6f4e6e060b7c8e1c8e0b6e6c4e7c8e9f1a2b
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -126,10 +123,10 @@ jobs:
         uses: aws-actions/amazon-ecr-login@5a88a04c91d5c6f97aae0d9be790e64d9b1d47b7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3.10.0
+        uses: docker/setup-buildx-action@v3
 
       - name: Build and push backend
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v6.15.0
+        uses: docker/build-push-action@v6
         with:
           context: apps/api
           file: apps/api/Dockerfile
@@ -139,7 +136,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=backend
 
       - name: Build and push frontend
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v6.15.0
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: apps/dashboard/Dockerfile
@@ -149,7 +146,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=frontend
 
       - name: Build and push security-engine
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v6.15.0
+        uses: docker/build-push-action@v6
         with:
           context: apps/security-engine
           file: apps/security-engine/Dockerfile
