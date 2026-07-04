@@ -214,7 +214,7 @@ app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/analytics', analyticsRoutes);
-app.use('/uploads', authenticate, express.static(path.join(__dirname, '../../uploads')));
+app.use('/uploads', generalLimiter, authenticate, express.static(path.join(__dirname, '../../uploads')));
 
 // ═══════════════════════════════════════
 // ERROR HANDLING

@@ -1,5 +1,5 @@
 const logLevels = { error: 0, warn: 1, info: 2, debug: 3 };
-let currentLevel = process.env.NODE_ENV === 'production' ? 'warn' : 'debug';
+let currentLevel = 'debug';
 
 function shouldLog(level) {
     return logLevels[level] <= logLevels[currentLevel];
