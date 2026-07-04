@@ -1903,7 +1903,7 @@ export default function SettingsPage({ initialTabOverride = null }) {
                                 </p>
                             </div>
 
-                            <div className="w-full">{activeContent}</div>
+                            <div className="w-full" data-testid={`${activeTab}-tab`}>{activeContent}</div>
                         </div>
                     </div>
                 </div>

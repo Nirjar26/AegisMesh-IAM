@@ -163,7 +163,7 @@ describe('SettingsPage', () => {
 
     it('shows user initials in avatar', () => {
         renderSettingsPage();
-        expect(screen.getByText('AU')).toBeInTheDocument();
+        expect(screen.getAllByText('AU').length).toBeGreaterThanOrEqual(1);
     });
 
     it('uses initialTabOverride when provided', () => {

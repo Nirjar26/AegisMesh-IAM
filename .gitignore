@@ -20,6 +20,10 @@ credentials-*
 node_modules/
 .turbo/cache
 
+# ── AI/IDE configs ─────────────────────────────────────────────
+.continue/
+.opencode/
+
 # ── Build Outputs ───────────────────────────────────────────────
 dist/
 build/
