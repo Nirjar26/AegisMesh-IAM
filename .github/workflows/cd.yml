@@ -9,6 +9,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  deployments: write
 
 concurrency:
   group: cd-${{ github.event.workflow_run.head_sha || github.sha }}
