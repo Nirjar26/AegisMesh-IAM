@@ -2,6 +2,8 @@ const rateLimit = require('express-rate-limit');
 const logger = require('../utils/logger');
 const { auditSecurity } = require('../utils/auditLog');
 
+const onAuditFail = (err) => logger.warn('Audit log failed', { error: err.message });
+
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: process.env.NODE_ENV === 'production' ? 50 : 1000,
@@ -13,7 +15,7 @@ const loginLimiter = rateLimit({
     legacyHeaders: false,
     handler: (req, res, next, options) => {
         logger.warn('Rate limit exceeded for login', { ip: req.ip });
-        auditSecurity.rateLimitExceeded(req, 'auth/login').catch(err => logger.warn('Audit log failed', { error: err.message }));
+        auditSecurity.rateLimitExceeded(req, 'auth/login').catch(onAuditFail);
         res.status(429).json(options.message);
     },
 });
@@ -29,7 +31,7 @@ const registerLimiter = rateLimit({
     legacyHeaders: false,
     handler: (req, res, next, options) => {
         logger.warn('Rate limit exceeded for register', { ip: req.ip });
-        auditSecurity.rateLimitExceeded(req, 'auth/register').catch(err => logger.warn('Audit log failed', { error: err.message }));
+        auditSecurity.rateLimitExceeded(req, 'auth/register').catch(onAuditFail);
         res.status(429).json(options.message);
     },
 });
@@ -45,7 +47,7 @@ const generalLimiter = rateLimit({
     legacyHeaders: false,
     handler: (req, res, next, options) => {
         logger.warn('Rate limit exceeded', { ip: req.ip, path: req.path });
-        auditSecurity.rateLimitExceeded(req, req.path).catch(err => logger.warn('Audit log failed', { error: err.message }));
+        auditSecurity.rateLimitExceeded(req, req.path).catch(onAuditFail);
         res.status(429).json(options.message);
     },
 });
@@ -61,7 +63,7 @@ const passwordResetLimiter = rateLimit({
     legacyHeaders: false,
     handler: (req, res, next, options) => {
         logger.warn('Rate limit exceeded for password reset', { ip: req.ip });
-        auditSecurity.rateLimitExceeded(req, 'auth/forgot-password').catch(err => logger.warn('Audit log failed', { error: err.message }));
+        auditSecurity.rateLimitExceeded(req, 'auth/forgot-password').catch(onAuditFail);
         res.status(429).json(options.message);
     },
 });
@@ -77,7 +79,7 @@ const mfaSetupLimiter = rateLimit({
     legacyHeaders: false,
     handler: (req, res, next, options) => {
         logger.warn('Rate limit exceeded for MFA operations', { ip: req.ip });
-        auditSecurity.rateLimitExceeded(req, 'auth/mfa').catch(err => logger.warn('Audit log failed', { error: err.message }));
+        auditSecurity.rateLimitExceeded(req, 'auth/mfa').catch(onAuditFail);
         res.status(429).json(options.message);
     },
 });
@@ -93,7 +95,7 @@ const tokenRefreshLimiter = rateLimit({
     legacyHeaders: false,
     handler: (req, res, next, options) => {
         logger.warn('Rate limit exceeded for token refresh', { ip: req.ip });
-        auditSecurity.rateLimitExceeded(req, 'auth/refresh-token').catch(err => logger.warn('Audit log failed', { error: err.message }));
+        auditSecurity.rateLimitExceeded(req, 'auth/refresh-token').catch(onAuditFail);
         res.status(429).json(options.message);
     },
 });
@@ -109,7 +111,7 @@ const sessionRevokeLimiter = rateLimit({
     legacyHeaders: false,
     handler: (req, res, next, options) => {
         logger.warn('Rate limit exceeded for session revocation', { ip: req.ip });
-        auditSecurity.rateLimitExceeded(req, 'auth/sessions').catch(err => logger.warn('Audit log failed', { error: err.message }));
+        auditSecurity.rateLimitExceeded(req, 'auth/sessions').catch(onAuditFail);
         res.status(429).json(options.message);
     },
 });
