@@ -2,43 +2,22 @@ const bcrypt = require('bcryptjs');
 const prisma = require('../config/database');
 const { recordApiKeyEvent } = require('../utils/metrics');
 
+const SCOPE_MAP = [
+    { prefix: '/api/users', read: 'read:users', write: 'write:users' },
+    { prefix: '/api/roles', read: 'read:roles', write: 'write:roles' },
+    { prefix: '/api/policies', read: 'read:policies', write: 'write:policies' },
+    { prefix: '/api/groups', read: 'write:groups', write: 'write:groups' },
+    { prefix: '/api/audit-logs', read: 'read:audit', write: 'read:audit' },
+    { prefix: '/api/settings', read: 'read:settings', write: 'write:settings' },
+    { prefix: '/api/notifications', read: 'read:notifications', write: 'write:notifications' },
+    { prefix: '/api/analytics', read: 'read:analytics', write: 'write:analytics' },
+];
+
 function getRequiredScope(method, fullPath) {
     const path = (fullPath || '').toLowerCase();
     const verb = (method || 'GET').toUpperCase();
-
-    if (path.startsWith('/api/users')) {
-        return verb === 'GET' ? 'read:users' : 'write:users';
-    }
-
-    if (path.startsWith('/api/roles')) {
-        return verb === 'GET' ? 'read:roles' : 'write:roles';
-    }
-
-    if (path.startsWith('/api/policies')) {
-        return verb === 'GET' ? 'read:policies' : 'write:policies';
-    }
-
-    if (path.startsWith('/api/groups')) {
-        return 'write:groups';
-    }
-
-    if (path.startsWith('/api/audit-logs')) {
-        return 'read:audit';
-    }
-
-    if (path.startsWith('/api/settings')) {
-        return verb === 'GET' ? 'read:settings' : 'write:settings';
-    }
-
-    if (path.startsWith('/api/notifications')) {
-        return verb === 'GET' ? 'read:notifications' : 'write:notifications';
-    }
-
-    if (path.startsWith('/api/analytics')) {
-        return verb === 'GET' ? 'read:analytics' : 'write:analytics';
-    }
-
-    return null;
+    const entry = SCOPE_MAP.find(s => path.startsWith(s.prefix));
+    return entry ? (verb === 'GET' ? entry.read : entry.write) : null;
 }
 
 function derivePrimaryRole(user) {
@@ -47,16 +26,60 @@ function derivePrimaryRole(user) {
     return names[0] || null;
 }
 
+async function matchToken(token, req, rawToken) {
+    const isMatch = await bcrypt.compare(rawToken, token.tokenHash);
+    if (!isMatch) return null;
+
+    if (token.expiresAt && token.expiresAt < new Date()) {
+        await prisma.apiToken.update({
+            where: { id: token.id },
+            data: { isActive: false, revokedAt: token.expiresAt },
+        });
+        recordApiKeyEvent('API_KEY_EXPIRED', 'BLOCKED');
+        return null;
+    }
+
+    const requiredScope = getRequiredScope(req.method, req.originalUrl || req.path || '');
+    if (requiredScope && !token.scopes.includes(requiredScope) && !token.scopes.includes('*')) {
+        recordApiKeyEvent('API_KEY_DENIED', 'BLOCKED');
+        return { scopeError: true };
+    }
+
+    await prisma.apiToken.update({
+        where: { id: token.id },
+        data: { lastUsedAt: new Date() },
+    });
+
+    if (!token.user) return null;
+
+    recordApiKeyEvent('API_KEY_USED', 'SUCCESS');
+
+    return {
+        id: token.user.id,
+        email: token.user.email,
+        firstName: token.user.firstName,
+        lastName: token.user.lastName,
+        status: token.user.status,
+        emailVerified: token.user.emailVerified,
+        mfaEnabled: token.user.mfaEnabled,
+        role: derivePrimaryRole(token.user),
+        createdAt: token.user.createdAt,
+        updatedAt: token.user.updatedAt,
+        authType: 'apiKey',
+        apiTokenId: token.id,
+        apiTokenScopes: token.scopes,
+        sessionId: null,
+    };
+}
+
 async function authenticateApiKeyToken(req, rawToken) {
     if (typeof rawToken !== 'string' || rawToken.length < 16 || rawToken.length > 4096 || !rawToken.startsWith('iam_')) {
         return null;
     }
 
-    const lookupPrefix = rawToken.substring(0, 12);
-
     const candidates = await prisma.apiToken.findMany({
         where: {
-            tokenPrefix: lookupPrefix,
+            tokenPrefix: rawToken.substring(0, 12),
             isActive: true,
             revokedAt: null,
         },
@@ -77,50 +100,8 @@ async function authenticateApiKeyToken(req, rawToken) {
     });
 
     for (const token of candidates) {
-        const isMatch = await bcrypt.compare(rawToken, token.tokenHash);
-        if (!isMatch) continue;
-
-        if (token.expiresAt && token.expiresAt < new Date()) {
-            await prisma.apiToken.update({
-                where: { id: token.id },
-                data: { isActive: false, revokedAt: token.expiresAt },
-            });
-            recordApiKeyEvent('API_KEY_EXPIRED', 'BLOCKED');
-            return null;
-        }
-
-        const requiredScope = getRequiredScope(req.method, req.originalUrl || req.path || '');
-        if (requiredScope && !token.scopes.includes(requiredScope) && !token.scopes.includes('*')) {
-            recordApiKeyEvent('API_KEY_DENIED', 'BLOCKED');
-            return { scopeError: true };
-        }
-
-        await prisma.apiToken.update({
-            where: { id: token.id },
-            data: { lastUsedAt: new Date() },
-        });
-
-        const user = token.user;
-        if (!user) return null;
-
-        recordApiKeyEvent('API_KEY_USED', 'SUCCESS');
-
-        return {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            status: user.status,
-            emailVerified: user.emailVerified,
-            mfaEnabled: user.mfaEnabled,
-            role: derivePrimaryRole(user),
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-            authType: 'apiKey',
-            apiTokenId: token.id,
-            apiTokenScopes: token.scopes,
-            sessionId: null,
-        };
+        const result = await matchToken(token, req, rawToken);
+        if (result) return result;
     }
 
     return null;

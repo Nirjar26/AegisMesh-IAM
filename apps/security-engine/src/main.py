@@ -15,10 +15,9 @@ SECURITY_ENGINE_API_KEY = os.getenv("SECURITY_ENGINE_API_KEY", "")
 
 def verify_api_key(api_key: str = Depends(API_KEY_HEADER)):
     if not SECURITY_ENGINE_API_KEY:
-        return True
+        return
     if not api_key or api_key != SECURITY_ENGINE_API_KEY:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing API key")
-    return True
 
 
 @asynccontextmanager
@@ -90,7 +89,7 @@ app.mount("/metrics", metrics_app)
 
 @app.get("/health", response_model=HealthResponse, responses={
     500: {"description": "Internal Server Error"}})
-def health(_auth: bool = Depends(verify_api_key)):
+def health(_auth = Depends(verify_api_key)):
     return {
         "status": "healthy",
         "model_loaded": detector.model is not None,
@@ -101,7 +100,7 @@ def health(_auth: bool = Depends(verify_api_key)):
 @app.post("/analyze", response_model=AnalyzeResponse, responses={
     400: {"description": "Bad Request"},
     500: {"description": "Internal Server Error"}})
-async def analyze(data: AnalyzeRequest, _auth: bool = Depends(verify_api_key)):
+async def analyze(data: AnalyzeRequest, _auth = Depends(verify_api_key)):
     start_total = time.time()
     try:
         risk_score, prep_time, inf_time = detector.predict_risk(data.model_dump())
@@ -128,7 +127,7 @@ async def analyze(data: AnalyzeRequest, _auth: bool = Depends(verify_api_key)):
 
 @app.post("/train", response_model=TrainResponse, responses={
     500: {"description": "Internal Server Error"}})
-def train(_auth: bool = Depends(verify_api_key)):
+def train(_auth = Depends(verify_api_key)):
     try:
         detector.train()
         sync_metrics()

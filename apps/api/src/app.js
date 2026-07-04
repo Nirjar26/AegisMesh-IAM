@@ -55,13 +55,6 @@ const {
     getTokenFromRequest: (req) => req.headers['x-csrf-token'],
 });
 
-function doubleCsrfProtection(req, res, next) {
-    baseDoubleCsrfProtection(req, res, (err) => {
-        if (err) return next(err);
-        generateCsrfToken(req, res);
-        next();
-    });
-}
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const { initializePassport } = require('./config/passport');
@@ -135,7 +128,11 @@ app.use((req, res, next) => {
     if (!isMutating || csrfExemptPaths.has(req.path)) {
         return next();
     }
-    return doubleCsrfProtection(req, res, next);
+    baseDoubleCsrfProtection(req, res, (err) => {
+        if (err) return next(err);
+        generateCsrfToken(req, res);
+        next();
+    });
 });
 
 // ═══════════════════════════════════════
