@@ -12,6 +12,13 @@ const { hasConfiguredBackupCodes } = require('./profileService');
 const MAX_FAILED_ATTEMPTS = Number.parseInt(process.env.MAX_FAILED_LOGIN_ATTEMPTS, 10) || 5;
 const LOCK_DURATION_MINUTES = Number.parseInt(process.env.ACCOUNT_LOCK_DURATION_MINUTES, 10) || 30;
 
+function getLockDuration(failures) {
+    if (failures >= 7) return 30;
+    if (failures >= 5) return 15;
+    if (failures >= 3) return 5;
+    return 0;
+}
+
 async function login({ email, password, totpCode, req }) {
     const [orgSettings, user] = await Promise.all([
         getOrganizationSettings(),
@@ -19,6 +26,12 @@ async function login({ email, password, totpCode, req }) {
     ]);
     const maxFailedAttempts =
         orgSettings?.maxFailedAttempts || MAX_FAILED_ATTEMPTS;
+
+    if (!user || !user.passwordHash) {
+        await bcrypt.compare(password, '$2a$12$00000000000000000000000000000000000000000000000');
+        await auditAuth.loginFailed(req, email, 'Invalid credentials', 'AUTH_001');
+        throw createError('AUTH_001');
+    }
 
     await validateUserAccess(user, req, email);
 
@@ -61,17 +74,6 @@ async function findUserByEmail(email) {
 }
 
 async function validateUserAccess(user, req, email) {
-    if (!user) {
-        await auditAuth.loginFailed(
-            req,
-            email,
-            'User not found',
-            'AUTH_001'
-        );
-
-        throw createError('AUTH_001');
-    }
-
     if (user.status === 'INACTIVE') {
         throw createError('AUTH_008');
     }
@@ -104,10 +106,6 @@ async function validateUserAccess(user, req, email) {
     if (!user.emailVerified) {
         throw createError('AUTH_003');
     }
-
-    if (!user.passwordHash) {
-        throw createError('AUTH_001');
-    }
 }
 
 async function handleFailedPassword({
@@ -125,18 +123,22 @@ async function handleFailedPassword({
     const shouldLock =
         newFailedCount >= maxFailedAttempts;
 
-    if (shouldLock) {
-        const lockUntil = new Date();
+    const lockDuration = getLockDuration(newFailedCount);
+    const doLock = shouldLock || lockDuration > 0;
 
+    if (doLock) {
+        const lockUntil = new Date();
         lockUntil.setMinutes(
-            lockUntil.getMinutes() + LOCK_DURATION_MINUTES
+            lockUntil.getMinutes() + (shouldLock ? Math.max(LOCK_DURATION_MINUTES, lockDuration) : lockDuration)
         );
 
         updateData.lockedUntil = lockUntil;
-        updateData.status = 'LOCKED';
+        if (shouldLock) {
+            updateData.status = 'LOCKED';
+        }
 
         logger.warn(
-            `Account locked for user ${user.email}. Unlock at ${lockUntil}`
+            `Account locked for user ${user.email} (${newFailedCount} failures). Unlock at ${lockUntil}`
         );
     }
 
@@ -226,20 +228,19 @@ async function createLoginResponse({ user, req }) {
         ? 'SuperAdmin'
         : (roleNames[0] || null);
 
-    const { ...safeUser } = user;
-    const hasBackupCodes = hasConfiguredBackupCodes({
-        backupCodes: safeUser.mfaBackupCodes,
-        mfaBackupCodes: safeUser.mfaBackupCodes,
-    });
-    const hasPassword = Boolean(safeUser.passwordHash);
-    Reflect.deleteProperty(safeUser, 'passwordHash');
-    Reflect.deleteProperty(safeUser, 'mfaSecret');
-    Reflect.deleteProperty(safeUser, 'mfaBackupCodes');
-    Reflect.deleteProperty(safeUser, 'backupCodes');
-    Reflect.deleteProperty(safeUser, 'emailVerifyToken');
-    Reflect.deleteProperty(safeUser, 'passwordResetToken');
-    Reflect.deleteProperty(safeUser, 'passwordResetExpires');
-    Reflect.deleteProperty(safeUser, 'userRoles');
+    const hasBackupCodes = hasConfiguredBackupCodes(user);
+    const hasPassword = Boolean(user.passwordHash);
+    const {
+        passwordHash: _pw,
+        mfaSecret: _secret,
+        mfaBackupCodes: _backup,
+        backupCodes: _codes,
+        emailVerifyToken: _evt,
+        passwordResetToken: _prt,
+        passwordResetExpires: _pre,
+        userRoles: _roles,
+        ...safeUser
+    } = user;
 
     return {
         accessToken,

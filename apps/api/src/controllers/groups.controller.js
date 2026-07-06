@@ -1,14 +1,21 @@
 const prisma = require('../config/database');
 const { createError } = require('../utils/errors');
 const { auditGroup } = require('../utils/auditLog');
+const { parsePagination } = require('../utils/pagination');
 
 exports.getGroups = async (req, res, next) => {
     try {
-        const groups = await prisma.group.findMany({
-            include: { _count: { select: { userGroups: true, groupRoles: true } } },
-            orderBy: { createdAt: 'desc' }
-        });
-        res.json({ success: true, data: groups });
+        const { page, limit, skip } = parsePagination(req.query);
+        const [groups, total] = await Promise.all([
+            prisma.group.findMany({
+                skip,
+                take: limit,
+                include: { _count: { select: { userGroups: true, groupRoles: true } } },
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.group.count()
+        ]);
+        res.json({ success: true, data: groups, pagination: { total, page, limit } });
     } catch (error) { next(error); }
 };
 
@@ -29,14 +36,13 @@ exports.getGroup = async (req, res, next) => {
 exports.createGroup = async (req, res, next) => {
     try {
         const { name, description } = req.body;
-        const existing = await prisma.group.findUnique({ where: { name } });
-        if (existing) return res.status(400).json({ success: false, error: 'Group name must be unique' });
-
         const group = await prisma.group.create({ data: { name, description } });
         await auditGroup.created(req, group.id, name);
-
         res.status(201).json({ success: true, data: group });
-    } catch (error) { next(error); }
+    } catch (error) {
+        if (error.code === 'P2002') return res.status(409).json({ success: false, error: 'Group name must be unique' });
+        next(error);
+    }
 };
 
 exports.updateGroup = async (req, res, next) => {

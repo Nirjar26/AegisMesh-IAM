@@ -85,9 +85,18 @@ router.post('/bulk/export',
     bulkExport
 );
 
-// GET /api/users/:id — get user details
+// GET /api/users/:id — get user details (self or SuperAdmin only)
 router.get('/:id',
     authorize('users:read', 'users/*'),
+    (req, res, next) => {
+        if (req.user.role === 'SuperAdmin' || req.params.id === req.user.id) {
+            return next();
+        }
+        return res.status(403).json({
+            success: false,
+            error: { code: 'RBAC_001', message: 'Access denied' },
+        });
+    },
     getUserById
 );
 
@@ -108,6 +117,7 @@ router.put('/:id/status',
 // PUT /api/users/:id/verify-email
 router.put('/:id/verify-email',
     authorize('users:write', 'users/*'),
+    requireReauth(SENSITIVE_ACTIONS.CHANGE_EMAIL),
     verifyUserEmail
 );
 

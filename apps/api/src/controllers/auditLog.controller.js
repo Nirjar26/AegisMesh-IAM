@@ -1,5 +1,30 @@
+const { Prisma } = require('@prisma/client');
 const prisma = require('../config/database');
+const logger = require('../utils/logger');
 const { audit } = require('../utils/auditLog');
+const { parsePagination, isValidUUID } = require('../utils/pagination');
+
+function buildWhere(w) {
+    const p = [];
+    if (w.userId) p.push(Prisma.sql`"userId" = ${w.userId}`);
+    if (w.action) p.push(Prisma.sql`"action" = ${w.action}`);
+    if (w.category) p.push(Prisma.sql`"category" = ${w.category}`);
+    if (w.result) p.push(Prisma.sql`"result" = ${w.result}`);
+    if (w.ipAddress?.contains) p.push(Prisma.sql`"ipAddress" LIKE ${'%' + w.ipAddress.contains + '%'}`);
+    if (w.createdAt?.gte) p.push(Prisma.sql`"createdAt" >= ${w.createdAt.gte}`);
+    if (w.createdAt?.lte) p.push(Prisma.sql`"createdAt" <= ${w.createdAt.lte}`);
+    if (w.OR?.length) {
+        const ors = w.OR.flatMap(o => {
+            const q = [];
+            if (o.action?.contains) q.push(Prisma.sql`"action" ILIKE ${'%' + o.action.contains + '%'}`);
+            if (o.resource?.contains) q.push(Prisma.sql`"resource" ILIKE ${'%' + o.resource.contains + '%'}`);
+            if (o.ipAddress?.contains) q.push(Prisma.sql`"ipAddress" ILIKE ${'%' + o.ipAddress.contains + '%'}`);
+            return q;
+        });
+        if (ors.length) p.push(Prisma.sql`(${Prisma.join(ors, ' OR ')})`);
+    }
+    return p.length ? Prisma.join(p, ' AND ') : Prisma.sql`TRUE`;
+}
 
 /**
  * GET /api/audit-logs
@@ -7,12 +32,12 @@ const { audit } = require('../utils/auditLog');
 exports.getAuditLogs = async (req, res, next) => {
     try {
         const {
-            page = 1, limit = 50,
+            page: rawPage, limit: rawLimit,
             userId, action, category, result,
             startDate, endDate, search, ipAddress
         } = req.query;
 
-        const skip = (Number.parseInt(page) - 1) * Number.parseInt(limit);
+        const { page, limit, skip } = parsePagination({ page: rawPage, limit: rawLimit });
         const where = {};
 
         if (userId) where.userId = userId;
@@ -37,44 +62,46 @@ exports.getAuditLogs = async (req, res, next) => {
             prisma.auditLog.findMany({
                 where,
                 skip,
-                take: Number.parseInt(limit),
+                take: limit,
                 orderBy: { createdAt: 'desc' },
                 include: { user: { select: { id: true, email: true, firstName: true, lastName: true } } }
             }),
             prisma.auditLog.count({ where })
         ]);
 
-        const totalPages = Math.ceil(total / Number.parseInt(limit));
+        const totalPages = Math.ceil(total / limit);
 
-        // Summary
-        const [failureCount, uniqueUsers, topActionsRaw] = await Promise.all([
-            prisma.auditLog.count({ where: { ...where, result: { in: ['FAILURE', 'ERROR', 'BLOCKED'] } } }),
-            prisma.auditLog.groupBy({ by: ['userId'], where, _count: true }),
-            prisma.auditLog.groupBy({
-                by: ['action'],
-                where,
-                _count: { action: true },
-                orderBy: { _count: { action: 'desc' } },
-                take: 10
-            })
-        ]);
+        const wc = buildWhere(where);
+        const [summary] = await prisma.$queryRaw`
+            SELECT
+                COUNT(*) FILTER (WHERE "result" IN ('FAILURE', 'ERROR', 'BLOCKED'))::int AS "failureCount",
+                COUNT(DISTINCT "userId")::int AS "uniqueUsers",
+                COALESCE(
+                    (SELECT json_agg(sa) FROM (
+                        SELECT "action", COUNT(*)::int AS "count"
+                        FROM "AuditLog"
+                        WHERE ${wc}
+                        GROUP BY "action"
+                        ORDER BY "count" DESC
+                        LIMIT 10
+                    ) sa),
+                    '[]'::json
+                ) AS "topActions"
+            FROM "AuditLog"
+            WHERE ${wc}
+        `;
+
+        const topActions = (summary.topActions || []).map(a => ({ action: a.action, count: a.count }));
 
         res.json({
             success: true,
             data: logs,
-            pagination: {
-                total,
-                page: Number.parseInt(page),
-                limit: Number.parseInt(limit),
-                totalPages,
-                hasNext: Number.parseInt(page) < totalPages,
-                hasPrev: Number.parseInt(page) > 1
-            },
+            pagination: { total, page, limit, totalPages, hasNext: page < totalPages, hasPrev: page > 1 },
             summary: {
                 totalEvents: total,
-                failureRate: total > 0 ? Math.round((failureCount / total) * 100 * 100) / 100 : 0,
-                topActions: topActionsRaw.map(a => ({ action: a.action, count: a._count.action })),
-                uniqueUsers: uniqueUsers.length
+                failureRate: total > 0 ? Math.round((summary.failureCount / total) * 100 * 100) / 100 : 0,
+                topActions,
+                uniqueUsers: summary.uniqueUsers
             }
         });
     } catch (error) { next(error); }
@@ -301,6 +328,9 @@ exports.getSecurityAlerts = async (req, res, next) => {
  */
 exports.getAuditLog = async (req, res, next) => {
     try {
+        if (!isValidUUID(req.params.id)) {
+            return res.status(400).json({ success: false, error: 'Invalid audit log ID' });
+        }
         const log = await prisma.auditLog.findUnique({
             where: { id: req.params.id },
             include: { user: { select: { id: true, email: true, firstName: true, lastName: true } } }
@@ -315,8 +345,8 @@ exports.getAuditLog = async (req, res, next) => {
  */
 exports.getUserAuditLogs = async (req, res, next) => {
     try {
-        const { page = 1, limit = 50, action, category, result, startDate, endDate } = req.query;
-        const skip = (Number.parseInt(page) - 1) * Number.parseInt(limit);
+        const { page: rawPage, limit: rawLimit, action, category, result, startDate, endDate } = req.query;
+        const { page, limit, skip } = parsePagination({ page: rawPage, limit: rawLimit });
         const where = { userId: req.params.userId };
 
         if (action) where.action = action;
@@ -337,11 +367,11 @@ exports.getUserAuditLogs = async (req, res, next) => {
             prisma.auditLog.count({ where })
         ]);
 
-        const totalPages = Math.ceil(total / Number.parseInt(limit));
+        const totalPages = Math.ceil(total / limit);
         res.json({
             success: true,
             data: logs,
-            pagination: { total, page: Number.parseInt(page), limit: Number.parseInt(limit), totalPages, hasNext: Number.parseInt(page) < totalPages, hasPrev: Number.parseInt(page) > 1 }
+            pagination: { total, page, limit, totalPages, hasNext: page < totalPages, hasPrev: page > 1 }
         });
     } catch (error) { next(error); }
 };
@@ -401,9 +431,13 @@ exports.exportLogs = async (req, res, next) => {
  */
 exports.cleanupLogs = async (req, res, next) => {
     try {
-        const { olderThanDays = 90, category: cat } = req.body || {};
+        const { olderThanDays: rawDays = 90, category: cat } = req.body || {};
+        const olderThanDays = Number.isFinite(rawDays) ? rawDays : Number.parseInt(rawDays, 10);
+        if (!olderThanDays || olderThanDays < 1 || olderThanDays > 3650) {
+            return res.status(400).json({ success: false, error: 'olderThanDays must be between 1 and 3650' });
+        }
         const cutoff = new Date();
-        cutoff.setDate(cutoff.getDate() - Number.parseInt(olderThanDays));
+        cutoff.setDate(cutoff.getDate() - olderThanDays);
 
         const where = { createdAt: { lt: cutoff } };
         if (cat) where.category = cat;
@@ -426,7 +460,7 @@ exports.cleanupLogs = async (req, res, next) => {
 /**
  * GET /api/audit-logs/stream (SSE)
  */
-exports.streamLogs = async (req, res) => {
+exports.streamLogs = async (req, res, next) => {
     const { addSSEClient, removeSSEClient } = require('../utils/auditLog');
 
     res.setHeader('Content-Type', 'text/event-stream');
@@ -441,7 +475,10 @@ exports.streamLogs = async (req, res) => {
     // Ping every 30s
     const pingInterval = setInterval(() => {
         try { res.write(`data: ${JSON.stringify({ type: 'ping' })}\n\n`); }
-        catch { clearInterval(pingInterval); removeSSEClient(client); }
+        catch {
+            logger.warn('SSE ping write failed, cleaning up client');
+            clearInterval(pingInterval); removeSSEClient(client);
+        }
     }, 30000);
 
     // Send initial event

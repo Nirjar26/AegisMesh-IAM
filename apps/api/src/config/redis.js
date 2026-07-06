@@ -22,14 +22,25 @@ if (process.env.NODE_ENV === 'test') {
     const port = Number.parseInt(process.env.REDIS_PORT || '6379', 10);
     const password = process.env.REDIS_PASSWORD || undefined;
 
+    const dbIndex = Number.parseInt(process.env.REDIS_DB || '0', 10);
+    const CONNECT_TIMEOUT_MS = 10000;
+    const COMMAND_TIMEOUT_MS = 5000;
+    const MAX_RETRY_COUNT = 10;
+    const RETRY_BASE_MS = 200;
+    const RETRY_MAX_MS = 3000;
+
     redis = new Redis({
         host,
         port,
         password,
+        db: dbIndex,
         maxRetriesPerRequest: 3,
+        connectTimeout: CONNECT_TIMEOUT_MS,
+        commandTimeout: COMMAND_TIMEOUT_MS,
+        connectionName: 'bastion-api',
         retryStrategy(times) {
-            // Reconnect retry strategy - increases delay up to 2 seconds
-            const delay = Math.min(times * 100, 2000);
+            if (times > MAX_RETRY_COUNT) return null;
+            const delay = Math.min(times * RETRY_BASE_MS, RETRY_MAX_MS);
             return delay;
         }
     });

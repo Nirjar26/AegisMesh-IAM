@@ -59,7 +59,6 @@ async function verifySetup(req, res, next) {
                 mfaType: 'totp',
                 mfaSecret: encryptText(user.mfaSecret),
                 backupCodes: hashedBackupCodes,
-                mfaBackupCodes: JSON.stringify(backupCodes),
             },
         });
 
@@ -86,6 +85,13 @@ async function disableMFA(req, res, next) {
             });
         }
 
+        if (!user.passwordHash) {
+            return res.status(400).json({
+                success: false,
+                error: { code: 'MFA_OAUTH', message: 'Password required. OAuth users must set a password first.' },
+            });
+        }
+
         const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
         if (!isPasswordValid) {
             throw createError('AUTH_001');
@@ -104,7 +110,6 @@ async function disableMFA(req, res, next) {
                 mfaType: null,
                 mfaSecret: null,
                 backupCodes: [],
-                mfaBackupCodes: null,
             },
         });
 

@@ -1,3 +1,5 @@
+const logger = require('./logger');
+
 class AppError extends Error {
     constructor(message, statusCode, errorCode, details = null) {
         super(message);
@@ -41,6 +43,7 @@ const ErrorCodes = {
 function createError(errorCode, details = null) {
     const err = ErrorCodes[errorCode];
     if (!err) {
+        logger.warn('Unknown error code referenced', { errorCode });
         return new AppError('Unknown error', 500, 'UNKNOWN');
     }
     

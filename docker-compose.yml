@@ -219,6 +219,11 @@ services:
     networks:
       - aegismesh-network
     restart: unless-stopped
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --lazyfree-lazy-eviction yes
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s

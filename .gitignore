@@ -92,6 +92,7 @@ backups/
 .antigravitycli/
 .claude/
 .agents/
+CLAUDE.md
 .sonarqube_report/
 .code-quality/
 .codex/

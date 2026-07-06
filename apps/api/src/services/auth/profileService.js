@@ -42,7 +42,7 @@ async function getProfile(userId) {
 
     const { ...safeUser } = user;
     const hasPassword = Boolean(safeUser.passwordHash);
-    const hasBackupCodes = hasConfiguredBackupCodes({ backupCodes: safeUser.mfaBackupCodes, mfaBackupCodes: safeUser.mfaBackupCodes });
+    const hasBackupCodes = hasConfiguredBackupCodes(safeUser);
     Reflect.deleteProperty(safeUser, 'userRoles');
     Reflect.deleteProperty(safeUser, 'passwordHash');
     Reflect.deleteProperty(safeUser, 'backupCodes');

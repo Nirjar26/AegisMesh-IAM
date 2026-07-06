@@ -126,7 +126,7 @@ export function AuthProvider({ children }) {
     }, [refreshToken]);
 
     const updateUser = useCallback((updates) => {
-        setUser((prev) => (prev ? { ...prev, ...Object.fromEntries(Object.entries(updates).filter(([k]) => k !== '__proto__')) } : null));
+        setUser((prev) => (prev ? { ...prev, ...Object.fromEntries(Object.entries(updates).filter(([k]) => k !== '__proto__' && k !== 'constructor' && k !== 'prototype')) } : null));
     }, []);
 
     // Initialize auth state
@@ -175,7 +175,6 @@ export function AuthProvider({ children }) {
             accessToken,
             isAuthenticated,
             isLoading,
-            loading: isLoading,
             login,
             logout,
             refreshToken,

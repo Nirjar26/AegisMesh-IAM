@@ -20,8 +20,12 @@ exports.updateUserStatus = async (req, res, next) => {
             return res.status(404).json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
         }
 
+        const isTargetSuperAdmin = user.userRoles.some((ur) => ur.role.name === 'SuperAdmin');
+        if (isTargetSuperAdmin && req.user.role !== 'SuperAdmin') {
+            return res.status(403).json({ success: false, error: { code: 'RBAC_001', message: 'Only SuperAdmins can modify SuperAdmin accounts' } });
+        }
+
         if (status === 'LOCKED') {
-            const isTargetSuperAdmin = user.userRoles.some((ur) => ur.role.name === 'SuperAdmin');
             if (isTargetSuperAdmin) {
                 const superAdmins = await prisma.user.count({
                     where: { userRoles: { some: { role: { name: 'SuperAdmin' } } }, status: 'ACTIVE' },
@@ -50,10 +54,7 @@ exports.updateUserStatus = async (req, res, next) => {
 
         await auditUser.statusChanged(req, id, user.email, user.status, status);
 
-        const { ...safeUser } = updatedUser;
-        Reflect.deleteProperty(safeUser, 'passwordHash');
-        Reflect.deleteProperty(safeUser, 'mfaSecret');
-        Reflect.deleteProperty(safeUser, 'mfaBackupCodes');
+        const { passwordHash, mfaSecret, mfaBackupCodes, ...safeUser } = updatedUser;
         res.json({ success: true, data: safeUser });
     } catch (error) {
         next(error);
@@ -80,8 +81,7 @@ exports.verifyUserEmail = async (req, res, next) => {
 
         await auditUser.emailVerified(req, id, user.email);
 
-        const { ...safeUser } = updatedUser;
-        Reflect.deleteProperty(safeUser, 'passwordHash');
+        const { passwordHash, ...safeUser } = updatedUser;
         res.json({ success: true, data: safeUser });
     } catch (error) {
         next(error);

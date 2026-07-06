@@ -1,21 +1,28 @@
 const prisma = require('../config/database');
 const { createError } = require('../utils/errors');
 const { auditPolicy } = require('../utils/auditLog');
+const { parsePagination } = require('../utils/pagination');
 const permissionService = require('../services/permission.service');
 
 exports.getPolicies = async (req, res, next) => {
     try {
         const { search, effect } = req.query;
+        const { page, limit, skip } = parsePagination(req.query);
         const where = {};
         if (search) where.name = { contains: search, mode: 'insensitive' };
         if (effect) where.effect = effect;
 
-        const policies = await prisma.policy.findMany({
-            where,
-            include: { _count: { select: { rolePolicies: true } } },
-            orderBy: { createdAt: 'desc' }
-        });
-        res.json({ success: true, data: policies });
+        const [policies, total] = await Promise.all([
+            prisma.policy.findMany({
+                where,
+                skip,
+                take: limit,
+                include: { _count: { select: { rolePolicies: true } } },
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.policy.count({ where })
+        ]);
+        res.json({ success: true, data: policies, pagination: { total, page, limit } });
     } catch (error) { next(error); }
 };
 

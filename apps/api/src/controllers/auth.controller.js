@@ -2,27 +2,7 @@ const authService = require('../services/auth');
 const tokenService = require('../services/token.service');
 const prisma = require('../config/database');
 const { encryptText, decryptText } = require('../utils/crypto');
-
-function getCookieOptions(req) {
-    const isProd = process.env.NODE_ENV === 'production';
-    const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https' || isProd;
-
-    return {
-        accessToken: {
-            httpOnly: true,
-            secure: isSecure,
-            sameSite: isSecure ? 'strict' : 'lax',
-            maxAge: 15 * 60 * 1000,
-        },
-        refreshToken: {
-            httpOnly: true,
-            secure: isSecure,
-            sameSite: isSecure ? 'strict' : 'lax',
-            path: '/api/auth/refresh-token',
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        },
-    };
-}
+const { getCookieOptions } = require('../utils/cookieHelper');
 
 /**
  * POST /api/auth/register
@@ -159,8 +139,11 @@ async function getProfile(req, res, next) {
  */
 async function getSessions(req, res, next) {
     try {
-        const sessions = await tokenService.getUserSessions(req.user.id);
-        res.json({ success: true, data: sessions });
+        const result = await tokenService.getUserSessions(req.user.id, {
+            cursor: req.query.cursor,
+            limit: req.query.limit ? Number.parseInt(req.query.limit, 10) : undefined,
+        });
+        res.json({ success: true, data: result });
     } catch (error) {
         next(error);
     }

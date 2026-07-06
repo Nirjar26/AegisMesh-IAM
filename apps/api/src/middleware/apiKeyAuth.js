@@ -6,7 +6,7 @@ const SCOPE_MAP = [
     { prefix: '/api/users', read: 'read:users', write: 'write:users' },
     { prefix: '/api/roles', read: 'read:roles', write: 'write:roles' },
     { prefix: '/api/policies', read: 'read:policies', write: 'write:policies' },
-    { prefix: '/api/groups', read: 'write:groups', write: 'write:groups' },
+    { prefix: '/api/groups', read: 'read:groups', write: 'write:groups' },
     { prefix: '/api/audit-logs', read: 'read:audit', write: 'read:audit' },
     { prefix: '/api/settings', read: 'read:settings', write: 'write:settings' },
     { prefix: '/api/notifications', read: 'read:notifications', write: 'write:notifications' },
@@ -96,7 +96,7 @@ async function authenticateApiKeyToken(req, rawToken) {
                 },
             },
         },
-        take: 20,
+        take: 3,
     });
 
     for (const token of candidates) {
@@ -110,4 +110,5 @@ async function authenticateApiKeyToken(req, rawToken) {
 module.exports = {
     authenticateApiKeyToken,
     getRequiredScope,
+    derivePrimaryRole,
 };

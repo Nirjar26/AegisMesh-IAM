@@ -4,12 +4,13 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const crypto = require('node:crypto');
 const jwt = require('jsonwebtoken');
 const { doubleCsrf } = require('csrf-csrf');
+const { randomHex } = require('./utils/cookieHelper');
 const passport = require('passport');
+const logger = require('./utils/logger');
 
-const csrfSecret = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+const csrfSecret = process.env.JWT_SECRET || randomHex();
 
 function extractRequestToken(req) {
     const authHeader = req.headers.authorization;
@@ -68,9 +69,7 @@ const auditLogRoutes = require('./routes/auditLog.routes');
 const notificationsRoutes = require('./routes/notifications.routes');
 const settingsRoutes = require('./routes/settings.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
-const logger = require('./utils/logger');
 const { metricsHandler, metricsMiddleware } = require('./utils/metrics');
-const { scheduleCleanup: _scheduleCleanup } = require('./utils/auditCleanup');
 const path = require('node:path');
 
 const app = express();
@@ -81,7 +80,18 @@ app.set('trust proxy', 1);
 // ═══════════════════════════════════════
 // SECURITY MIDDLEWARE
 // ═══════════════════════════════════════
-app.use(helmet());
+const CSP_DIRECTIVES = {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'"],
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    imgSrc: ["'self'", 'data:'],
+    fontSrc: ["'self'"],
+    connectSrc: ["'self'", process.env.FRONTEND_URL || 'http://localhost:3000'].filter(Boolean),
+    frameSrc: ["'none'"],
+    objectSrc: ["'none'"],
+    upgradeInsecureRequests: [],
+};
+app.use(helmet({ contentSecurityPolicy: { directives: CSP_DIRECTIVES } }));
 
 const ALLOWED_ORIGINS = process.env.FRONTEND_URL
     ? process.env.FRONTEND_URL.split(',').map((s) => s.trim())
@@ -89,7 +99,9 @@ const ALLOWED_ORIGINS = process.env.FRONTEND_URL
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+        if (!origin) {
+            callback(null, true);
+        } else if (ALLOWED_ORIGINS.includes(origin)) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));

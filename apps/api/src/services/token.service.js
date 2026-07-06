@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('node:crypto');
 const prisma = require('../config/database');
 const redis = require('../config/redis');
 const logger = require('../utils/logger');
@@ -35,9 +35,8 @@ function generateAccessToken(user, sessionId = null) {
     return jwt.sign(
         {
             sub: user.id,
-            email: user.email,
             type: 'access',
-            jti: uuidv4(),
+            jti: crypto.randomUUID(),
             ...(sessionId ? { sessionId } : {}),
         },
         ACCESS_SECRET,
@@ -127,7 +126,7 @@ function generateRefreshToken(user) {
         {
             sub: user.id,
             type: 'refresh',
-            jti: uuidv4(),
+            jti: crypto.randomUUID(),
         },
         REFRESH_SECRET,
         { expiresIn: REFRESH_EXPIRY }
@@ -139,7 +138,7 @@ function generateRefreshToken(user) {
  */
 function verifyAccessToken(token) {
     try {
-        return jwt.verify(token, ACCESS_SECRET);
+        return jwt.verify(token, ACCESS_SECRET, { algorithms: ['HS256'] });
     } catch (error) {
         logger.debug('Access token verification failed', { message: error.message });
         return null;
@@ -151,7 +150,7 @@ function verifyAccessToken(token) {
  */
 function verifyRefreshToken(token) {
     try {
-        return jwt.verify(token, REFRESH_SECRET);
+        return jwt.verify(token, REFRESH_SECRET, { algorithms: ['HS256'] });
     } catch (error) {
         logger.debug('Refresh token verification failed', { message: error.message });
         return null;
@@ -207,8 +206,8 @@ async function deleteSession(refreshToken) {
             where: { refreshToken },
         });
         return true;
-    } catch {
-        logger.warn('Failed to delete session', { refreshToken });
+    } catch (err) {
+        logger.warn('Failed to delete session', { refreshToken, error: err.message });
         return false;
     }
 }
@@ -261,9 +260,13 @@ async function deleteAllUserSessions(userId) {
 /**
  * Get all sessions for a user
  */
-async function getUserSessions(userId) {
-    return prisma.session.findMany({
+async function getUserSessions(userId, { cursor, limit = 50 } = {}) {
+    const take = Math.min(limit, 100);
+    const sessions = await prisma.session.findMany({
+        take: take + 1,
         where: { userId },
+        cursor: cursor ? { id: cursor } : undefined,
+        skip: cursor ? 1 : 0,
         select: {
             id: true,
             deviceInfo: true,
@@ -274,6 +277,9 @@ async function getUserSessions(userId) {
         },
         orderBy: { createdAt: 'desc' },
     });
+    const hasMore = sessions.length > take;
+    if (hasMore) sessions.pop();
+    return { sessions, nextCursor: hasMore ? sessions[sessions.length - 1].id : null };
 }
 
 async function revokeAllOtherSessions(userId, currentSessionId) {
