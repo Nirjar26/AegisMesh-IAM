@@ -135,21 +135,15 @@ const csrfExemptPaths = new Set([
     '/api/auth/oauth/github/callback',
 ]);
 
-app.use((req, res, next) => {
-    if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method) || csrfExemptPaths.has(req.path)) {
-        req._csrfSkip = true;
-    }
-    next();
-});
-
-app.use(doubleCsrfProtection);
-
-app.use((err, req, res, next) => {
-    if (err.code === 'EBADCSRFTOKEN' && req._csrfSkip) {
+const csrfProtection = (req, res, next) => {
+    const isMutating = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
+    if (!isMutating || csrfExemptPaths.has(req.path)) {
         return next();
     }
-    next(err);
-});
+    doubleCsrfProtection(req, res, next);
+};
+
+app.use(csrfProtection);
 
 // ═══════════════════════════════════════
 // RATE LIMITING
