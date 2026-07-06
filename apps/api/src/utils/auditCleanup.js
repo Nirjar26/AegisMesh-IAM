@@ -23,7 +23,7 @@ async function archiveExpiredLogs(cutoff, categoryFilter) {
     let total = 0;
 
     try {
-        let cursor = undefined;
+        let cursor;
         let hasMore = true;
         while (hasMore) {
             const batch = await prisma.auditLog.findMany({

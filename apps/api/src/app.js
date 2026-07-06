@@ -32,7 +32,7 @@ function extractRequestToken(req) {
 
 const {
     generateCsrfToken,
-    doubleCsrfProtection: baseDoubleCsrfProtection,
+    doubleCsrfProtection,
 } = doubleCsrf({
     getSecret: (_req) => csrfSecret,
     getSessionIdentifier: (req) => {
@@ -140,9 +140,8 @@ app.use((req, res, next) => {
     if (!isMutating || csrfExemptPaths.has(req.path)) {
         return next();
     }
-    baseDoubleCsrfProtection(req, res, (err) => {
+    doubleCsrfProtection(req, res, (err) => {
         if (err) return next(err);
-        generateCsrfToken(req, res);
         next();
     });
 });

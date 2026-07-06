@@ -27,7 +27,7 @@ async function login({ email, password, totpCode, req }) {
     const maxFailedAttempts =
         orgSettings?.maxFailedAttempts || MAX_FAILED_ATTEMPTS;
 
-    if (!user || !user.passwordHash) {
+    if (!user?.passwordHash) {
         await bcrypt.compare(password, '$2a$12$00000000000000000000000000000000000000000000000');
         await auditAuth.loginFailed(req, email, 'Invalid credentials', 'AUTH_001');
         throw createError('AUTH_001');
@@ -230,17 +230,8 @@ async function createLoginResponse({ user, req }) {
 
     const hasBackupCodes = hasConfiguredBackupCodes(user);
     const hasPassword = Boolean(user.passwordHash);
-    const {
-        passwordHash: _pw,
-        mfaSecret: _secret,
-        mfaBackupCodes: _backup,
-        backupCodes: _codes,
-        emailVerifyToken: _evt,
-        passwordResetToken: _prt,
-        passwordResetExpires: _pre,
-        userRoles: _roles,
-        ...safeUser
-    } = user;
+    const sensitiveKeys = ['passwordHash', 'mfaSecret', 'mfaBackupCodes', 'backupCodes', 'emailVerifyToken', 'passwordResetToken', 'passwordResetExpires', 'userRoles'];
+    const safeUser = Object.fromEntries(Object.entries(user).filter(([k]) => !sensitiveKeys.includes(k)));
 
     return {
         accessToken,

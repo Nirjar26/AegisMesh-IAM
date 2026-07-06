@@ -3,6 +3,7 @@ import time
 import logging
 from collections import defaultdict
 from contextlib import asynccontextmanager
+from typing import Annotated
 if os.getenv("DD_APM_ENABLED") == "true":
     from ddtrace import patch_all; patch_all()
 from fastapi import FastAPI, HTTPException, Depends, status, Request
@@ -121,7 +122,7 @@ app.mount("/metrics", metrics_app)
 
 @app.get("/health", response_model=HealthResponse, responses={
     500: {"description": "Internal Server Error"}})
-def health(_auth = Depends(verify_api_key)):
+def health(_auth: Annotated[str, Depends(verify_api_key)]):
     return {
         "status": "healthy",
         "model_loaded": detector.model is not None,

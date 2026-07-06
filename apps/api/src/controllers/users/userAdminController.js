@@ -54,7 +54,7 @@ exports.updateUserStatus = async (req, res, next) => {
 
         await auditUser.statusChanged(req, id, user.email, user.status, status);
 
-        const { passwordHash, mfaSecret, mfaBackupCodes, ...safeUser } = updatedUser;
+        const safeUser = Object.fromEntries(Object.entries(updatedUser).filter(([k]) => !['passwordHash', 'mfaSecret', 'mfaBackupCodes'].includes(k)));
         res.json({ success: true, data: safeUser });
     } catch (error) {
         next(error);
@@ -81,7 +81,7 @@ exports.verifyUserEmail = async (req, res, next) => {
 
         await auditUser.emailVerified(req, id, user.email);
 
-        const { passwordHash, ...safeUser } = updatedUser;
+        const safeUser = Object.fromEntries(Object.entries(updatedUser).filter(([k]) => k !== 'passwordHash'));
         res.json({ success: true, data: safeUser });
     } catch (error) {
         next(error);

@@ -28,7 +28,7 @@ export default function ResetPassword() {
 
     useEffect(() => {
         if (token) {
-            window.history.replaceState(null, '', window.location.pathname);
+            globalThis.history.replaceState(null, '', globalThis.location.pathname);
         }
     }, [token]);
 
