@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 // Password must be min 8 chars, with uppercase, lowercase, number, special char
-const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d\s]).{8,}$/;
+const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d\s]).{8,128}$/;
 const reauthFields = {
     password: Joi.string().allow('', null),
     currentPassword: Joi.string().allow('', null),
@@ -297,7 +297,13 @@ const schemas = {
     settingsChangePassword: {
         body: Joi.object({
             currentPassword: Joi.string().allow('', null),
-            newPassword: Joi.string().required(),
+            newPassword: Joi.string().min(8)
+                .pattern(passwordPattern)
+                .required()
+                .messages({
+                    'string.min': 'Password must be at least 8 characters',
+                    'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+                }),
             confirmPassword: Joi.string().required(),
             mfaToken: Joi.string().min(6).max(8).allow('', null),
         }),

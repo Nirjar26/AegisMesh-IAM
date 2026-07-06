@@ -4,58 +4,28 @@ const passport = require('passport');
 const authController = require('../controllers/auth.controller');
 const mfaController = require('../controllers/mfa.controller');
 const { authenticate } = require('../middleware/authenticate');
+const { requireReauth, SENSITIVE_ACTIONS } = require('../middleware/requireReauth');
 const { validate } = require('../middleware/validate');
-const { loginLimiter, registerLimiter, passwordResetLimiter, mfaSetupLimiter, tokenRefreshLimiter, sessionRevokeLimiter } = require('../middleware/rateLimiter');
+const { loginLimiter, registerLimiter, passwordResetLimiter, mfaSetupLimiter, tokenRefreshLimiter, sessionRevokeLimiter, verifyEmailLimiter } = require('../middleware/rateLimiter');
 const schemas = require('../config/validationSchemas');
 const tokenService = require('../services/token.service');
 const { auditAuth } = require('../utils/auditLog');
 const { getOrganizationSettings } = require('../services/organizationSettings.service');
 const { encryptText } = require('../utils/crypto');
+const { getCookieOptions, randomHex } = require('../utils/cookieHelper');
 const logger = require('../utils/logger');
 
 const router = express.Router();
-
-function isSecureRequest(req) {
-    if (process.env.COOKIE_SECURE === 'true') {
-        return true;
-    }
-
-    if (process.env.COOKIE_SECURE === 'false') {
-        return false;
-    }
-
-    return req.secure || req.headers['x-forwarded-proto'] === 'https';
-}
-
-function getCookieOptions(req) {
-    const secure = isSecureRequest(req);
-
-    return {
-        access: {
-            httpOnly: true,
-            secure,
-            sameSite: secure ? 'strict' : 'lax',
-            maxAge: 15 * 60 * 1000,
-        },
-        refresh: {
-            httpOnly: true,
-            secure,
-            sameSite: secure ? 'strict' : 'lax',
-            path: '/api/auth/refresh-token',
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        },
-    };
-}
 
 function setAuthCookies(req, res, accessToken, refreshToken) {
     const options = getCookieOptions(req);
 
     res.cookie('accessToken', encryptText(accessToken), {
-        ...options.access,
+        ...options.accessToken,
     });
 
     res.cookie('refreshToken', encryptText(refreshToken), {
-        ...options.refresh,
+        ...options.refreshToken,
     });
 }
 
@@ -98,7 +68,7 @@ if (!OAUTH_STATE_SECRET) {
 }
 
 function generateOAuthState() {
-    const state = crypto.randomBytes(16).toString('hex');
+    const state = randomHex(16);
     const hmac = crypto.createHmac('sha256', OAUTH_STATE_SECRET).update(state).digest('hex');
     return `${state}.${hmac}`;
 }
@@ -176,6 +146,7 @@ router.post(
 // Reset password
 router.post(
     '/reset-password',
+    verifyEmailLimiter,
     validate(schemas.resetPassword),
     authController.resetPassword
 );
@@ -183,6 +154,7 @@ router.post(
 // Verify email
 router.post(
     '/verify-email',
+    verifyEmailLimiter,
     validate(schemas.verifyEmail),
     authController.verifyEmail
 );
@@ -218,6 +190,7 @@ router.post(
     '/mfa/setup',
     mfaSetupLimiter,
     authenticate,
+    requireReauth(SENSITIVE_ACTIONS.SETUP_MFA),
     mfaController.setupMFA
 );
 
@@ -247,10 +220,12 @@ router.post(
 router.get(
     '/oauth/google',
     enforceOAuthAllowed,
-    passport.authenticate('google', {
-        scope: ['profile', 'email'],
-        state: generateOAuthState(),
-    })
+    (req, res, next) => {
+        passport.authenticate('google', {
+            scope: ['profile', 'email'],
+            state: generateOAuthState(),
+        })(req, res, next);
+    }
 );
 
 router.get(
@@ -272,10 +247,12 @@ router.get(
 router.get(
     '/oauth/github',
     enforceOAuthAllowed,
-    passport.authenticate('github', {
-        scope: ['user:email'],
-        state: generateOAuthState(),
-    })
+    (req, res, next) => {
+        passport.authenticate('github', {
+            scope: ['user:email'],
+            state: generateOAuthState(),
+        })(req, res, next);
+    }
 );
 
 router.get(

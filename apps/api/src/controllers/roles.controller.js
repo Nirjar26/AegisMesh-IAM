@@ -1,20 +1,20 @@
 const prisma = require('../config/database');
 const { createError } = require('../utils/errors');
 const { audit, auditRole, auditPolicy } = require('../utils/auditLog');
+const { parsePagination } = require('../utils/pagination');
 const { ROLE_TEMPLATES } = require('../data/roleTemplates');
 
 exports.getRoles = async (req, res, next) => {
     try {
-        const { search, page = 1, limit = 20 } = req.query;
-        const skip = (page - 1) * limit;
-
+        const { search } = req.query;
+        const { page, limit, skip } = parsePagination(req.query, { page: 1, limit: 20 });
         const where = search ? { name: { contains: search, mode: 'insensitive' } } : {};
 
         const [roles, total] = await Promise.all([
             prisma.role.findMany({
                 where,
-                skip: Number.parseInt(skip),
-                take: Number.parseInt(limit),
+                skip,
+                take: limit,
                 include: {
                     _count: { select: { userRoles: true, rolePolicies: true } },
                     rolePolicies: {
@@ -28,7 +28,7 @@ exports.getRoles = async (req, res, next) => {
             prisma.role.count({ where })
         ]);
 
-        res.json({ success: true, data: roles, pagination: { total, page: Number.parseInt(page), limit: Number.parseInt(limit) } });
+        res.json({ success: true, data: roles, pagination: { total, page, limit } });
     } catch (error) { next(error); }
 };
 
@@ -132,11 +132,17 @@ exports.getRoleUsers = async (req, res, next) => {
     try {
         const role = await prisma.role.findUnique({ where: { id: req.params.id } });
         if (!role) throw createError('RBAC_002');
-        const userRoles = await prisma.userRole.findMany({
-            where: { roleId: req.params.id },
-            include: { user: { select: { id: true, email: true, firstName: true, lastName: true, status: true } } }
-        });
-        res.json({ success: true, data: userRoles.map(ur => ur.user) });
+        const { page, limit, skip } = parsePagination(req.query);
+        const [userRoles, total] = await Promise.all([
+            prisma.userRole.findMany({
+                where: { roleId: req.params.id },
+                skip,
+                take: limit,
+                include: { user: { select: { id: true, email: true, firstName: true, lastName: true, status: true } } }
+            }),
+            prisma.userRole.count({ where: { roleId: req.params.id } })
+        ]);
+        res.json({ success: true, data: userRoles.map(ur => ur.user), pagination: { total, page, limit } });
     } catch (error) { next(error); }
 };
 

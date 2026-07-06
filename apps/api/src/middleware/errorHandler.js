@@ -7,7 +7,7 @@ function errorHandler(err, req, res, _next) {
     // Log the error
     logger.error('Error caught by handler', {
         error: err.message,
-        stack: err.stack,
+        ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
         path: req.path,
         method: req.method,
         ip: req.ip,
@@ -22,37 +22,24 @@ function errorHandler(err, req, res, _next) {
         },
     };
 
-    // Prisma connection / credential / authentication errors
     const errMsgLower = err.message ? String(err.message).toLowerCase() : '';
-    const isPrismaDbConnError = 
-        err.code?.startsWith('P1') || 
+    const isPrismaConnError =
+        (err.code?.startsWith('P1') && err.constructor?.name === 'PrismaClientKnownRequestError') ||
+        err.constructor?.name === 'PrismaClientInitializationError' ||
         errMsgLower.includes('authentication failed against database server') ||
         errMsgLower.includes('database credentials') ||
         errMsgLower.includes('can\'t reach database server') ||
-        errMsgLower.includes('cannot connect to the database') ||
-        (errMsgLower.includes('prisma') && (
-            errMsgLower.includes('connection') || 
-            errMsgLower.includes('credential') || 
-            errMsgLower.includes('authentication') || 
-            errMsgLower.includes('failed')
-        ));
+        errMsgLower.includes('cannot connect to the database');
 
     if (err.isOperational) {
         status = err.statusCode;
-        body.error = { 
-            code: err.errorCode, 
-            message: err.message, 
-            details: err.details || undefined 
-        };
-    } else if (isPrismaDbConnError) {
+        body.error = { code: err.errorCode, message: err.message, details: err.details || undefined };
+    } else if (isPrismaConnError) {
         status = 503;
-        body.error = { 
-            code: 'DATABASE_ERROR', 
-            message: 'Database connection or authentication failed. Please verify credentials and database availability.' 
-        };
+        body.error = { code: 'DATABASE_ERROR', message: 'Database connection or authentication failed. Please verify credentials and database availability.' };
     } else if (err.code === 'P2002') {
         status = 409;
-        body.error = { code: 'CONFLICT', message: 'A record with this data already exists', details: err.meta };
+        body.error = { code: 'CONFLICT', message: 'A record with this data already exists', details: err.meta?.target ? { target: err.meta.target } : undefined };
     } else if (err.code === 'P2025') {
         status = 404;
         body.error = { code: 'NOT_FOUND', message: 'Record not found' };

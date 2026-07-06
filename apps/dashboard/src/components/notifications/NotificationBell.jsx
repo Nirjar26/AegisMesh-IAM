@@ -162,7 +162,7 @@ export default function NotificationBell() {
             return undefined;
         }
 
-        const eventSource = new EventSource(`/api/audit-logs/stream?token=${encodeURIComponent(accessToken)}`);
+        const eventSource = new EventSource('/api/audit-logs/stream');
 
         eventSource.onmessage = (event) => {
             try {

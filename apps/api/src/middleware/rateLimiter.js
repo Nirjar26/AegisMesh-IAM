@@ -2,118 +2,35 @@ const rateLimit = require('express-rate-limit');
 const logger = require('../utils/logger');
 const { auditSecurity } = require('../utils/auditLog');
 
+const WINDOW_15MIN = 15 * 60 * 1000;
+const WINDOW_1HR = 60 * 60 * 1000;
 const onAuditFail = (err) => logger.warn('Audit log failed', { error: err.message });
 
-const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: process.env.NODE_ENV === 'production' ? 50 : 1000,
-    message: {
-        success: false,
-        error: { code: 'RATE_LIMIT', message: 'Too many login attempts. Please try again in 15 minutes.' },
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    handler: (req, res, next, options) => {
-        logger.warn('Rate limit exceeded for login', { ip: req.ip });
-        auditSecurity.rateLimitExceeded(req, 'auth/login').catch(onAuditFail);
-        res.status(429).json(options.message);
-    },
-});
+const prodMax = (n) => process.env.NODE_ENV === 'production' ? n : 1000;
 
-const registerLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000,
-    max: process.env.NODE_ENV === 'production' ? 20 : 1000,
-    message: {
-        success: false,
-        error: { code: 'RATE_LIMIT', message: 'Too many registration attempts. Please try again later.' },
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    handler: (req, res, next, options) => {
-        logger.warn('Rate limit exceeded for register', { ip: req.ip });
-        auditSecurity.rateLimitExceeded(req, 'auth/register').catch(onAuditFail);
-        res.status(429).json(options.message);
-    },
-});
+function createLimiter(windowMs, max, message, auditPath) {
+    return rateLimit({
+        windowMs,
+        max,
+        message: { success: false, error: { code: 'RATE_LIMIT', message } },
+        standardHeaders: true,
+        legacyHeaders: false,
+        handler: (req, res, _next, options) => {
+            logger.warn(`Rate limit exceeded for ${auditPath}`, { ip: req.ip, path: req.path });
+            auditSecurity.rateLimitExceeded(req, auditPath).catch(onAuditFail);
+            res.status(429).json(options.message);
+        },
+    });
+}
 
-const generalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: process.env.NODE_ENV === 'production' ? 1000 : 5000,
-    message: {
-        success: false,
-        error: { code: 'RATE_LIMIT', message: 'Too many requests. Please try again later.' },
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    handler: (req, res, next, options) => {
-        logger.warn('Rate limit exceeded', { ip: req.ip, path: req.path });
-        auditSecurity.rateLimitExceeded(req, req.path).catch(onAuditFail);
-        res.status(429).json(options.message);
-    },
-});
+const loginLimiter = createLimiter(WINDOW_15MIN, prodMax(50), 'Too many login attempts. Please try again in 15 minutes.', 'auth/login');
+const registerLimiter = createLimiter(WINDOW_1HR, prodMax(20), 'Too many registration attempts. Please try again later.', 'auth/register');
+const generalLimiter = createLimiter(WINDOW_15MIN, prodMax(1000), 'Too many requests. Please try again later.', '');
+const passwordResetLimiter = createLimiter(WINDOW_1HR, prodMax(3), 'Too many password reset attempts. Please try again later.', 'auth/forgot-password');
+const mfaSetupLimiter = createLimiter(WINDOW_15MIN, prodMax(10), 'Too many MFA attempts. Please try again later.', 'auth/mfa');
+const tokenRefreshLimiter = createLimiter(WINDOW_15MIN, prodMax(30), 'Too many token refresh attempts. Please try again later.', 'auth/refresh-token');
+const verifyEmailLimiter = createLimiter(WINDOW_15MIN, prodMax(10), 'Too many verification attempts. Please try again in 15 minutes.', 'auth/verify-email');
+const sessionRevokeLimiter = createLimiter(WINDOW_15MIN, prodMax(20), 'Too many session revocation attempts. Please try again later.', 'auth/sessions');
 
-const passwordResetLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000,
-    max: process.env.NODE_ENV === 'production' ? 3 : 1000,
-    message: {
-        success: false,
-        error: { code: 'RATE_LIMIT', message: 'Too many password reset attempts. Please try again later.' },
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    handler: (req, res, next, options) => {
-        logger.warn('Rate limit exceeded for password reset', { ip: req.ip });
-        auditSecurity.rateLimitExceeded(req, 'auth/forgot-password').catch(onAuditFail);
-        res.status(429).json(options.message);
-    },
-});
+module.exports = { loginLimiter, registerLimiter, generalLimiter, passwordResetLimiter, mfaSetupLimiter, tokenRefreshLimiter, verifyEmailLimiter, sessionRevokeLimiter };
 
-const mfaSetupLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: process.env.NODE_ENV === 'production' ? 10 : 1000,
-    message: {
-        success: false,
-        error: { code: 'RATE_LIMIT', message: 'Too many MFA attempts. Please try again later.' },
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    handler: (req, res, next, options) => {
-        logger.warn('Rate limit exceeded for MFA operations', { ip: req.ip });
-        auditSecurity.rateLimitExceeded(req, 'auth/mfa').catch(onAuditFail);
-        res.status(429).json(options.message);
-    },
-});
-
-const tokenRefreshLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: process.env.NODE_ENV === 'production' ? 30 : 1000,
-    message: {
-        success: false,
-        error: { code: 'RATE_LIMIT', message: 'Too many token refresh attempts. Please try again later.' },
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    handler: (req, res, next, options) => {
-        logger.warn('Rate limit exceeded for token refresh', { ip: req.ip });
-        auditSecurity.rateLimitExceeded(req, 'auth/refresh-token').catch(onAuditFail);
-        res.status(429).json(options.message);
-    },
-});
-
-const sessionRevokeLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: process.env.NODE_ENV === 'production' ? 20 : 1000,
-    message: {
-        success: false,
-        error: { code: 'RATE_LIMIT', message: 'Too many session revocation attempts. Please try again later.' },
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    handler: (req, res, next, options) => {
-        logger.warn('Rate limit exceeded for session revocation', { ip: req.ip });
-        auditSecurity.rateLimitExceeded(req, 'auth/sessions').catch(onAuditFail);
-        res.status(429).json(options.message);
-    },
-});
-
-module.exports = { loginLimiter, registerLimiter, generalLimiter, passwordResetLimiter, mfaSetupLimiter, tokenRefreshLimiter, sessionRevokeLimiter };

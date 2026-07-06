@@ -57,6 +57,8 @@ model Session {
   createdAt    DateTime @default(now())
   lastActiveAt DateTime @default(now())
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model OrganizationSettings {
@@ -106,6 +108,7 @@ model OAuthAccount {
   user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerId])
+  @@index([userId])
 }
 
 model AuditLog {
@@ -125,7 +128,7 @@ model AuditLog {
   resourceId String?
   sessionId  String?
   result     AuditResult   @default(SUCCESS)
-  user       User?         @relation(fields: [userId], references: [id])
+  user       User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
   @@index([action])

@@ -3,16 +3,10 @@ const prisma = require('../config/database');
 const redis = require('../config/redis');
 const logger = require('../utils/logger');
 const { createError } = require('../utils/errors');
-const { authenticateApiKeyToken } = require('./apiKeyAuth');
+const { authenticateApiKeyToken, derivePrimaryRole } = require('./apiKeyAuth');
 const { enforceOrgPolicyForRequest } = require('./orgPolicy');
 const { decryptText } = require('../utils/crypto');
 const { getRiskScore } = require('../utils/riskEngine');
-
-function derivePrimaryRole(user) {
-    const roleNames = (user.userRoles || []).map((ur) => ur.role?.name).filter(Boolean);
-    if (roleNames.includes('SuperAdmin')) return 'SuperAdmin';
-    return roleNames[0] || null;
-}
 
 /**
  * Authentication middleware
@@ -97,7 +91,10 @@ async function getUserFromCache(userId, profileVersion) {
             user.createdAt = new Date(user.createdAt);
             user.updatedAt = new Date(user.updatedAt);
             return user;
-        } catch { return null; }
+        } catch {
+            logger.warn('Failed to parse cached user profile');
+            return null;
+        }
     }
     return null;
 }
@@ -220,14 +217,18 @@ async function authenticateJwtRequest(req, token) {
         authType: 'jwt',
     };
 
-    // ML-Powered Risk Assessment
-    const riskAssessment = await getRiskScore({
-        userId: authUser.id,
-        ip: req.ip,
-        userAgent: req.headers['user-agent'],
-        action: 'AUTHENTICATION_VERIFY',
-        path: req.path
-    });
+    // ML-Powered Risk Assessment — fire-and-forget with 100ms ceiling
+    let fallbackTimer;
+    const riskAssessment = await Promise.race([
+        getRiskScore({
+            userId: authUser.id,
+            ip: req.ip,
+            userAgent: req.headers['user-agent'],
+            action: 'AUTHENTICATION_VERIFY',
+            path: req.path
+        }).finally(() => clearTimeout(fallbackTimer)),
+        new Promise(resolve => { fallbackTimer = setTimeout(() => resolve({ risk_score: 0.1, is_anomaly: false }), 100); })
+    ]);
 
     if (riskAssessment.is_anomaly) {
         authUser.isAnomalous = true;

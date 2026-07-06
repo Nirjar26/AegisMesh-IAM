@@ -1,6 +1,48 @@
 const prisma = require('../config/database');
 const logger = require('../utils/logger');
 
+const VALID_RANGES = new Set(['24h', '30d', '1y']);
+
+function timeBucketExpr(range) {
+    if (range === '24h') return "date_trunc('hour', a.\"createdAt\")";
+    if (range === '30d') return "date_trunc('day', a.\"createdAt\")";
+    return "date_trunc('month', a.\"createdAt\")";
+}
+
+function bucketFormat(range, labelExpr) {
+    if (range === '24h') return `to_char(${labelExpr}, 'HH24:MI')`;
+    if (range === '30d') return `to_char(${labelExpr}, 'Mon DD')`;
+    return `to_char(${labelExpr}, 'Mon')`;
+}
+
+function validateRange(range) {
+    if (range && !VALID_RANGES.has(range)) range = '1y';
+    return range || '1y';
+}
+
+/** @returns {{ total: number, mfa: number, locked: number }} */
+async function getUserStats(now) {
+    const [totalUsers, mfaUsers, lockedUsers] = await Promise.all([
+        prisma.user.count(),
+        prisma.user.count({ where: { mfaEnabled: true } }),
+        prisma.user.count({ where: { status: 'LOCKED' } })
+    ]);
+    const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+    const recentPasswordChangeCount = await prisma.user.count({
+        where: { OR: [
+            { passwordChangedAt: { gte: ninetyDaysAgo } },
+            { createdAt: { gte: ninetyDaysAgo } }
+        ]}
+    });
+    return { total: totalUsers, mfa: mfaUsers, locked: lockedUsers, recentPasswordChangeCount };
+}
+
+function getRangeStart(now, range) {
+    if (range === '24h') return new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    if (range === '30d') return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    return new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+}
+
 /**
  * GET /api/analytics/overview
  * Aggregates high-depth metrics for the 'War Room' dashboard over various timeframes (24h, 30d, 1y).
@@ -8,28 +50,88 @@ const logger = require('../utils/logger');
 exports.getOverviewMetrics = async (req, res, next) => {
     try {
         const now = new Date();
-        const range = req.query.range || '1y';
+        const range = validateRange(req.query.range || '1y');
 
-        // 1. Fetch users if needed for seeding
-        const totalUsers = await prisma.user.count();
-        const mfaUsers = await prisma.user.count({ where: { mfaEnabled: true } });
-        const lockedUsers = await prisma.user.count({ where: { status: 'LOCKED' } });
+        const userStats = await getUserStats(now);
+        const { total: totalUsers, mfa: mfaUsers, locked: lockedUsers, recentPasswordChangeCount } = userStats;
 
-        // Query password hygiene (changed within 90 days or created within 90 days)
-        const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-        const recentPasswordChangeCount = await prisma.user.count({
+        const rangeStart = getRangeStart(now, range);
+
+        const bucketExpr = timeBucketExpr(range);
+        const fmtExpr = bucketFormat(range, bucketExpr);
+
+        const timeBuckets = await prisma.$queryRawUnsafe(`
+            SELECT ${fmtExpr} AS label,
+                   COUNT(*)::int AS requests,
+                   AVG(COALESCE((a.metadata->>'risk_score')::numeric, 0.1)) AS avg_risk,
+                   COUNT(*) FILTER (WHERE a.result = 'BLOCKED'
+                     OR a.action ILIKE '%DENY%' OR a.action ILIKE '%BLOCK%')::int AS denies,
+                   COUNT(*) FILTER (WHERE a.action IN ('SESSION_REVOKED','ALL_OTHER_SESSIONS_REVOKED','SESSION_REVOKE_ALL'))::int AS revocations
+            FROM "AuditLog" a
+            WHERE a."createdAt" >= $1
+            GROUP BY ${bucketExpr}
+            ORDER BY ${bucketExpr}
+        `, rangeStart);
+
+        const buckets = timeBuckets.map(b => ({
+            label: b.label,
+            requests: Number(b.requests),
+            avgRisk: b.avg_risk ? Math.round(Number(b.avg_risk) * 100) / 100 : 0,
+            denies: Number(b.denies),
+            revocations: Number(b.revocations),
+        }));
+
+        const pulse = buckets.map(b => ({ timestamp: b.label, requests: b.requests, avgRisk: b.avgRisk }));
+        const denyTrends = buckets.map(b => ({ timestamp: b.label, denies: b.denies }));
+        const revocationTrends = buckets.map(b => ({ timestamp: b.label, revocations: b.revocations }));
+
+        // Geo distribution (SQL aggregation instead of JS)
+        const ipAgg = await prisma.$queryRawUnsafe(`
+            SELECT COALESCE(a."ipAddress", 'Unknown') AS "ipAddress",
+                   COUNT(*) FILTER (WHERE a.result = 'BLOCKED')::int AS blocked,
+                   COUNT(*) FILTER (WHERE a.result != 'BLOCKED')::int AS success,
+                   COUNT(*)::int AS total
+            FROM "AuditLog" a
+            WHERE a."createdAt" >= $1
+            GROUP BY a."ipAddress"
+            ORDER BY total DESC
+            LIMIT 5
+        `, rangeStart);
+
+        const geoDist = ipAgg.map(r => ({
+            ipAddress: r.ipAddress,
+            blocked: Number(r.blocked),
+            success: Number(r.success),
+            total: Number(r.total),
+        }));
+
+        // Aggregated counts for stats
+        const aggCounts = await prisma.$queryRawUnsafe(`
+            SELECT
+              COUNT(*)::int AS total_events,
+              COUNT(*) FILTER (WHERE a.result IN ('FAILURE','BLOCKED','ERROR'))::int AS anomaly_events,
+              COUNT(*) FILTER (WHERE a.result = 'BLOCKED' AND a."createdAt" >= $2)::int AS threats_24h,
+              COUNT(*) FILTER (WHERE a.result = 'BLOCKED' AND a."createdAt" >= $3)::int AS threats_30d
+            FROM "AuditLog" a
+            WHERE a."createdAt" >= $1
+        `, rangeStart,
+            new Date(now.getTime() - 24 * 60 * 60 * 1000),
+            new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+        );
+        const aggs = aggCounts[0];
+        const totalEvents = Number(aggs.total_events);
+        const anomalyEvents = Number(aggs.anomaly_events);
+        const threatsLast24h = Number(aggs.threats_24h);
+        const threatsLast30d = Number(aggs.threats_30d);
+
+        // Critical incidents (targeted query, no full scan)
+        const criticalIncidents = await prisma.auditLog.findMany({
             where: {
-                OR: [
-                    { passwordChangedAt: { gte: ninetyDaysAgo } },
-                    { createdAt: { gte: ninetyDaysAgo } }
-                ]
-            }
-        });
-
-        // 1b. Fetch all logs in the last 1 year
-        const lastYear = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
-        const auditLogsAll = await prisma.auditLog.findMany({
-            where: { createdAt: { gte: lastYear } },
+                createdAt: { gte: rangeStart },
+                OR: [{ result: 'BLOCKED' }, { action: 'ACCOUNT_LOCKED' }],
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 5,
             select: {
                 id: true,
                 createdAt: true,
@@ -38,111 +140,9 @@ exports.getOverviewMetrics = async (req, res, next) => {
                 result: true,
                 action: true,
                 category: true,
-                user: { select: { email: true } }
-            }
+                user: { select: { email: true } },
+            },
         });
-
-        // 2. Set up buckets based on requested range
-        const buckets = [];
-        let rangeLimit = lastYear;
-
-        if (range === '24h') {
-            rangeLimit = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-            for (let i = 23; i >= 0; i--) {
-                const d = new Date(now.getTime() - i * 60 * 60 * 1000);
-                d.setMinutes(0, 0, 0);
-                const hourLabel = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-                buckets.push({
-                    label: hourLabel,
-                    start: new Date(d.getTime),
-                    end: new Date(d.getTime() + 59 * 60 * 1000 + 59 * 1000),
-                    requests: 0,
-                    avgRisk: 0,
-                    riskSum: 0,
-                    denies: 0,
-                    revocations: 0
-                });
-            }
-        } else if (range === '30d') {
-            rangeLimit = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-            for (let i = 29; i >= 0; i--) {
-                const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-                const dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                const year = d.getFullYear();
-                const month = d.getMonth();
-                const day = d.getDate();
-                buckets.push({
-                    label: dateLabel,
-                    start: new Date(year, month, day, 0, 0, 0),
-                    end: new Date(year, month, day, 23, 59, 59),
-                    requests: 0,
-                    avgRisk: 0,
-                    riskSum: 0,
-                    denies: 0,
-                    revocations: 0
-                });
-            }
-        } else {
-            // default to '1y' with exactly 12 monthly buckets
-            rangeLimit = lastYear;
-            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            for (let i = 11; i >= 0; i--) {
-                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                const monthIndex = d.getMonth();
-                const year = d.getFullYear();
-                buckets.push({
-                    label: monthNames[monthIndex],
-                    start: new Date(year, monthIndex, 1, 0, 0, 0),
-                    end: new Date(year, monthIndex + 1, 0, 23, 59, 59),
-                    requests: 0,
-                    avgRisk: 0,
-                    riskSum: 0,
-                    denies: 0,
-                    revocations: 0
-                });
-            }
-        }
-
-        // Filter logs to match timeframe
-        const activeLogs = auditLogsAll.filter(log => new Date(log.createdAt) >= rangeLimit);
-
-        // Aggregate logs into buckets
-        activeLogs.forEach(log => {
-            const logTime = new Date(log.createdAt);
-            const bucket = buckets.find(b => logTime >= b.start && logTime <= b.end);
-            if (bucket) {
-                bucket.requests++;
-                const risk = log.metadata?.risk_score || 0.1;
-                bucket.riskSum += risk;
-                bucket.avgRisk = bucket.riskSum / bucket.requests;
-                
-                const isDeny = log.result === 'BLOCKED' || (log.action && (log.action.includes('DENY') || log.action.includes('BLOCK')));
-                if (isDeny) {
-                    bucket.denies++;
-                }
-                
-                const isRevoke = ['SESSION_REVOKED', 'ALL_OTHER_SESSIONS_REVOKED', 'SESSION_REVOKE_ALL'].includes(log.action);
-                if (isRevoke) {
-                    bucket.revocations++;
-                }
-            }
-        });
-
-        const pulse = buckets.map(b => ({
-            timestamp: b.label,
-            requests: b.requests,
-            avgRisk: b.avgRisk ? Math.round(b.avgRisk * 100) / 100 : 0
-        }));
-
-        const denyTrends = buckets.map(b => ({
-            timestamp: b.label,
-            denies: b.denies
-        }));
-
-        const revocationTrends = buckets.map(b => ({
-            timestamp: b.label,
-            revocations: b.revocations
-        }));
 
         // 3. Security Radar Axes & Trends
         const [totalRoles, wildcardPolicies] = await Promise.all([
@@ -157,16 +157,15 @@ exports.getOverviewMetrics = async (req, res, next) => {
             })
         ]);
 
-        const activeSessionsCount = await prisma.session.count({ where: { expiresAt: { gte: now } } });
-        const inactiveActiveSessions = await prisma.session.count({
-            where: {
-                expiresAt: { gte: now },
-                lastActiveAt: { lt: new Date(now.getTime() - 4 * 60 * 60 * 1000) }
-            }
-        });
-
-        const totalEvents = activeLogs.length;
-        const anomalyEvents = activeLogs.filter(log => ['FAILURE', 'BLOCKED', 'ERROR'].includes(log.result)).length;
+        const [activeSessionsCount, inactiveActiveSessions] = await Promise.all([
+            prisma.session.count({ where: { expiresAt: { gte: now } } }),
+            prisma.session.count({
+                where: {
+                    expiresAt: { gte: now },
+                    lastActiveAt: { lt: new Date(now.getTime() - 4 * 60 * 60 * 1000) }
+                }
+            })
+        ]);
 
         const mfaPercentage = totalUsers ? Math.round((mfaUsers / totalUsers) * 100) : 0;
         const activeUsersPct = totalUsers ? Math.round(((totalUsers - lockedUsers) / totalUsers) * 100) : 100;
@@ -184,64 +183,23 @@ exports.getOverviewMetrics = async (req, res, next) => {
             { axis: 'Anomaly Index', value: anomalyIndex }
         ];
 
-        // 4. Geo-Traffic Origin (Top IPs with Success/Blocked split)
-        const ipMap = Object.create(null);
-        activeLogs.forEach(log => {
-            const ip = log.ipAddress || 'Unknown';
-            if (!ipMap[ip]) {
-                ipMap[ip] = { ipAddress: ip, success: 0, blocked: 0, total: 0 };
-            }
-            if (log.result === 'BLOCKED') {
-                ipMap[ip].blocked++;
-            } else {
-                ipMap[ip].success++;
-            }
-            ipMap[ip].total++;
-        });
-
-        const geoDist = Object.values(ipMap)
-            .sort((a, b) => b.total - a.total)
-            .slice(0, 5);
-
-        // 5. Critical Incidents Triage (capped at 5)
-        const criticalIncidents = activeLogs
-            .filter(log => log.result === 'BLOCKED' || log.action === 'ACCOUNT_LOCKED')
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            .slice(0, 5);
-
-        // 6. Overprivileged Roles & Wildcard Policies Alerts
-        const wildcardPoliciesList = await prisma.policy.findMany({
-            where: {
-                OR: [
-                    { actions: { has: '*' } },
-                    { resources: { has: '*' } }
-                ]
-            },
-            select: { id: true }
-        });
-        const wildcardPolicyIds = wildcardPoliciesList.map(p => p.id);
-
-        const overprivilegedRolesCount = wildcardPolicyIds.length > 0
-            ? await prisma.rolePolicy.count({
-                where: { policyId: { in: wildcardPolicyIds } }
-            })
-            : 0;
-
-        const overprivilegedUserRoles = wildcardPolicyIds.length > 0
-            ? await prisma.userRole.findMany({
-                where: {
-                    role: {
-                        rolePolicies: {
-                            some: {
-                                policyId: { in: wildcardPolicyIds }
-                            }
-                        }
-                    }
-                },
-                select: { userId: true }
-            })
+        // 5. Overprivileged Roles & Wildcard Policies Alerts
+        const wildcardPolicyIds = wildcardPolicies > 0
+            ? await prisma.policy.findMany({
+                where: { OR: [{ actions: { has: '*' } }, { resources: { has: '*' } }] },
+                select: { id: true }
+              }).then(r => r.map(p => p.id))
             : [];
-        const overprivilegedUsersCount = new Set(overprivilegedUserRoles.map(ur => ur.userId)).size;
+
+        const [overprivilegedRolesCount, overprivilegedUsersCount] = wildcardPolicyIds.length > 0
+            ? await Promise.all([
+                prisma.rolePolicy.count({ where: { policyId: { in: wildcardPolicyIds } } }),
+                prisma.userRole.findMany({
+                    where: { role: { rolePolicies: { some: { policyId: { in: wildcardPolicyIds } } } } },
+                    select: { userId: true }
+                }).then(r => new Set(r.map(ur => ur.userId)).size)
+              ])
+            : [0, 0];
 
         // 7. Authentication Type Distribution
         const [oauthGoogleCount, oauthGithubCount, localMfaCount, localNoMfaCount] = await Promise.all([
@@ -264,22 +222,25 @@ exports.getOverviewMetrics = async (req, res, next) => {
 
         // 8. Trend Calculations (compare current status with past reference timeframes)
         const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        const users30dAgo = await prisma.user.count({ where: { createdAt: { lte: monthAgo } } });
+        const [users30dAgo, mfaUsers30d] = await Promise.all([
+            prisma.user.count({ where: { createdAt: { lte: monthAgo } } }),
+            prisma.user.count({ where: { mfaEnabled: true, createdAt: { lte: monthAgo } } })
+        ]);
         const activeIdentitiesTrend = users30dAgo ? Math.round(((totalUsers - users30dAgo) / users30dAgo) * 100) : 0;
-
-        const mfaUsers30d = await prisma.user.count({ where: { mfaEnabled: true, createdAt: { lte: monthAgo } } });
         const mfaPercentage30d = users30dAgo ? Math.round((mfaUsers30d / users30dAgo) * 100) : 0;
         const mfaAdoptionTrend = mfaPercentage - mfaPercentage30d;
 
-        const sessionsLast12h = await prisma.session.count({ where: { lastActiveAt: { gte: new Date(now.getTime() - 12 * 60 * 60 * 1000) } } });
-        const sessionsPrior12h = await prisma.session.count({
-            where: {
-                lastActiveAt: {
-                    gte: new Date(now.getTime() - 24 * 60 * 60 * 1000),
-                    lt: new Date(now.getTime() - 12 * 60 * 60 * 1000)
+        const [sessionsLast12h, sessionsPrior12h] = await Promise.all([
+            prisma.session.count({ where: { lastActiveAt: { gte: new Date(now.getTime() - 12 * 60 * 60 * 1000) } } }),
+            prisma.session.count({
+                where: {
+                    lastActiveAt: {
+                        gte: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+                        lt: new Date(now.getTime() - 12 * 60 * 60 * 1000)
+                    }
                 }
-            }
-        });
+            })
+        ]);
         let activeSessionsTrend = 0;
         if (sessionsPrior12h) {
             activeSessionsTrend = Math.round(((sessionsLast12h - sessionsPrior12h) / sessionsPrior12h) * 100);
@@ -287,12 +248,11 @@ exports.getOverviewMetrics = async (req, res, next) => {
             activeSessionsTrend = 100;
         }
 
-        const threatsLast30d = activeLogs.filter(log => log.result === 'BLOCKED' && new Date(log.createdAt) >= monthAgo).length;
         const threatsPrior30d = await prisma.auditLog.count({
             where: {
                 createdAt: {
                     gte: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000),
-                    lt: monthAgo
+                    lt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
                 },
                 result: 'BLOCKED'
             }
@@ -304,11 +264,10 @@ exports.getOverviewMetrics = async (req, res, next) => {
             blockedThreatsTrend = 100;
         }
 
-        const threatsLast24h = activeLogs.filter(log => log.result === 'BLOCKED' && new Date(log.createdAt) >= new Date(now.getTime() - 24 * 60 * 60 * 1000)).length;
-
         // System Load Evaluation (24h request rate)
-        const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-        const requestsLast24h = activeLogs.filter(log => new Date(log.createdAt) >= last24h).length;
+        const requestsLast24h = await prisma.auditLog.count({
+            where: { createdAt: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) } }
+        });
         let systemLoad = 'Stable';
         if (requestsLast24h > 10) {
             systemLoad = 'Peak Load';

@@ -4,6 +4,7 @@ const { authenticator } = require('otplib');
 const prisma = require('../config/database');
 const { decryptText } = require('../utils/crypto');
 const { createAuditLog } = require('../utils/auditLog');
+const logger = require('../utils/logger');
 
 const REAUTH_HEADER = 'x-reauth-token';
 const REAUTH_WINDOW_SECONDS = 10 * 60;
@@ -27,6 +28,7 @@ const SENSITIVE_ACTIONS = Object.freeze({
     EXPORT_DATA: 'export_data',
     CREATE_PRIV_TOKEN: 'create_priv_token',
     DELETE_ACCOUNT: 'delete_account',
+    SETUP_MFA: 'setup_mfa',
     DISABLE_MFA: 'disable_mfa',
     CHANGE_ORG_SETTINGS: 'change_org_settings',
     RESET_POLICIES: 'reset_policies',
@@ -237,7 +239,7 @@ function requireReauth(action) {
             req.reauthedAt = issuedAt;
             req.reauthMethod = method;
 
-            await createAuditLog({
+            createAuditLog({
                 req,
                 userId,
                 sessionId,
@@ -246,7 +248,7 @@ function requireReauth(action) {
                 resource: 'reauth',
                 result: 'SUCCESS',
                 metadata: { action, method },
-            });
+            }).catch(err => logger.warn('Reauth audit log failed', { error: err.message }));
 
             return next();
         } catch (error) {

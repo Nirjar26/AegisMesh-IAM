@@ -1,3 +1,5 @@
+import hashlib
+import json
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import IsolationForest
@@ -16,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 ALLOWED_MODEL_DIR = os.getenv("MODEL_DIR", "models")
+_MODEL_HASH_FILE = "model_hashes.json"
 
 
 def _resolve_model_path(model_path):
@@ -24,6 +27,41 @@ def _resolve_model_path(model_path):
         raise ValueError(f"Model path {model_path} is outside allowed directory {ALLOWED_MODEL_DIR}")
     return safe
 
+
+def _file_sha256(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _load_trusted_hashes():
+    path = os.path.join(ALLOWED_MODEL_DIR, _MODEL_HASH_FILE)
+    if os.path.exists(path):
+        with open(path) as f:
+            return json.load(f)
+    return {}
+
+
+def _save_trusted_hash(model_path):
+    hashes = _load_trusted_hashes()
+    hashes[os.path.basename(model_path)] = _file_sha256(model_path)
+    path = os.path.join(ALLOWED_MODEL_DIR, _MODEL_HASH_FILE)
+    with open(path, "w") as f:
+        json.dump(hashes, f)
+
+
+def _safely_load_joblib(path):
+    trusted = _load_trusted_hashes()
+    basename = os.path.basename(path)
+    if basename in trusted:
+        actual = _file_sha256(path)
+        if actual != trusted[basename]:
+            raise RuntimeError(f"Model file {basename} hash mismatch — possible tampering")
+    # ponytail: hash check prevents loading tampered models;
+    # add pickle safe-restrictor if loading from untrusted sources
+    return joblib.load(path)
 
 class AnomalyDetector:
     def __init__(self, model_path="models/isolation_forest.joblib"):
@@ -68,7 +106,7 @@ class AnomalyDetector:
     def _load_model(self):
         if os.path.exists(self.model_path):
             logger.info("Loading existing model pipeline from %s", self.model_path)
-            return joblib.load(self.model_path)
+            return _safely_load_joblib(self.model_path)
         return self._create_pipeline()
 
     def _create_pipeline(self):
@@ -107,8 +145,9 @@ class AnomalyDetector:
 
         self._ensure_mlflow()
         engine = create_engine(self.db_url)
-        query = 'SELECT action, category, result, duration FROM "AuditLog" LIMIT 10000'
-        df = pd.read_sql(query, engine)
+        row_limit = int(os.getenv("TRAINING_ROW_LIMIT", "50000"))
+        query = 'SELECT action, category, result, duration FROM "AuditLog" WHERE "createdAt" >= NOW() - INTERVAL \'90 days\' LIMIT %s'
+        df = pd.read_sql(query, engine, params=(row_limit,))
 
         if df.empty:
             logger.warning("No data found for training.")
@@ -133,6 +172,7 @@ class AnomalyDetector:
             mlflow.sklearn.log_model(self.model, "model", registered_model_name="SecurityEnginePipeline")
 
             joblib.dump(self.model, self.model_path)
+            _save_trusted_hash(self.model_path)
             self._sync_version_info()
             logger.info("Model pipeline saved and logged. Active version: %s", self.active_version)
 

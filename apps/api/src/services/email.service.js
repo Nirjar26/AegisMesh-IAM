@@ -4,8 +4,27 @@ const logger = require('../utils/logger');
 let transporter = null;
 
 function buildFrontendUrl(pathname, token) {
-  const frontendOrigin = new URL(process.env.FRONTEND_URL || 'http://localhost:3000').origin; // nosonar
+  const frontendOrigin = new URL(process.env.FRONTEND_URL || 'http://localhost:3000').origin; // NOSONAR
   return `${frontendOrigin}${pathname}?token=${encodeURIComponent(token)}`;
+}
+
+function buildEmailTemplate(title, body, buttonUrl, buttonText, expiryText) {
+    return `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #1a1a2e; color: #e0e0e0; padding: 40px; border-radius: 12px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #ff9900; margin: 0;">🔐 IAM Auth</h1>
+          <p style="color: #888;">Identity & Access Management</p>
+        </div>
+        <h2 style="color: #fff;">${title}</h2>
+        <p>${body}</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${buttonUrl}" style="background-color: #ff9900; color: #000; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+            ${buttonText}
+          </a>
+        </div>
+        <p style="font-size: 12px; color: #666;">${expiryText}</p>
+      </div>
+    `;
 }
 
 /**
@@ -43,80 +62,43 @@ async function initializeTransporter() {
     return transporter;
 }
 
-/**
- * Send verification email
- */
-async function sendVerificationEmail(email, token) {
+async function sendEmail({ to, subject, templateTitle, templateBody, buttonUrl, buttonText, expiryText }) {
     const t = await initializeTransporter();
-  const verifyUrl = buildFrontendUrl('/verify-email', token);
-
     const info = await t.sendMail({
         from: '"IAM Auth System" <noreply@iam-auth.com>',
-        to: email,
-        subject: 'Verify your email address',
-        html: `
-      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #1a1a2e; color: #e0e0e0; padding: 40px; border-radius: 12px;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #ff9900; margin: 0;">🔐 IAM Auth</h1>
-          <p style="color: #888;">Identity & Access Management</p>
-        </div>
-        <h2 style="color: #fff;">Verify Your Email</h2>
-        <p>Click the button below to verify your email address and activate your account:</p>
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${verifyUrl}" style="background-color: #ff9900; color: #000; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
-            Verify Email
-          </a>
-        </div>
-        <p style="font-size: 12px; color: #666;">If you didn't create an account, you can safely ignore this email.</p>
-        <p style="font-size: 12px; color: #666;">This link expires in 24 hours.</p>
-      </div>
-    `,
+        to,
+        subject,
+        html: buildEmailTemplate(templateTitle, templateBody, buttonUrl, buttonText, expiryText),
     });
-
     const previewUrl = nodemailer.getTestMessageUrl(info);
     if (previewUrl) {
         logger.info(`📧 Preview URL: ${previewUrl}`);
     }
-
     return { messageId: info.messageId, previewUrl };
 }
 
-/**
- * Send password reset email
- */
-async function sendPasswordResetEmail(email, token) {
-    const t = await initializeTransporter();
-  const resetUrl = buildFrontendUrl('/reset-password', token);
+function sendVerificationEmail(email, token) {
+    return sendEmail({
+        to: email,
+        subject: 'Verify your email address',
+        templateTitle: 'Verify Your Email',
+        templateBody: 'Click the button below to verify your email address and activate your account:',
+        buttonUrl: buildFrontendUrl('/verify-email', token),
+        buttonText: 'Verify Email',
+        expiryText: 'If you didn\'t create an account, you can safely ignore this email. This link expires in 24 hours.',
+    });
+}
 
-    const info = await t.sendMail({
-        from: '"IAM Auth System" <noreply@iam-auth.com>',
+function sendPasswordResetEmail(email, token) {
+    return sendEmail({
         to: email,
         subject: 'Reset your password',
-        html: `
-      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #1a1a2e; color: #e0e0e0; padding: 40px; border-radius: 12px;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #ff9900; margin: 0;">🔐 IAM Auth</h1>
-          <p style="color: #888;">Identity & Access Management</p>
-        </div>
-        <h2 style="color: #fff;">Reset Your Password</h2>
-        <p>You requested a password reset. Click the button below to set a new password:</p>
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${resetUrl}" style="background-color: #ff9900; color: #000; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
-            Reset Password
-          </a>
-        </div>
-        <p style="font-size: 12px; color: #666;">If you didn't request a password reset, you can safely ignore this email.</p>
-        <p style="font-size: 12px; color: #666;">This link expires in 1 hour.</p>
-      </div>
-    `,
+        templateTitle: 'Reset Your Password',
+        templateBody: 'You requested a password reset. Click the button below to set a new password:',
+        buttonUrl: buildFrontendUrl('/reset-password', token),
+        buttonText: 'Reset Password',
+        expiryText: 'If you didn\'t request a password reset, you can safely ignore this email. This link expires in 1 hour.',
     });
-
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    if (previewUrl) {
-        logger.info(`📧 Preview URL: ${previewUrl}`);
-    }
-
-    return { messageId: info.messageId, previewUrl };
 }
 
 module.exports = {

@@ -1,7 +1,14 @@
 const crypto = require('node:crypto');
+const logger = require('./logger');
 
 const ALGO = 'aes-256-gcm';
 const LEGACY_SALT = 'aegismesh-mfa-key-v1';
+
+const COOKIE_ENCRYPTION_KEY = process.env.COOKIE_ENCRYPTION_KEY || process.env.MFA_SECRET_ENCRYPTION_KEY;
+
+if (process.env.NODE_ENV === 'production' && process.env.COOKIE_ENCRYPTION_KEY && process.env.COOKIE_ENCRYPTION_KEY === process.env.MFA_SECRET_ENCRYPTION_KEY) {
+    console.warn('[crypto] COOKIE_ENCRYPTION_KEY and MFA_SECRET_ENCRYPTION_KEY are identical. Use separate keys in production.');
+}
 
 let mfaFallbackKey;
 function buildKey(salt) {
@@ -40,7 +47,6 @@ function decryptText(payload) {
     if (parts.length < 3) {
         return text;
     }
-
     try {
         // New format (4 parts): salt:iv:authTag:ciphertext
         // Legacy format (3 parts): iv:authTag:ciphertext
@@ -62,7 +68,8 @@ function decryptText(payload) {
         ]);
 
         return decrypted.toString('utf8');
-    } catch {
+    } catch (err) {
+        logger.warn('Decryption failed', { error: err.message });
         return null;
     }
 }
@@ -70,4 +77,5 @@ function decryptText(payload) {
 module.exports = {
     encryptText,
     decryptText,
+    COOKIE_ENCRYPTION_KEY,
 };

@@ -92,12 +92,14 @@ backups/
 .antigravitycli/
 .claude/
 .agents/
+CLAUDE.md
 .sonarqube_report/
 .code-quality/
 .codex/
 .continue/
 .archive/
 .jenkins/
+.continue/
 
 # ── Local Dev Scripts (not needed in CI) ───────────────────────
 scripts/ci/sonar-report.js

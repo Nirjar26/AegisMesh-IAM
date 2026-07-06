@@ -1,5 +1,6 @@
 const { createError } = require('../utils/errors');
 const { auditPermission } = require('../utils/auditLog');
+const logger = require('../utils/logger');
 const permissionService = require('../services/permission.service');
 
 function authorize(action, resource) {
@@ -10,7 +11,7 @@ function authorize(action, resource) {
             }
 
             const result = await permissionService.checkPermission(req.user.id, action, resource);
-            await auditPermission.checked(req, req.user.id, action, resource, result);
+            auditPermission.checked(req, req.user.id, action, resource, result).catch(err => logger.warn('Audit log write failed', { error: err.message }));
 
             if (result.allowed) {
                 return next();

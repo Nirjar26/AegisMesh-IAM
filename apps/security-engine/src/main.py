@@ -1,13 +1,44 @@
 import os
+import time
+import logging
+from collections import defaultdict
 from contextlib import asynccontextmanager
+from typing import Annotated
 if os.getenv("DD_APM_ENABLED") == "true":
     from ddtrace import patch_all; patch_all()
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, Request
 from fastapi.security import APIKeyHeader
 from .models import AnalyzeRequest, AnalyzeResponse, HealthResponse, TrainResponse
 from .anomaly_detector import AnomalyDetector
 from prometheus_client import Counter, Histogram, Gauge, make_asgi_app
-import time
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+API_KEY_HEADER = APIKeyHeader(name="X-Api-Key", auto_error=False)
+SECURITY_ENGINE_API_KEY = os.getenv("SECURITY_ENGINE_API_KEY", "")
+
+
+def verify_api_key(api_key: str = Depends(API_KEY_HEADER)):
+    if not api_key or api_key != SECURITY_ENGINE_API_KEY:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing API key")
+
+
+_rate_limit_store = defaultdict(list)
+
+
+def _check_rate_limit(ip: str, max_requests: int = 100, window: int = 60):
+    now = time.time()
+    timestamps = _rate_limit_store[ip]
+    while timestamps and timestamps[0] < now - window:
+        timestamps.pop(0)
+    if len(timestamps) >= max_requests:
+        raise HTTPException(status_code=429, detail="Rate limit exceeded")
+    timestamps.append(now)
+
+
+def rate_limit(request: Request):
+    _check_rate_limit(request.client.host)
 
 API_KEY_HEADER = APIKeyHeader(name="X-Api-Key", auto_error=False)
 SECURITY_ENGINE_API_KEY = os.getenv("SECURITY_ENGINE_API_KEY", "")
@@ -23,6 +54,8 @@ def verify_api_key(api_key: str = Depends(API_KEY_HEADER)):
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     """Application lifespan handler — runs startup logic then yields."""
+    if not SECURITY_ENGINE_API_KEY:
+        raise RuntimeError("SECURITY_ENGINE_API_KEY environment variable is required")
     sync_metrics()
     yield
 
@@ -89,7 +122,7 @@ app.mount("/metrics", metrics_app)
 
 @app.get("/health", response_model=HealthResponse, responses={
     500: {"description": "Internal Server Error"}})
-def health(_auth = Depends(verify_api_key)):
+def health(_auth: Annotated[str, Depends(verify_api_key)]):
     return {
         "status": "healthy",
         "model_loaded": detector.model is not None,
@@ -104,8 +137,9 @@ async def analyze(data: AnalyzeRequest, _auth = Depends(verify_api_key)):
     start_total = time.time()
     try:
         risk_score, prep_time, inf_time = detector.predict_risk(data.model_dump())
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
+    except Exception:
+        logger.exception("Prediction failed")
+        raise HTTPException(status_code=500, detail="Prediction failed")
     total_duration = time.time() - start_total
 
     # Record detailed metrics
@@ -132,8 +166,9 @@ def train(_auth = Depends(verify_api_key)):
         detector.train()
         sync_metrics()
         return {"message": "Model trained successfully", "new_version": detector.active_version}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception("Training failed")
+        raise HTTPException(status_code=500, detail="Training failed")
 
 
 if __name__ == "__main__":

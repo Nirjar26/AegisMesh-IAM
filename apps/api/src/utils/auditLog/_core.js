@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const prisma = require('../../config/database');
 const logger = require('../logger');
 const { createNotificationFromAudit } = require('../notifications');
@@ -140,6 +141,17 @@ async function audit({
             sessionId = sessionId || req.user?.sessionId || null;
         }
 
+        const prevEntry = await prisma.auditLog.findFirst({
+            orderBy: { createdAt: 'desc' },
+            select: { metadata: true },
+        });
+        const prevHash = prevEntry?.metadata?.chain_hash || null;
+
+        const canonicalData = `${prevHash || ''}|${action}|${category}|${resource || ''}|${resourceId || ''}|${result}`;
+        const chainHash = crypto.pbkdf2Sync(canonicalData, process.env.JWT_SECRET || 'audit-chain', 10, 64, 'sha512').toString('hex');
+
+        const enrichedMetadata = metadata ? { ...metadata, chain_hash: chainHash } : { chain_hash: chainHash };
+
         const entry = await prisma.auditLog.create({
             data: {
                 userId,
@@ -155,7 +167,7 @@ async function audit({
                 result,
                 duration,
                 errorCode,
-                metadata,
+                metadata: enrichedMetadata,
             },
             include: USER_INCLUDE,
         });

@@ -40,11 +40,10 @@ describe('generateAccessToken', () => {
         expect(typeof tokenService.generateAccessToken(MOCK_USER)).toBe('string');
     });
 
-    it('encodes the user id and email in the payload', () => {
+    it('encodes the user id in the payload', () => {
         const token = tokenService.generateAccessToken(MOCK_USER);
         const payload = jwt.decode(token);
         expect(payload.sub).toBe(MOCK_USER.id);
-        expect(payload.email).toBe(MOCK_USER.email);
         expect(payload.type).toBe('access');
     });
 
@@ -148,7 +147,7 @@ describe('getUserSessions', () => {
         prisma.session.findMany.mockResolvedValue(mockSessions);
 
         const result = await tokenService.getUserSessions('user-1');
-        expect(result).toEqual(mockSessions);
+        expect(result).toEqual({ sessions: mockSessions, nextCursor: null });
         expect(prisma.session.findMany).toHaveBeenCalledWith(
             expect.objectContaining({ where: { userId: 'user-1' } })
         );

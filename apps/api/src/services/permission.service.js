@@ -1,6 +1,7 @@
 const prisma = require('../config/database');
 const redis = require('../config/redis');
 const logger = require('../utils/logger');
+const { createAuditLog } = require('../utils/auditLog');
 
 const SUPER_ADMIN_ROLE = 'SuperAdmin';
 const REGEX_ESCAPE_PATTERN = /[.+?^${}()|[\]\\]/g;
@@ -219,6 +220,14 @@ async function checkPermission(userId, action, resource) {
     const context = await getCachedUserAccessContext(userId);
 
     if (context.isSuperAdmin) {
+        createAuditLog({
+            userId,
+            action: 'SUPERADMIN_ACCESS',
+            category: 'AUTHORIZATION',
+            resource,
+            result: 'SUCCESS',
+            metadata: { checkedAction: action, checkedResource: resource },
+        }).catch(err => logger.warn('SuperAdmin audit log failed', { error: err.message }));
         return { allowed: true, reason: 'SuperAdmin', matchedPolicies: [], deniedBy: null };
     }
 

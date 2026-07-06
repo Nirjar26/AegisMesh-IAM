@@ -16,10 +16,18 @@ jest.mock('../../src/services/token.service', () => ({
 
 jest.mock('../../src/middleware/apiKeyAuth', () => ({
     authenticateApiKeyToken: jest.fn(),
+    derivePrimaryRole: jest.fn(u => {
+        const names = (u?.userRoles || []).map(r => r.role?.name).filter(Boolean);
+        return names.includes('SuperAdmin') ? 'SuperAdmin' : (names[0] || null);
+    }),
 }));
 
 jest.mock('../../src/middleware/orgPolicy', () => ({
     enforceOrgPolicyForRequest: jest.fn().mockResolvedValue({}),
+}));
+
+jest.mock('../../src/utils/riskEngine', () => ({
+    getRiskScore: jest.fn().mockResolvedValue({ risk_score: 0.1, is_anomaly: false }),
 }));
 
 const prisma = require('../../src/config/database');

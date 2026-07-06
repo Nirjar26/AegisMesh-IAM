@@ -80,6 +80,7 @@ jest.mock('../../src/middleware/rateLimiter', () => ({
     passwordResetLimiter: jest.fn((req, res, next) => next()),
     mfaSetupLimiter: jest.fn((req, res, next) => next()),
     tokenRefreshLimiter: jest.fn((req, res, next) => next()),
+    verifyEmailLimiter: jest.fn((req, res, next) => next()),
     sessionRevokeLimiter: jest.fn((req, res, next) => next()),
 }));
 

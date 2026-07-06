@@ -4,11 +4,12 @@ const prisma = require('../../config/database');
 const emailService = require('../email.service');
 const tokenService = require('../token.service');
 const { auditAuth, auditSession } = require('../../utils/auditLog');
-const { createError } = require('../../utils/errors');
+const { createError, AppError } = require('../../utils/errors');
 const logger = require('../../utils/logger');
 
 const BCRYPT_ROUNDS = Number.parseInt(process.env.BCRYPT_ROUNDS, 10) || 12;
 const RESET_EXPIRY_HOURS = Number.parseInt(process.env.PASSWORD_RESET_EXPIRY_HOURS, 10) || 1;
+const VERIFY_TOKEN_EXPIRY_HOURS = 24;
 
 async function forgotPassword({ email, req }) {
     const user = await prisma.user.findUnique({ where: { email } });
@@ -79,11 +80,10 @@ async function verifyEmail({ token, req }) {
         throw createError('AUTH_007', { message: 'Invalid verification token' });
     }
 
-    const TOKEN_EXPIRY_HOURS = 24;
     if (user.emailVerifyTokenCreatedAt) {
         const elapsed = Date.now() - new Date(user.emailVerifyTokenCreatedAt).getTime();
-        if (elapsed > TOKEN_EXPIRY_HOURS * 60 * 60 * 1000) {
-            throw createError('AUTH_010', { message: 'Verification token has expired. Please request a new one.' });
+        if (elapsed > VERIFY_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000) {
+            throw new AppError('Verification token has expired. Please request a new one.', 410, 'AUTH_010');
         }
     }
 
