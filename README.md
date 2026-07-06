@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1>AegisMesh</h1>
+<h1>Bastion</h1>
 
 </div>
 
@@ -10,7 +10,7 @@ Run your own IAM layer instead of paying for Auth0/Okta which covers policy-driv
 
 ## Overview
 
-AegisMesh is a full-stack identity and access management platform built for teams that want AWS IAM-style access controls without handing user data to a third party.
+Bastion is a full-stack identity and access management platform built for teams that want AWS IAM-style access controls without handing user data to a third party.
 
 Core design rules:
 
@@ -185,8 +185,8 @@ The Security Engine is a FastAPI service that scores every login request against
 ### Prerequisites
 
 ```bash
-git clone https://github.com/nirjxr26/AegisMesh-IAM.git
-cd AegisMesh-IAM
+git clone https://github.com/nirjxr26/Bastion.git
+cd Bastion
 cp .env.example .env
 ```
 

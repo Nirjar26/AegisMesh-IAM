@@ -32,4 +32,4 @@ const tokenRefreshLimiter = createLimiter(WINDOW_15MIN, prodMax(30), 'Too many t
 const verifyEmailLimiter = createLimiter(WINDOW_15MIN, prodMax(10), 'Too many verification attempts. Please try again in 15 minutes.', 'auth/verify-email');
 const sessionRevokeLimiter = createLimiter(WINDOW_15MIN, prodMax(20), 'Too many session revocation attempts. Please try again later.', 'auth/sessions');
 
-module.exports = { loginLimiter, registerLimiter, generalLimiter, passwordResetLimiter, mfaSetupLimiter, tokenRefreshLimiter, verifyEmailLimiter, sessionRevokeLimiter };
+

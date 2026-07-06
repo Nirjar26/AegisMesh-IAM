@@ -39,6 +39,16 @@ def _check_rate_limit(ip: str, max_requests: int = 100, window: int = 60):
 def rate_limit(request: Request):
     _check_rate_limit(request.client.host)
 
+API_KEY_HEADER = APIKeyHeader(name="X-Api-Key", auto_error=False)
+SECURITY_ENGINE_API_KEY = os.getenv("SECURITY_ENGINE_API_KEY", "")
+
+
+def verify_api_key(api_key: str = Depends(API_KEY_HEADER)):
+    if not SECURITY_ENGINE_API_KEY:
+        return
+    if not api_key or api_key != SECURITY_ENGINE_API_KEY:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing API key")
+
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
@@ -122,7 +132,7 @@ def health(_auth = Depends(verify_api_key)):
 @app.post("/analyze", response_model=AnalyzeResponse, responses={
     400: {"description": "Bad Request"},
     500: {"description": "Internal Server Error"}})
-async def analyze(data: AnalyzeRequest, _auth = Depends(verify_api_key), _rl = Depends(rate_limit)):
+async def analyze(data: AnalyzeRequest, _auth = Depends(verify_api_key)):
     start_total = time.time()
     try:
         risk_score, prep_time, inf_time = detector.predict_risk(data.model_dump())

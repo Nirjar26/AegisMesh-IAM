@@ -43,6 +43,10 @@ function decryptText(payload) {
     const text = String(payload);
     const parts = text.split(':');
 
+    // Legacy plaintext — backward compat for pre-encryption secrets.
+    if (parts.length < 3) {
+        return text;
+    }
     try {
         // New format (4 parts): salt:iv:authTag:ciphertext
         // Legacy format (3 parts): iv:authTag:ciphertext

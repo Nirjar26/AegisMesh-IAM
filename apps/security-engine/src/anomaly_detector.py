@@ -63,7 +63,6 @@ def _safely_load_joblib(path):
     # add pickle safe-restrictor if loading from untrusted sources
     return joblib.load(path)
 
-
 class AnomalyDetector:
     def __init__(self, model_path="models/isolation_forest.joblib"):
         self.model_path = _resolve_model_path(model_path)
