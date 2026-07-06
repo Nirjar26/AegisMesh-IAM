@@ -460,7 +460,7 @@ exports.cleanupLogs = async (req, res, next) => {
 /**
  * GET /api/audit-logs/stream (SSE)
  */
-exports.streamLogs = async (req, res, next) => {
+exports.streamLogs = async (req, res, _next) => {
     const { addSSEClient, removeSSEClient } = require('../utils/auditLog');
 
     res.setHeader('Content-Type', 'text/event-stream');

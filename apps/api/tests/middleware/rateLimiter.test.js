@@ -104,7 +104,7 @@ describe('rateLimiter handlers', () => {
 
         limiters.loginLimiter.options.handler(mockReq, mockRes, jest.fn(), limiters.loginLimiter.options);
 
-        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for login', { ip: '192.168.1.1' });
+        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for auth/login', { ip: '192.168.1.1', path: undefined });
         expect(auditSecurity.rateLimitExceeded).toHaveBeenCalledWith(mockReq, 'auth/login');
         expect(mockRes.status).toHaveBeenCalledWith(429);
         expect(mockRes.json).toHaveBeenCalledWith(limiters.loginLimiter.options.message);
@@ -117,7 +117,7 @@ describe('rateLimiter handlers', () => {
 
         limiters.registerLimiter.options.handler(mockReq, mockRes, jest.fn(), limiters.registerLimiter.options);
 
-        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for register', { ip: '10.0.0.1' });
+        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for auth/register', { ip: '10.0.0.1', path: undefined });
     });
 
     it('handler calls logger.warn on password reset limit', () => {
@@ -127,7 +127,7 @@ describe('rateLimiter handlers', () => {
 
         limiters.passwordResetLimiter.options.handler(mockReq, mockRes, jest.fn(), limiters.passwordResetLimiter.options);
 
-        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for password reset', { ip: '10.0.0.2' });
+        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for auth/forgot-password', { ip: '10.0.0.2', path: undefined });
     });
 
     it('handler includes path for generalLimiter', () => {
@@ -137,6 +137,6 @@ describe('rateLimiter handlers', () => {
 
         limiters.generalLimiter.options.handler(mockReq, mockRes, jest.fn(), limiters.generalLimiter.options);
 
-        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded', { ip: '10.0.0.3', path: '/api/users' });
+        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for ', { ip: '10.0.0.3', path: '/api/users' });
     });
 });
