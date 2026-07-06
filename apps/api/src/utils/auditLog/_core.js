@@ -148,9 +148,7 @@ async function audit({
         const prevHash = prevEntry?.metadata?.chain_hash || null;
 
         const canonicalData = `${prevHash || ''}|${action}|${category}|${resource || ''}|${resourceId || ''}|${result}`;
-        // ponytail: HMAC over createHash so CodeQL stops flagging this as a password hash.
-        // This is an audit-chain integrity check, not password storage.
-        const chainHash = crypto.createHmac('sha256', process.env.JWT_SECRET || 'audit-chain').update(canonicalData).digest('hex');
+        const chainHash = crypto.createHmac('sha512', process.env.JWT_SECRET || 'audit-chain').update(canonicalData).digest('hex');
 
         const enrichedMetadata = metadata ? { ...metadata, chain_hash: chainHash } : { chain_hash: chainHash };
 

@@ -44,7 +44,7 @@ exports.createApiKey = async (req, res, next) => {
         }
 
         const rawToken = `iam_${crypto.randomBytes(20).toString('hex')}`;
-        const tokenHash = await bcrypt.hash(rawToken, 10);
+        const tokenHash = await bcrypt.hash(rawToken, 12);
         const tokenPrefix = rawToken.slice(0, 12);
 
         let expiresAt = null;

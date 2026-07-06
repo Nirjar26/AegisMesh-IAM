@@ -387,7 +387,7 @@ describe('updateUserStatus', () => {
         prisma.user.findUnique.mockResolvedValue(user);
         prisma.user.count.mockResolvedValue(1);
 
-        const req = mockReq({ params: { id: 'user-1' }, body: { status: 'LOCKED' } });
+        const req = mockReq({ params: { id: 'user-1' }, body: { status: 'LOCKED' }, user: { id: 'admin-1', role: 'SuperAdmin' } });
         const res = mockRes();
 
         await userController.updateUserStatus(req, res, next);

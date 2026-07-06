@@ -39,7 +39,7 @@ function errorHandler(err, req, res, _next) {
         body.error = { code: 'DATABASE_ERROR', message: 'Database connection or authentication failed. Please verify credentials and database availability.' };
     } else if (err.code === 'P2002') {
         status = 409;
-        body.error = { code: 'CONFLICT', message: 'A record with this data already exists' };
+        body.error = { code: 'CONFLICT', message: 'A record with this data already exists', details: err.meta?.target ? { target: err.meta.target } : undefined };
     } else if (err.code === 'P2025') {
         status = 404;
         body.error = { code: 'NOT_FOUND', message: 'Record not found' };
