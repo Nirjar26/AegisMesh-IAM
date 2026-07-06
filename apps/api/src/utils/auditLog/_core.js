@@ -148,7 +148,7 @@ async function audit({
         const prevHash = prevEntry?.metadata?.chain_hash || null;
 
         const canonicalData = `${prevHash || ''}|${action}|${category}|${resource || ''}|${resourceId || ''}|${result}`;
-        const chainHash = crypto.createHmac('sha512', process.env.JWT_SECRET || 'audit-chain').update(canonicalData).digest('hex');
+        const chainHash = crypto.pbkdf2Sync(canonicalData, process.env.JWT_SECRET || 'audit-chain', 10, 64, 'sha512').toString('hex');
 
         const enrichedMetadata = metadata ? { ...metadata, chain_hash: chainHash } : { chain_hash: chainHash };
 
