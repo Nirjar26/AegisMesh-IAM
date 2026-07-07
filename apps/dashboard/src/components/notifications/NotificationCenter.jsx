@@ -236,11 +236,10 @@ export default function NotificationCenter({
                                         {count > 0 && (
                                             <span
                                                 className={`rounded-full px-1.5 py-0.5 text-[9px] font-extrabold ${
-                                                    active
-                                                        ? filter === 'critical'
-                                                            ? 'bg-red-500 text-white'
-                                                            : 'bg-[#4f46e5] text-white'
-                                                        : 'bg-slate-200 text-slate-600'
+                                                (() => {
+                                                    if (!active) return 'bg-slate-200 text-slate-600';
+                                                    return filter === 'critical' ? 'bg-red-500 text-white' : 'bg-[#4f46e5] text-white';
+                                                })()
                                                 }`}
                                             >
                                                 {count}

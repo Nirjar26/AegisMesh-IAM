@@ -1,24 +1,26 @@
 const winston = require('winston');
 const path = require('node:path');
 
-const SENSITIVE_KEYS = [
+const SENSITIVE_KEYS = new Set([
   'refreshtoken', 'accesstoken', 'password', 'passwordhash', 'secret',
   'token', 'otp', 'mfatoken', 'auth', 'credentials', 'pwd', 'api_key', 'apikey'
-];
+]);
+
+function sanitizeString(value) {
+  let sanitized = value;
+  for (const key of SENSITIVE_KEYS) {
+    const regex = new RegExp(String.raw`(decodeURIComponent\()?("${key}"|'${key}'|\\"${key}\\"|\b${key}\b)\s*[:=]\s*(?:"[^"]{0,500}"|'[^']{0,500}'|\\"[^\\"]{0,500}\\"|[\w/+=-]{0,200})`, 'gi');
+    sanitized = sanitized.replace(regex, (match, p1, p2) => {
+      return p1 ? `${p1}${p2}: "[REDACTED]"` : `${p2}: "[REDACTED]"`;
+    });
+  }
+  return sanitized;
+}
 
 function sanitizeValue(value) {
   if (value === null || value === undefined) return value;
 
-  if (typeof value === 'string') {
-    let sanitized = value;
-    for (const key of SENSITIVE_KEYS) {
-      const regex = new RegExp(`(decodeURIComponent\\()?("${key}"|'${key}'|\\\\"${key}\\\\"|\\b${key}\\b)\\s*[:=]\\s*(?:"[^"]{0,500}"|'[^']{0,500}'|\\\\"[^\\\\"]{0,500}\\\\"|[\\w/+=-]{0,200})`, 'gi');
-      sanitized = sanitized.replace(regex, (match, p1, p2) => {
-        return p1 ? `${p1}${p2}: "[REDACTED]"` : `${p2}: "[REDACTED]"`;
-      });
-    }
-    return sanitized;
-  }
+  if (typeof value === 'string') return sanitizeString(value);
 
   if (Array.isArray(value)) {
     return value.map(sanitizeValue);
@@ -35,7 +37,7 @@ function sanitizeValue(value) {
     }
     const sanitizedObj = {};
     for (const [k, v] of Object.entries(value)) {
-      if (SENSITIVE_KEYS.includes(k.toLowerCase())) {
+      if (SENSITIVE_KEYS.has(k.toLowerCase())) {
         sanitizedObj[k] = '[REDACTED]';
       } else {
         sanitizedObj[k] = sanitizeValue(v);
@@ -44,9 +46,7 @@ function sanitizeValue(value) {
     return sanitizedObj;
   }
 
-  if (typeof value === 'number' || typeof value === 'boolean') {
-    return sanitizeValue(String(value));
-  }
+  if (typeof value === 'number' || typeof value === 'boolean') return sanitizeString(String(value));
 
   return value;
 }
@@ -60,7 +60,7 @@ const sanitizeFormat = winston.format((info) => {
   }
   for (const key of Object.keys(info)) {
     if (!['timestamp', 'level', 'message', 'stack'].includes(key)) {
-      if (SENSITIVE_KEYS.includes(key.toLowerCase())) {
+      if (SENSITIVE_KEYS.has(key.toLowerCase())) {
         info[key] = '[REDACTED]';
       } else {
         info[key] = sanitizeValue(info[key]);

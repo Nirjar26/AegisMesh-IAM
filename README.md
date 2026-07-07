@@ -6,6 +6,13 @@
 
 Run your own IAM layer instead of paying for Auth0/Okta which covers policy-driven access, step-up auth, ML threat detection and DevSecOps pipeline.
 
+<div align="center">
+<img
+  src="./diagrams/iam.svg"
+  alt="IAM architecture diagram"
+ />
+</div>
+
 ---
 
 ## Overview

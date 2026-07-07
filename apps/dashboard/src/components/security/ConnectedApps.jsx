@@ -250,10 +250,9 @@ export default function ConnectedApps() {
             ) : null}
 
             {pendingRevoke ? (
-                <div
-                    role="button"
-                    tabIndex={0}
-                    className="fixed inset-0 z-[85] flex items-end justify-center bg-slate-900/50 backdrop-blur-sm p-0 sm:items-center sm:p-4 cursor-default"
+                <button
+                    type="button"
+                    className="fixed inset-0 z-[85] flex items-end justify-center bg-slate-900/50 backdrop-blur-sm p-0 sm:items-center sm:p-4 cursor-default w-full border-0"
                     onClick={(event) => {
                         if (event.target === event.currentTarget && !revokeMutation.isPending) {
                             setPendingRevoke(null);
@@ -282,7 +281,7 @@ export default function ConnectedApps() {
                                 <AlertTriangle size={14} className="mt-0.5 shrink-0" />
                                 <span>If this is your only login method, you may need your password to sign in.</span>
                             </div>
-                        ) : null}
+            ) : null}
 
                         <div className="mt-5">
                             <button
@@ -303,7 +302,7 @@ export default function ConnectedApps() {
                             </button>
                         </div>
                     </div>
-                </div>
+                    </button>
             ) : null}
         </div>
     );

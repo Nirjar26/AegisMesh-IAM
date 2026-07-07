@@ -45,7 +45,7 @@ spec:
         fsGroup: 1000
       containers:
       - name: mlflow
-        image: aegismesh-mlflow:latest
+        image: aegismesh-mlflow:2.17.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5000

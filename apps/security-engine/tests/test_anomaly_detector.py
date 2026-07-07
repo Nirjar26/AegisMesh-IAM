@@ -34,7 +34,7 @@ class TestAnomalyDetector:
 
     def test_predict_risk_raises_on_invalid_data(self):
         detector = AnomalyDetector()
-        with pytest.raises(Exception):
+        with pytest.raises(TypeError):
             detector.predict_risk(None)
 
     def test_model_uses_isolation_forest(self):

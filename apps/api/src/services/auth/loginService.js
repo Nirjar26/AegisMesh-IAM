@@ -230,8 +230,8 @@ async function createLoginResponse({ user, req }) {
 
     const hasBackupCodes = hasConfiguredBackupCodes(user);
     const hasPassword = Boolean(user.passwordHash);
-    const sensitiveKeys = ['passwordHash', 'mfaSecret', 'mfaBackupCodes', 'backupCodes', 'emailVerifyToken', 'passwordResetToken', 'passwordResetExpires', 'userRoles'];
-    const safeUser = Object.fromEntries(Object.entries(user).filter(([k]) => !sensitiveKeys.includes(k)));
+    const sensitiveKeys = new Set(['passwordHash', 'mfaSecret', 'mfaBackupCodes', 'backupCodes', 'emailVerifyToken', 'passwordResetToken', 'passwordResetExpires', 'userRoles']);
+    const safeUser = Object.fromEntries(Object.entries(user).filter(([k]) => !sensitiveKeys.has(k)));
 
     return {
         accessToken,

@@ -43,6 +43,55 @@ function getRangeStart(now, range) {
     return new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
 }
 
+async function getTimeSeriesData(rangeStart, range) {
+    const bucketExpr = timeBucketExpr(range);
+    const fmtExpr = bucketFormat(range, bucketExpr);
+    const timeBuckets = await prisma.$queryRawUnsafe(`
+        SELECT ${fmtExpr} AS label,
+               COUNT(*)::int AS requests,
+               AVG(COALESCE((a.metadata->>'risk_score')::numeric, 0.1)) AS avg_risk,
+               COUNT(*) FILTER (WHERE a.result = 'BLOCKED'
+                 OR a.action ILIKE '%DENY%' OR a.action ILIKE '%BLOCK%')::int AS denies,
+               COUNT(*) FILTER (WHERE a.action IN ('SESSION_REVOKED','ALL_OTHER_SESSIONS_REVOKED','SESSION_REVOKE_ALL'))::int AS revocations
+        FROM "AuditLog" a
+        WHERE a."createdAt" >= $1
+        GROUP BY ${bucketExpr}
+        ORDER BY ${bucketExpr}
+    `, rangeStart);
+    const buckets = timeBuckets.map(b => ({
+        label: b.label,
+        requests: Number(b.requests),
+        avgRisk: b.avg_risk ? Math.round(Number(b.avg_risk) * 100) / 100 : 0,
+        denies: Number(b.denies),
+        revocations: Number(b.revocations),
+    }));
+    return {
+        pulse: buckets.map(b => ({ timestamp: b.label, requests: b.requests, avgRisk: b.avgRisk })),
+        denyTrends: buckets.map(b => ({ timestamp: b.label, denies: b.denies })),
+        revocationTrends: buckets.map(b => ({ timestamp: b.label, revocations: b.revocations })),
+    };
+}
+
+async function getGeoDistribution(rangeStart) {
+    const ipAgg = await prisma.$queryRawUnsafe(`
+        SELECT COALESCE(a."ipAddress", 'Unknown') AS "ipAddress",
+               COUNT(*) FILTER (WHERE a.result = 'BLOCKED')::int AS blocked,
+               COUNT(*) FILTER (WHERE a.result != 'BLOCKED')::int AS success,
+               COUNT(*)::int AS total
+        FROM "AuditLog" a
+        WHERE a."createdAt" >= $1
+        GROUP BY a."ipAddress"
+        ORDER BY total DESC
+        LIMIT 5
+    `, rangeStart);
+    return ipAgg.map(r => ({
+        ipAddress: r.ipAddress,
+        blocked: Number(r.blocked),
+        success: Number(r.success),
+        total: Number(r.total),
+    }));
+}
+
 /**
  * GET /api/analytics/overview
  * Aggregates high-depth metrics for the 'War Room' dashboard over various timeframes (24h, 30d, 1y).
@@ -57,53 +106,8 @@ exports.getOverviewMetrics = async (req, res, next) => {
 
         const rangeStart = getRangeStart(now, range);
 
-        const bucketExpr = timeBucketExpr(range);
-        const fmtExpr = bucketFormat(range, bucketExpr);
-
-        const timeBuckets = await prisma.$queryRawUnsafe(`
-            SELECT ${fmtExpr} AS label,
-                   COUNT(*)::int AS requests,
-                   AVG(COALESCE((a.metadata->>'risk_score')::numeric, 0.1)) AS avg_risk,
-                   COUNT(*) FILTER (WHERE a.result = 'BLOCKED'
-                     OR a.action ILIKE '%DENY%' OR a.action ILIKE '%BLOCK%')::int AS denies,
-                   COUNT(*) FILTER (WHERE a.action IN ('SESSION_REVOKED','ALL_OTHER_SESSIONS_REVOKED','SESSION_REVOKE_ALL'))::int AS revocations
-            FROM "AuditLog" a
-            WHERE a."createdAt" >= $1
-            GROUP BY ${bucketExpr}
-            ORDER BY ${bucketExpr}
-        `, rangeStart);
-
-        const buckets = timeBuckets.map(b => ({
-            label: b.label,
-            requests: Number(b.requests),
-            avgRisk: b.avg_risk ? Math.round(Number(b.avg_risk) * 100) / 100 : 0,
-            denies: Number(b.denies),
-            revocations: Number(b.revocations),
-        }));
-
-        const pulse = buckets.map(b => ({ timestamp: b.label, requests: b.requests, avgRisk: b.avgRisk }));
-        const denyTrends = buckets.map(b => ({ timestamp: b.label, denies: b.denies }));
-        const revocationTrends = buckets.map(b => ({ timestamp: b.label, revocations: b.revocations }));
-
-        // Geo distribution (SQL aggregation instead of JS)
-        const ipAgg = await prisma.$queryRawUnsafe(`
-            SELECT COALESCE(a."ipAddress", 'Unknown') AS "ipAddress",
-                   COUNT(*) FILTER (WHERE a.result = 'BLOCKED')::int AS blocked,
-                   COUNT(*) FILTER (WHERE a.result != 'BLOCKED')::int AS success,
-                   COUNT(*)::int AS total
-            FROM "AuditLog" a
-            WHERE a."createdAt" >= $1
-            GROUP BY a."ipAddress"
-            ORDER BY total DESC
-            LIMIT 5
-        `, rangeStart);
-
-        const geoDist = ipAgg.map(r => ({
-            ipAddress: r.ipAddress,
-            blocked: Number(r.blocked),
-            success: Number(r.success),
-            total: Number(r.total),
-        }));
+        const { pulse, denyTrends, revocationTrends } = await getTimeSeriesData(rangeStart, range);
+        const geoDist = await getGeoDistribution(rangeStart);
 
         // Aggregated counts for stats
         const aggCounts = await prisma.$queryRawUnsafe(`

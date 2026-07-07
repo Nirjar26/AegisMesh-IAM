@@ -133,7 +133,7 @@ def health(_auth: Annotated[str, Depends(verify_api_key)]):
 @app.post("/analyze", response_model=AnalyzeResponse, responses={
     400: {"description": "Bad Request"},
     500: {"description": "Internal Server Error"}})
-async def analyze(data: AnalyzeRequest, _auth = Depends(verify_api_key)):
+async def analyze(data: AnalyzeRequest, _auth: Annotated[dict, Depends(verify_api_key)]):
     start_total = time.time()
     try:
         risk_score, prep_time, inf_time = detector.predict_risk(data.model_dump())
@@ -161,7 +161,7 @@ async def analyze(data: AnalyzeRequest, _auth = Depends(verify_api_key)):
 
 @app.post("/train", response_model=TrainResponse, responses={
     500: {"description": "Internal Server Error"}})
-def train(_auth = Depends(verify_api_key)):
+def train(_auth: Annotated[dict, Depends(verify_api_key)]):
     try:
         detector.train()
         sync_metrics()
