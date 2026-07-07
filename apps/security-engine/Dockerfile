@@ -1,5 +1,5 @@
 # Build stage
-FROM python:3.11-slim AS builder
+FROM python:3.14-slim AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 
 # Final Production stage
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 
