@@ -143,11 +143,14 @@ api.interceptors.response.use(
 
         if (
             error.response?.status === 403 &&
-            (responseCode === 'EBADCSRFTOKEN' || responseCode === 'CSRF_ERROR')
+            (responseCode === 'EBADCSRFTOKEN' || responseCode === 'CSRF_ERROR') &&
+            originalRequest
         ) {
             await fetchCsrfToken();
-            originalRequest.headers[CSRF_TOKEN_HEADER] = csrfToken;
-            return api(originalRequest);
+            if (originalRequest.headers && csrfToken) {
+                originalRequest.headers[CSRF_TOKEN_HEADER] = csrfToken;
+            }
+            return api(originalRequest as any);
         }
 
         const shouldRetry =
