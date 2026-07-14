@@ -3,6 +3,15 @@ import { logger } from '../utils/logger';
 import type { QueryParams } from './types';
 import type { ApiResponse, PaginatedResponse, User } from '@bastion/types';
 
+interface InterceptorError {
+    config?: Record<string, unknown> & {
+        _retry?: boolean;
+        url?: string;
+        headers?: Record<string, string>;
+    };
+    response?: { status?: number; data?: { code?: string; error?: { code?: string } } };
+}
+
 const AUTH_EXPIRED_EVENT = 'iam:auth-expired';
 const REAUTH_HEADER = 'x-reauth-token';
 const CSRF_TOKEN_HEADER = 'x-csrf-token';
@@ -123,7 +132,7 @@ api.interceptors.response.use(
         if (reauthToken) storeReauthToken(reauthToken);
         return response;
     },
-    async (error: any) => {
+    async (error: InterceptorError) => {
         const originalRequest = error.config;
         const responseCode = error.response?.data?.code || error.response?.data?.error?.code;
 
@@ -248,8 +257,7 @@ export const rbacAPI: RBACAPI = {
     updateRole: (id, data) => api.put(`/roles/${id}`, data),
     deleteRole: (id) => api.delete(`/roles/${id}`),
     attachPolicyToRole: (roleId, policyId) => api.post(`/roles/${roleId}/policies`, { policyId }),
-    detachPolicyFromRole: (roleId, policyId) =>
-        api.delete(`/roles/${roleId}/policies/${policyId}`),
+    detachPolicyFromRole: (roleId, policyId) => api.delete(`/roles/${roleId}/policies/${policyId}`),
     getRoleUsers: (id) => api.get(`/roles/${id}/users`),
     getPolicies: (params) => api.get('/policies', { params }),
     getPolicy: (id) => api.get(`/policies/${id}`),
@@ -263,11 +271,9 @@ export const rbacAPI: RBACAPI = {
     updateGroup: (id, data) => api.put(`/groups/${id}`, data),
     deleteGroup: (id) => api.delete(`/groups/${id}`),
     addGroupMember: (groupId, userId) => api.post(`/groups/${groupId}/members`, { userId }),
-    removeGroupMember: (groupId, userId) =>
-        api.delete(`/groups/${groupId}/members/${userId}`),
+    removeGroupMember: (groupId, userId) => api.delete(`/groups/${groupId}/members/${userId}`),
     attachRoleToGroup: (groupId, roleId) => api.post(`/groups/${groupId}/roles`, { roleId }),
-    detachRoleFromGroup: (groupId, roleId) =>
-        api.delete(`/groups/${groupId}/roles/${roleId}`),
+    detachRoleFromGroup: (groupId, roleId) => api.delete(`/groups/${groupId}/roles/${roleId}`),
     getUserRoles: (userId) => api.get(`/users/${userId}/roles`),
     assignUserRole: (userId, roleId) => api.post(`/users/${userId}/roles`, { roleId }),
     removeUserRole: (userId, roleId) => api.delete(`/users/${userId}/roles/${roleId}`),
@@ -405,7 +411,10 @@ interface SettingsAPI {
     resetOrganizationPolicies: (credentials?: Record<string, unknown>) => Promise<unknown>;
 
     getApiKeys: () => Promise<unknown>;
-    createApiKey: (data: Record<string, unknown>, credentials?: Record<string, unknown>) => Promise<unknown>;
+    createApiKey: (
+        data: Record<string, unknown>,
+        credentials?: Record<string, unknown>,
+    ) => Promise<unknown>;
     revokeApiKey: (tokenId: string) => Promise<unknown>;
 }
 

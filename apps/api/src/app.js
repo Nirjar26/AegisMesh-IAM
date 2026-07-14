@@ -134,15 +134,13 @@ const csrfExemptPaths = new Set([
     '/api/auth/oauth/github/callback',
 ]);
 
-const csrfProtection = (req, res, next) => {
+app.use((req, res, next) => {
     const isMutating = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
     if (!isMutating || csrfExemptPaths.has(req.path)) {
         return next();
     }
     doubleCsrfProtection(req, res, next);
-};
-
-app.use(csrfProtection);
+});
 
 // ═══════════════════════════════════════
 // RATE LIMITING
@@ -221,15 +219,13 @@ app.get(
     '/metrics',
     (req, res, next) => {
         if (!isInternalIP(req)) {
-            return res
-                .status(403)
-                .json({
-                    success: false,
-                    error: {
-                        code: 'FORBIDDEN',
-                        message: 'Metrics accessible only from internal network',
-                    },
-                });
+            return res.status(403).json({
+                success: false,
+                error: {
+                    code: 'FORBIDDEN',
+                    message: 'Metrics accessible only from internal network',
+                },
+            });
         }
         next();
     },
