@@ -138,7 +138,9 @@ function classNames(...values) {
 }
 
 function normalizeTab(rawTab) {
-    const value = String(rawTab || '').trim().toLowerCase();
+    const value = String(rawTab || '')
+        .trim()
+        .toLowerCase();
 
     if (!value) return 'profile';
     if (value === 'preferences') return 'notifications';
@@ -203,23 +205,28 @@ function getPasswordStrength(password) {
     if (/\d/.test(password)) score += 1;
     if (/[^A-Za-z\d\s]/.test(password)) score += 1;
 
-    if (score <= 2) return { label: 'Weak', color: 'bg-[#dc2626]', textColor: 'text-[#dc2626]', pct: 25 };
-    if (score === 3) return { label: 'Fair', color: 'bg-[#d97706]', textColor: 'text-[#d97706]', pct: 50 };
-    if (score === 4) return { label: 'Strong', color: 'bg-[#16a34a]', textColor: 'text-[#16a34a]', pct: 75 };
-    return { label: 'Very Strong', color: 'bg-[#059669]', textColor: 'text-[#059669]', pct: 100 };
+    if (score <= 2)
+        return { label: 'Weak', color: 'bg-[var(--ds-color-danger)]', textColor: 'text-[var(--ds-color-danger)]', pct: 25 };
+    if (score === 3)
+        return { label: 'Fair', color: 'bg-[var(--ds-color-warning)]', textColor: 'text-[var(--ds-color-warning)]', pct: 50 };
+    if (score === 4)
+        return { label: 'Strong', color: 'bg-[var(--ds-color-success)]', textColor: 'text-[var(--ds-color-success)]', pct: 75 };
+    return { label: 'Very Strong', color: 'bg-[var(--ds-color-success)]', textColor: 'text-[var(--ds-color-success)]', pct: 100 };
 }
 
 function Toggle({ checked, onChange }) {
     return (
-        <label style={{
-            position: 'relative',
-            display: 'inline-flex',
-            alignItems: 'center',
-            cursor: 'pointer',
-            width: 44,
-            height: 24,
-            flexShrink: 0,
-        }}>
+        <label
+            style={{
+                position: 'relative',
+                display: 'inline-flex',
+                alignItems: 'center',
+                cursor: 'pointer',
+                width: 44,
+                height: 24,
+                flexShrink: 0,
+            }}
+        >
             <input
                 type="checkbox"
                 checked={checked}
@@ -232,25 +239,29 @@ function Toggle({ checked, onChange }) {
                     position: 'absolute',
                 }}
             />
-            <span style={{
-                position: 'absolute',
-                inset: 0,
-                borderRadius: 12,
-                background: checked ? '#6366f1' : '#e2e8f0',
-                transition: 'background 200ms ease',
-            }} />
-            <span style={{
-                position: 'absolute',
-                top: 3,
-                left: 3,
-                width: 18,
-                height: 18,
-                borderRadius: '50%',
-                background: '#ffffff',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                transition: 'transform 200ms ease',
-                transform: checked ? 'translateX(20px)' : 'translateX(0)',
-            }} />
+            <span
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: 12,
+                    background: checked ? 'var(--ds-color-accent)' : 'var(--ds-color-border)',
+                    transition: 'background 200ms ease',
+                }}
+            />
+            <span
+                style={{
+                    position: 'absolute',
+                    top: 3,
+                    left: 3,
+                    width: 18,
+                    height: 18,
+                    borderRadius: '50%',
+                    background: 'var(--ds-color-white)',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                    transition: 'transform 200ms ease',
+                    transform: checked ? 'translateX(20px)' : 'translateX(0)',
+                }}
+            />
         </label>
     );
 }
@@ -258,20 +269,20 @@ function Toggle({ checked, onChange }) {
 function Modal({ title, icon: Icon, children, onClose }) {
     return (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm p-0 sm:items-center sm:p-4">
-            <div className="mx-4 w-full overflow-hidden rounded-t-[20px] border border-[#d0d7e8] bg-white shadow-2xl sm:mx-0 sm:max-w-2xl sm:rounded-2xl">
-                <div className="px-6 py-4 border-b border-[#f0f2f8] flex items-center justify-between">
+            <div className="mx-4 w-full overflow-hidden rounded-t-[20px] border border-[var(--ds-color-border)] bg-white shadow-2xl sm:mx-0 sm:max-w-2xl sm:rounded-2xl">
+                <div className="px-6 py-4 border-b border-[var(--ds-color-bg-0)] flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         {Icon ? (
-                            <div className="w-8 h-8 rounded-lg bg-[#4f46e5]/10 text-[#4f46e5] flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-lg bg-[var(--ds-color-accent)]/10 text-[var(--ds-color-accent)] flex items-center justify-center">
                                 <Icon size={16} />
                             </div>
                         ) : null}
-                        <h3 className="text-[15px] font-semibold text-[#0f1623]">{title}</h3>
+                        <h3 className="text-[15px] font-semibold text-[var(--ds-color-text-primary)]">{title}</h3>
                     </div>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="text-[#7a87a8] hover:text-[#0f1623] text-sm"
+                        className="text-[var(--ds-color-text-muted)] hover:text-[var(--ds-color-text-primary)] text-sm"
                     >
                         Close
                     </button>
@@ -291,14 +302,14 @@ function TabButton({ tab, active, onClick }) {
             className={classNames(
                 'flex shrink-0 items-center gap-[10px] whitespace-nowrap border-none border-b-2 border-transparent px-[14px] py-[10px] text-left transition-all duration-150 md:mb-0.5 md:w-full md:rounded-[10px] md:border-b-0',
                 active
-                    ? 'border-[#6366f1] bg-transparent text-[#6366f1] font-semibold md:bg-[#ede9fe]'
-                    : 'bg-transparent text-[#64748b] hover:text-[#374151] font-medium md:hover:bg-[#f8fafc]'
+                    ? 'border-[var(--ds-color-accent)] bg-transparent text-[var(--ds-color-accent)] font-semibold md:bg-[var(--ds-color-bg-1)]'
+                    : 'bg-transparent text-[var(--ds-color-text-muted)] hover:text-[var(--ds-color-text-secondary)] font-medium md:hover:bg-[var(--ds-color-bg-0)]',
             )}
         >
             <Icon size={16} className="shrink-0" />
             <span className="flex-1 text-[13px] font-medium text-inherit">{tab.label}</span>
             {tab.badge ? (
-                <span className="ml-auto bg-[#6366f1] text-white text-[10px] font-bold rounded-[20px] px-[7px] py-[1px] min-w-[20px] text-center">
+                <span className="ml-auto bg-[var(--ds-color-accent)] text-white text-[10px] font-bold rounded-[20px] px-[7px] py-[1px] min-w-[20px] text-center">
                     {tab.badge}
                 </span>
             ) : null}
@@ -385,11 +396,15 @@ function ProfileTab({ user, onProfileUpdated }) {
 
     return (
         <div className="w-full space-y-5">
-            <div className="bg-white border border-[#d0d7e8] rounded-2xl p-6 flex flex-col items-start gap-4 shadow-sm sm:flex-row sm:items-center sm:gap-6">
+            <div className="bg-white border border-[var(--ds-color-border)] rounded-2xl p-6 flex flex-col items-start gap-4 shadow-sm sm:flex-row sm:items-center sm:gap-6">
                 {user?.avatarUrl ? (
-                    <img src={user.avatarUrl} alt="Avatar" className="w-20 h-20 rounded-2xl object-cover" />
+                    <img
+                        src={user.avatarUrl}
+                        alt="Avatar"
+                        className="w-20 h-20 rounded-2xl object-cover"
+                    />
                 ) : (
-                    <div className="w-20 h-20 rounded-2xl bg-[#4f46e5]/10 text-[#4f46e5] text-2xl font-bold flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-2xl bg-[var(--ds-color-accent)]/10 text-[var(--ds-color-accent)] text-2xl font-bold flex items-center justify-center">
                         {getInitials(user)}
                     </div>
                 )}
@@ -399,7 +414,7 @@ function ProfileTab({ user, onProfileUpdated }) {
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="px-3 py-1.5 text-sm border border-[#d0d7e8] rounded-lg text-[#3a4560] hover:bg-[#f4f6fb]"
+                            className="px-3 py-1.5 text-sm border border-[var(--ds-color-border)] rounded-lg text-[var(--ds-color-text-secondary)] hover:bg-[var(--ds-color-bg-0)]"
                             disabled={uploadMutation.isPending}
                         >
                             Upload Photo
@@ -408,13 +423,13 @@ function ProfileTab({ user, onProfileUpdated }) {
                             <button
                                 type="button"
                                 onClick={() => removeMutation.mutate()}
-                                className="text-xs text-[#dc2626] hover:underline"
+                                className="text-xs text-[var(--ds-color-danger)] hover:underline"
                             >
                                 Remove
                             </button>
                         ) : null}
                     </div>
-                    <p className="text-xs text-[#7a87a8]">JPG, PNG or WebP. Max 2MB.</p>
+                    <p className="text-xs text-[var(--ds-color-text-muted)]">JPG, PNG or WebP. Max 2MB.</p>
                 </div>
 
                 <input
@@ -429,39 +444,56 @@ function ProfileTab({ user, onProfileUpdated }) {
                 />
             </div>
 
-            <div className="bg-white border border-[#d0d7e8] rounded-2xl p-6 shadow-sm space-y-4">
-                <div className="pb-3 border-b border-[#f0f2f8]">
-                    <h3 className="text-[15px] font-semibold text-[#0f1623]">Personal Information</h3>
+            <div className="bg-white border border-[var(--ds-color-border)] rounded-2xl p-6 shadow-sm space-y-4">
+                <div className="pb-3 border-b border-[var(--ds-color-bg-0)]">
+                    <h3 className="text-[15px] font-semibold text-[var(--ds-color-text-primary)]">
+                        Personal Information
+                    </h3>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field label="First Name" error={errors.firstName}>
                         <input
                             value={form.firstName}
-                            onChange={(e) => setForm((prev) => ({ ...prev, firstName: e.target.value }))}
-                            className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm"
+                            onChange={(e) =>
+                                setForm((prev) => ({ ...prev, firstName: e.target.value }))
+                            }
+                            className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm"
                         />
                     </Field>
 
                     <Field label="Last Name" error={errors.lastName}>
                         <input
                             value={form.lastName}
-                            onChange={(e) => setForm((prev) => ({ ...prev, lastName: e.target.value }))}
-                            className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm"
+                            onChange={(e) =>
+                                setForm((prev) => ({ ...prev, lastName: e.target.value }))
+                            }
+                            className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm"
                         />
                     </Field>
 
                     <div className="col-span-2">
-                        <label htmlFor="profile-email" className="text-xs text-[#7a87a8] font-medium mb-1 block">Email</label>
+                        <label
+                            htmlFor="profile-email"
+                            className="text-xs text-[var(--ds-color-text-muted)] font-medium mb-1 block"
+                        >
+                            Email
+                        </label>
                         <div className="relative">
                             <input
                                 id="profile-email"
                                 value={user?.email || ''}
                                 readOnly
-                                className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2.5 text-sm bg-[#f4f6fb] cursor-not-allowed pr-20"
+                                className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2.5 text-sm bg-[var(--ds-color-bg-0)] cursor-not-allowed pr-20"
                             />
-                            <Lock size={14} className="absolute right-12 top-1/2 -translate-y-1/2 text-[#7a87a8]" />
-                            <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#4f46e5] hover:underline">
+                            <Lock
+                                size={14}
+                                className="absolute right-12 top-1/2 -translate-y-1/2 text-[var(--ds-color-text-muted)]"
+                            />
+                            <button
+                                type="button"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[var(--ds-color-accent)] hover:underline"
+                            >
                                 Change Email
                             </button>
                         </div>
@@ -470,16 +502,20 @@ function ProfileTab({ user, onProfileUpdated }) {
                     <Field label="Job Title">
                         <input
                             value={form.jobTitle}
-                            onChange={(e) => setForm((prev) => ({ ...prev, jobTitle: e.target.value }))}
-                            className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm"
+                            onChange={(e) =>
+                                setForm((prev) => ({ ...prev, jobTitle: e.target.value }))
+                            }
+                            className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm"
                         />
                     </Field>
 
                     <Field label="Department">
                         <input
                             value={form.department}
-                            onChange={(e) => setForm((prev) => ({ ...prev, department: e.target.value }))}
-                            className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm"
+                            onChange={(e) =>
+                                setForm((prev) => ({ ...prev, department: e.target.value }))
+                            }
+                            className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm"
                         />
                     </Field>
                 </div>
@@ -488,10 +524,12 @@ function ProfileTab({ user, onProfileUpdated }) {
                     <select
                         value={form.timezone}
                         onChange={(e) => setForm((prev) => ({ ...prev, timezone: e.target.value }))}
-                        className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm bg-white"
+                        className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm bg-white"
                     >
                         {TIMEZONE_OPTIONS.map((option) => (
-                            <option key={option} value={option}>{option}</option>
+                            <option key={option} value={option}>
+                                {option}
+                            </option>
                         ))}
                     </select>
                 </Field>
@@ -500,10 +538,12 @@ function ProfileTab({ user, onProfileUpdated }) {
                     <select
                         value={form.language}
                         onChange={(e) => setForm((prev) => ({ ...prev, language: e.target.value }))}
-                        className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm bg-white"
+                        className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm bg-white"
                     >
                         {LANG_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>{option.label}</option>
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
                         ))}
                     </select>
                 </Field>
@@ -511,22 +551,24 @@ function ProfileTab({ user, onProfileUpdated }) {
                 <div className="flex justify-end gap-3 pt-2">
                     <button
                         type="button"
-                        onClick={() => setForm({
-                            firstName: user?.firstName || '',
-                            lastName: user?.lastName || '',
-                            jobTitle: user?.jobTitle || '',
-                            department: user?.department || '',
-                            timezone: user?.timezone || 'UTC',
-                            language: user?.language || 'en',
-                        })}
-                        className="px-4 py-2 rounded-lg text-sm border border-[#d0d7e8] text-[#3a4560] hover:bg-[#f4f6fb]"
+                        onClick={() =>
+                            setForm({
+                                firstName: user?.firstName || '',
+                                lastName: user?.lastName || '',
+                                jobTitle: user?.jobTitle || '',
+                                department: user?.department || '',
+                                timezone: user?.timezone || 'UTC',
+                                language: user?.language || 'en',
+                            })
+                        }
+                        className="px-4 py-2 rounded-lg text-sm border border-[var(--ds-color-border)] text-[var(--ds-color-text-secondary)] hover:bg-[var(--ds-color-bg-0)]"
                     >
                         Cancel
                     </button>
                     <button
                         type="button"
                         onClick={handleSave}
-                        className="px-4 py-2 rounded-lg text-sm bg-[#4f46e5] text-white hover:bg-[#3730a3]"
+                        className="px-4 py-2 rounded-lg text-sm bg-[var(--ds-color-accent)] text-white hover:bg-[var(--ds-color-accent)]"
                         disabled={updateMutation.isPending}
                     >
                         Save Changes
@@ -614,7 +656,8 @@ function SecurityTab({ user }) {
     });
 
     const verifyMfaMutation = useMutation({
-        mutationFn: ({ token, secret, stateToken }) => settingsAPI.verifyMfa({ token, secret, stateToken }),
+        mutationFn: ({ token, secret, stateToken }) =>
+            settingsAPI.verifyMfa({ token, secret, stateToken }),
         onSuccess: async (res) => {
             setRevealedBackupCodes(res.data?.data?.backupCodes || []);
             setMfaStep(3);
@@ -657,7 +700,8 @@ function SecurityTab({ user }) {
             toast.success('Trusted device revoked');
             await queryClient.invalidateQueries({ queryKey: ['settings-trusted-devices'] });
         },
-        onError: (err) => toast.error(err.response?.data?.error?.message || 'Failed to revoke device'),
+        onError: (err) =>
+            toast.error(err.response?.data?.error?.message || 'Failed to revoke device'),
     });
 
     const revokeAllDevicesMutation = useMutation({
@@ -666,7 +710,8 @@ function SecurityTab({ user }) {
             toast.success('All trusted devices revoked');
             await queryClient.invalidateQueries({ queryKey: ['settings-trusted-devices'] });
         },
-        onError: (err) => toast.error(err.response?.data?.error?.message || 'Failed to revoke all devices'),
+        onError: (err) =>
+            toast.error(err.response?.data?.error?.message || 'Failed to revoke all devices'),
     });
 
     const passwordStrength = getPasswordStrength(passwordData.newPassword || '');
@@ -692,15 +737,26 @@ function SecurityTab({ user }) {
                 <CardHeader
                     icon={Lock}
                     title="Password"
-                    right={<span className="text-xs text-[#7a87a8]">Last changed: {daysSince(user?.passwordChangedAt)}</span>}
+                    right={
+                        <span className="text-xs text-[var(--ds-color-text-muted)]">
+                            Last changed: {daysSince(user?.passwordChangedAt)}
+                        </span>
+                    }
                 />
                 <div className="px-6 py-5 space-y-4">
                     <PasswordField
                         label="Current Password"
                         value={passwordData.currentPassword}
-                        onChange={(value) => setPasswordData((prev) => ({ ...prev, currentPassword: value }))}
+                        onChange={(value) =>
+                            setPasswordData((prev) => ({ ...prev, currentPassword: value }))
+                        }
                         visible={passwordVisibility.currentPassword}
-                        onToggle={() => setPasswordVisibility((prev) => ({ ...prev, currentPassword: !prev.currentPassword }))}
+                        onToggle={() =>
+                            setPasswordVisibility((prev) => ({
+                                ...prev,
+                                currentPassword: !prev.currentPassword,
+                            }))
+                        }
                         error={passwordErrors.currentPassword}
                     />
 
@@ -708,26 +764,53 @@ function SecurityTab({ user }) {
                         <PasswordField
                             label="New Password"
                             value={passwordData.newPassword}
-                            onChange={(value) => setPasswordData((prev) => ({ ...prev, newPassword: value }))}
+                            onChange={(value) =>
+                                setPasswordData((prev) => ({ ...prev, newPassword: value }))
+                            }
                             visible={passwordVisibility.newPassword}
-                            onToggle={() => setPasswordVisibility((prev) => ({ ...prev, newPassword: !prev.newPassword }))}
+                            onToggle={() =>
+                                setPasswordVisibility((prev) => ({
+                                    ...prev,
+                                    newPassword: !prev.newPassword,
+                                }))
+                            }
                             error={passwordErrors.newPassword}
                         />
 
                         <div className="mt-2 flex items-center gap-2">
-                            <div className="w-full h-1.5 bg-[#f0f2f8] rounded-full overflow-hidden">
-                                <div className={classNames('h-full transition-all', passwordStrength.color)} style={{ width: `${passwordStrength.pct}%` }} />
+                            <div className="w-full h-1.5 bg-[var(--ds-color-bg-0)] rounded-full overflow-hidden">
+                                <div
+                                    className={classNames(
+                                        'h-full transition-all',
+                                        passwordStrength.color,
+                                    )}
+                                    style={{ width: `${passwordStrength.pct}%` }}
+                                />
                             </div>
-                            <span className={classNames('text-xs font-medium', passwordStrength.textColor)}>{passwordStrength.label}</span>
+                            <span
+                                className={classNames(
+                                    'text-xs font-medium',
+                                    passwordStrength.textColor,
+                                )}
+                            >
+                                {passwordStrength.label}
+                            </span>
                         </div>
                     </div>
 
                     <PasswordField
                         label="Confirm Password"
                         value={passwordData.confirmPassword}
-                        onChange={(value) => setPasswordData((prev) => ({ ...prev, confirmPassword: value }))}
+                        onChange={(value) =>
+                            setPasswordData((prev) => ({ ...prev, confirmPassword: value }))
+                        }
                         visible={passwordVisibility.confirmPassword}
-                        onToggle={() => setPasswordVisibility((prev) => ({ ...prev, confirmPassword: !prev.confirmPassword }))}
+                        onToggle={() =>
+                            setPasswordVisibility((prev) => ({
+                                ...prev,
+                                confirmPassword: !prev.confirmPassword,
+                            }))
+                        }
                         error={passwordErrors.confirmPassword}
                     />
                 </div>
@@ -735,7 +818,7 @@ function SecurityTab({ user }) {
                     <button
                         type="button"
                         onClick={() => changePasswordMutation.mutate(passwordData)}
-                        className="px-4 py-2 rounded-lg text-sm bg-[#4f46e5] text-white hover:bg-[#3730a3]"
+                        className="px-4 py-2 rounded-lg text-sm bg-[var(--ds-color-accent)] text-white hover:bg-[var(--ds-color-accent)]"
                         disabled={changePasswordMutation.isPending}
                     >
                         Update Password
@@ -747,60 +830,74 @@ function SecurityTab({ user }) {
                 <CardHeader
                     icon={ShieldCheck}
                     title="Two-Factor Authentication"
-                    right={(
-                        <span className={classNames(
-                            'text-xs font-semibold px-2 py-1 rounded-full',
-                            user?.mfaEnabled ? 'bg-[#16a34a]/10 text-[#16a34a]' : 'bg-[#dc2626]/10 text-[#dc2626]'
-                        )}
+                    right={
+                        <span
+                            className={classNames(
+                                'text-xs font-semibold px-2 py-1 rounded-full',
+                                user?.mfaEnabled
+                                    ? 'bg-[var(--ds-color-success)]/10 text-[var(--ds-color-success)]'
+                                    : 'bg-[var(--ds-color-danger)]/10 text-[var(--ds-color-danger)]',
+                            )}
                         >
                             {user?.mfaEnabled ? 'Enabled' : 'Disabled'}
                         </span>
-                    )}
+                    }
                 />
 
                 {user?.mfaEnabled ? (
                     <div className="px-6 py-5 space-y-4">
-                        <div className="bg-[#16a34a]/5 border border-[#16a34a]/15 rounded-xl px-4 py-3">
-                            <p className="text-[13px] text-[#1f5e34]">Configured with Authenticator App</p>
+                        <div className="bg-[var(--ds-color-success)]/5 border border-[var(--ds-color-success)]/15 rounded-xl px-4 py-3">
+                            <p className="text-[13px] text-[var(--ds-color-text-primary)]">
+                                Configured with Authenticator App
+                            </p>
                         </div>
 
                         <div className="flex gap-2">
                             <button
                                 type="button"
                                 onClick={() => {
-                                    const password = globalThis.prompt('Confirm your password to regenerate backup codes');
+                                    const password = globalThis.prompt(
+                                        'Confirm your password to regenerate backup codes',
+                                    );
                                     if (password) {
                                         regenCodesMutation.mutate({ password });
                                     }
                                 }}
-                                className="px-3 py-2 text-sm border border-[#d0d7e8] rounded-lg text-[#3a4560] hover:bg-[#f4f6fb]"
+                                className="px-3 py-2 text-sm border border-[var(--ds-color-border)] rounded-lg text-[var(--ds-color-text-secondary)] hover:bg-[var(--ds-color-bg-0)]"
                             >
                                 View Backup Codes
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setShowDisablePrompt(true)}
-                                className="px-3 py-2 text-sm border border-red-200 text-[#dc2626] rounded-lg hover:bg-red-50"
+                                className="px-3 py-2 text-sm border border-red-200 text-[var(--ds-color-danger)] rounded-lg hover:bg-red-50"
                             >
                                 Disable MFA
                             </button>
                         </div>
 
                         {showDisablePrompt ? (
-                            <div className="border border-[#d0d7e8] rounded-xl p-3 bg-[#f8f9fd]">
-                                <label htmlFor="disable-mfa-password" className="text-xs text-[#7a87a8] block mb-1">Confirm password</label>
+                            <div className="border border-[var(--ds-color-border)] rounded-xl p-3 bg-[var(--ds-color-bg-0)]">
+                                <label
+                                    htmlFor="disable-mfa-password"
+                                    className="text-xs text-[var(--ds-color-text-muted)] block mb-1"
+                                >
+                                    Confirm password
+                                </label>
                                 <div className="flex gap-2">
                                     <input
                                         id="disable-mfa-password"
                                         type="password"
                                         value={disablePassword}
                                         onChange={(e) => setDisablePassword(e.target.value)}
-                                        className="flex-1 border border-[#d0d7e8] rounded-lg px-3 py-2 text-sm"
+                                        className="flex-1 border border-[var(--ds-color-border)] rounded-lg px-3 py-2 text-sm"
                                     />
                                     <button
                                         type="button"
-                                        onClick={() => disableMfaMutation.mutate({ password: disablePassword })}
-                                        className="px-3 py-2 rounded-lg text-sm bg-[#dc2626] text-white"
+                                        onClick={() =>
+                                            disableMfaMutation.mutate({ password: disablePassword })
+                                        }
+                                        className="px-3 py-2 rounded-lg text-sm bg-[var(--ds-color-danger)] text-white"
                                     >
                                         Confirm
                                     </button>
@@ -810,23 +907,30 @@ function SecurityTab({ user }) {
                     </div>
                 ) : (
                     <div className="px-6 py-5">
-                        <div className="bg-[#dc2626]/5 border border-[#dc2626]/15 rounded-xl px-4 py-3 flex items-start gap-3">
-                            <AlertTriangle size={16} className="text-[#dc2626] mt-0.5" />
+                        <div className="bg-[var(--ds-color-danger)]/5 border border-[var(--ds-color-danger)]/15 rounded-xl px-4 py-3 flex items-start gap-3">
+                            <AlertTriangle size={16} className="text-[var(--ds-color-danger)] mt-0.5" />
                             <div className="flex-1">
-                                <p className="text-[13px] text-[#7a1b1b]">Your account is not protected by two-factor authentication.</p>
+                                <p className="text-[13px] text-[var(--ds-color-text-primary)]">
+                                    Your account is not protected by two-factor authentication.
+                                </p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => mfaSetupMutation.mutate()}
-                                className="px-3 py-1.5 rounded-lg text-sm bg-[#4f46e5] text-white hover:bg-[#3730a3]"
+                                className="px-3 py-1.5 rounded-lg text-sm bg-[var(--ds-color-accent)] text-white hover:bg-[var(--ds-color-accent)]"
                             >
                                 Enable MFA
                             </button>
                         </div>
                     </div>
                 )}
-                <div className="px-6 py-3 border-t border-[#f0f2f8]">
-                    <a href="/dashboard/audit-logs" className="text-sm text-[#4f46e5] hover:underline">View Full Audit Log →</a>
+                <div className="px-6 py-3 border-t border-[var(--ds-color-bg-0)]">
+                    <a
+                        href="/dashboard/audit-logs"
+                        className="text-sm text-[var(--ds-color-accent)] hover:underline"
+                    >
+                        View Full Audit Log →
+                    </a>
                 </div>
             </CardShell>
 
@@ -834,34 +938,49 @@ function SecurityTab({ user }) {
                 <CardHeader icon={Monitor} title="Trusted Devices" />
                 <div>
                     {trustedDevices.map((device) => (
-                        <div key={device.id} className="px-6 py-3.5 border-b border-[#f0f2f8] last:border-0 flex items-center justify-between">
+                        <div
+                            key={device.id}
+                            className="px-6 py-3.5 border-b border-[var(--ds-color-bg-0)] last:border-0 flex items-center justify-between"
+                        >
                             <div className="flex items-center gap-3">
-                                <div className="bg-[#f4f6fb] rounded-lg p-1.5">
-                                    {String(device.device || '').toLowerCase().includes('mobile') ? <Smartphone size={14} className="text-[#7a87a8]" /> : <Monitor size={14} className="text-[#7a87a8]" />}
+                                <div className="bg-[var(--ds-color-bg-0)] rounded-lg p-1.5">
+                                    {String(device.device || '')
+                                        .toLowerCase()
+                                        .includes('mobile') ? (
+                                        <Smartphone size={14} className="text-[var(--ds-color-text-muted)]" />
+                                    ) : (
+                                        <Monitor size={14} className="text-[var(--ds-color-text-muted)]" />
+                                    )}
                                 </div>
                                 <div>
-                                    <p className="text-sm text-[#0f1623]">{device.name || 'Unknown Device'}</p>
-                                    <p className="text-xs text-[#7a87a8]">Last seen: {formatRelative(device.lastSeenAt)}</p>
+                                    <p className="text-sm text-[var(--ds-color-text-primary)]">
+                                        {device.name || 'Unknown Device'}
+                                    </p>
+                                    <p className="text-xs text-[var(--ds-color-text-muted)]">
+                                        Last seen: {formatRelative(device.lastSeenAt)}
+                                    </p>
                                 </div>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => revokeDeviceMutation.mutate(device.id)}
-                                className="text-xs text-[#dc2626] hover:underline"
+                                className="text-xs text-[var(--ds-color-danger)] hover:underline"
                             >
                                 Revoke
                             </button>
                         </div>
                     ))}
                     {trustedDevices.length === 0 ? (
-                        <div className="px-6 py-4 text-sm text-[#7a87a8]">No trusted devices found.</div>
+                        <div className="px-6 py-4 text-sm text-[var(--ds-color-text-muted)]">
+                            No trusted devices found.
+                        </div>
                     ) : null}
                 </div>
-                <div className="px-6 py-3 border-t border-[#f0f2f8]">
+                <div className="px-6 py-3 border-t border-[var(--ds-color-bg-0)]">
                     <button
                         type="button"
                         onClick={() => revokeAllDevicesMutation.mutate()}
-                        className="px-3 py-1.5 text-xs border border-red-200 text-[#dc2626] rounded-lg hover:bg-red-50"
+                        className="px-3 py-1.5 text-xs border border-red-200 text-[var(--ds-color-danger)] rounded-lg hover:bg-red-50"
                     >
                         Revoke All Devices
                     </button>
@@ -879,21 +998,28 @@ function SecurityTab({ user }) {
                 >
                     {mfaStep === 1 ? (
                         <div className="space-y-4">
-                            <p className="text-sm text-[#3a4560]">
-                                Scan this QR code with your authenticator app (Google Authenticator, Authy, 1Password).
+                            <p className="text-sm text-[var(--ds-color-text-secondary)]">
+                                Scan this QR code with your authenticator app (Google Authenticator,
+                                Authy, 1Password).
                             </p>
                             <div className="flex justify-center">
-                                <img src={mfaSetup?.qrCodeUrl} alt="MFA QR" className="w-[180px] h-[180px] border border-[#d0d7e8] rounded-xl" />
+                                <img
+                                    src={mfaSetup?.qrCodeUrl}
+                                    alt="MFA QR"
+                                    className="w-[180px] h-[180px] border border-[var(--ds-color-border)] rounded-xl"
+                                />
                             </div>
-                            <div className="bg-[#f4f6fb] border border-[#d0d7e8] rounded-xl p-3">
-                                <p className="text-xs text-[#7a87a8] mb-1">Manual Secret</p>
-                                <p className="font-mono text-sm break-all text-[#0f1623]">{mfaSetup?.secret}</p>
+                            <div className="bg-[var(--ds-color-bg-0)] border border-[var(--ds-color-border)] rounded-xl p-3">
+                                <p className="text-xs text-[var(--ds-color-text-muted)] mb-1">Manual Secret</p>
+                                <p className="font-mono text-sm break-all text-[var(--ds-color-text-primary)]">
+                                    {mfaSetup?.secret}
+                                </p>
                             </div>
                             <div className="flex justify-end">
                                 <button
                                     type="button"
                                     onClick={() => setMfaStep(2)}
-                                    className="px-4 py-2 text-sm bg-[#4f46e5] text-white rounded-lg"
+                                    className="px-4 py-2 text-sm bg-[var(--ds-color-accent)] text-white rounded-lg"
                                 >
                                     Next
                                 </button>
@@ -903,39 +1029,47 @@ function SecurityTab({ user }) {
 
                     {mfaStep === 2 ? (
                         <div className="space-y-4">
-                            <p className="text-sm text-[#3a4560]">Enter the 6-digit code from your app</p>
+                            <p className="text-sm text-[var(--ds-color-text-secondary)]">
+                                Enter the 6-digit code from your app
+                            </p>
                             <div className="flex gap-2 justify-center">
                                 {otpDigits.map((digit, index) => (
                                     <input
                                         key={OTP_INPUT_IDS[index]}
                                         value={digit}
                                         onChange={(e) => {
-                                            const clean = e.target.value.replace(/\D/g, '').slice(-1);
+                                            const clean = e.target.value
+                                                .replace(/\D/g, '')
+                                                .slice(-1);
                                             setOtpDigits((prev) => {
                                                 const next = [...prev];
                                                 next[index] = clean;
                                                 return next;
                                             });
                                             if (clean && index < 5) {
-                                                const nextInput = document.getElementById(OTP_INPUT_IDS[index + 1]);
+                                                const nextInput = document.getElementById(
+                                                    OTP_INPUT_IDS[index + 1],
+                                                );
                                                 nextInput?.focus();
                                             }
                                         }}
                                         id={OTP_INPUT_IDS[index]}
                                         maxLength={1}
-                                        className="w-10 h-12 text-center text-lg font-mono border border-[#d0d7e8] rounded-xl focus:border-[#4f46e5] focus:ring-2 focus:ring-[#4f46e5]/25"
+                                        className="w-10 h-12 text-center text-lg font-mono border border-[var(--ds-color-border)] rounded-xl focus:border-[var(--ds-color-accent)] focus:ring-2 focus:ring-[var(--ds-color-accent)]/25"
                                     />
                                 ))}
                             </div>
                             <div className="flex justify-end">
                                 <button
                                     type="button"
-                                    onClick={() => verifyMfaMutation.mutate({
-                                        token: otpValue,
-                                        secret: mfaSetup?.secret,
-                                        stateToken: mfaSetup?.stateToken,
-                                    })}
-                                    className="px-4 py-2 text-sm bg-[#4f46e5] text-white rounded-lg"
+                                    onClick={() =>
+                                        verifyMfaMutation.mutate({
+                                            token: otpValue,
+                                            secret: mfaSetup?.secret,
+                                            stateToken: mfaSetup?.stateToken,
+                                        })
+                                    }
+                                    className="px-4 py-2 text-sm bg-[var(--ds-color-accent)] text-white rounded-lg"
                                     disabled={otpValue.length !== 6 || verifyMfaMutation.isPending}
                                 >
                                     Verify & Enable
@@ -946,10 +1080,15 @@ function SecurityTab({ user }) {
 
                     {mfaStep === 3 ? (
                         <div className="space-y-4">
-                            <p className="text-sm text-[#3a4560]">Save these codes somewhere safe. Each can only be used once.</p>
+                            <p className="text-sm text-[var(--ds-color-text-secondary)]">
+                                Save these codes somewhere safe. Each can only be used once.
+                            </p>
                             <div className="grid grid-cols-2 gap-2">
                                 {revealedBackupCodes.map((code) => (
-                                    <div key={code} className="font-mono text-sm bg-[#f4f6fb] border border-[#d0d7e8] rounded-lg px-4 py-2 text-center">
+                                    <div
+                                        key={code}
+                                        className="font-mono text-sm bg-[var(--ds-color-bg-0)] border border-[var(--ds-color-border)] rounded-lg px-4 py-2 text-center"
+                                    >
                                         {code}
                                     </div>
                                 ))}
@@ -958,14 +1097,14 @@ function SecurityTab({ user }) {
                                 <button
                                     type="button"
                                     onClick={downloadBackupCodes}
-                                    className="px-3 py-2 text-sm border border-[#d0d7e8] rounded-lg"
+                                    className="px-3 py-2 text-sm border border-[var(--ds-color-border)] rounded-lg"
                                 >
                                     Download Codes
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setShowMfaModal(false)}
-                                    className="px-3 py-2 text-sm bg-[#4f46e5] text-white rounded-lg"
+                                    className="px-3 py-2 text-sm bg-[var(--ds-color-accent)] text-white rounded-lg"
                                 >
                                     Done
                                 </button>
@@ -1000,7 +1139,8 @@ function SessionsTab() {
             toast.success('Session revoked');
             await queryClient.invalidateQueries({ queryKey: ['settings-sessions'] });
         },
-        onError: (err) => toast.error(err.response?.data?.error?.message || 'Failed to revoke session'),
+        onError: (err) =>
+            toast.error(err.response?.data?.error?.message || 'Failed to revoke session'),
     });
 
     const revokeAllMutation = useMutation({
@@ -1009,59 +1149,75 @@ function SessionsTab() {
             toast.success('All other sessions revoked');
             await queryClient.invalidateQueries({ queryKey: ['settings-sessions'] });
         },
-        onError: (err) => toast.error(err.response?.data?.error?.message || 'Failed to revoke sessions'),
+        onError: (err) =>
+            toast.error(err.response?.data?.error?.message || 'Failed to revoke sessions'),
     });
 
     const current = sessions.find((session) => session.isCurrent);
 
     return (
         <div className="w-full">
-            <div className="bg-[#4f46e5]/5 border border-[#4f46e5]/15 rounded-xl px-4 py-3 flex items-center gap-3 mb-5">
-                <Info size={16} className="text-[#4f46e5]" />
-                <p className="text-[13px] text-[#374151] flex-1">
-                    You are currently signed in from {current?.deviceName || 'this device'} · {current?.ip || 'Unknown IP'}
+            <div className="bg-[var(--ds-color-accent)]/5 border border-[var(--ds-color-accent)]/15 rounded-xl px-4 py-3 flex items-center gap-3 mb-5">
+                <Info size={16} className="text-[var(--ds-color-accent)]" />
+                <p className="text-[13px] text-[var(--ds-color-text-secondary)] flex-1">
+                    You are currently signed in from {current?.deviceName || 'this device'} ·{' '}
+                    {current?.ip || 'Unknown IP'}
                 </p>
                 <button
                     type="button"
                     onClick={() => revokeAllMutation.mutate()}
-                    className="text-sm text-[#dc2626] hover:underline font-medium"
+                    className="text-sm text-[var(--ds-color-danger)] hover:underline font-medium"
                 >
                     Revoke All Others
                 </button>
             </div>
 
-            <div className="bg-white border border-[#d0d7e8] rounded-2xl overflow-hidden shadow-sm divide-y divide-[#f0f2f8]">
+            <div className="bg-white border border-[var(--ds-color-border)] rounded-2xl overflow-hidden shadow-sm divide-y divide-[var(--ds-color-bg-0)]">
                 {sessions.map((session) => (
                     <div key={session.id} className="px-6 py-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-lg bg-[#f4f6fb] flex items-center justify-center text-[#7a87a8]">
-                                {session.device === 'Mobile' ? <Smartphone size={16} /> : <Monitor size={16} />}
+                            <div className="w-9 h-9 rounded-lg bg-[var(--ds-color-bg-0)] flex items-center justify-center text-[var(--ds-color-text-muted)]">
+                                {session.device === 'Mobile' ? (
+                                    <Smartphone size={16} />
+                                ) : (
+                                    <Monitor size={16} />
+                                )}
                             </div>
                             <div>
-                                <p className="text-sm font-medium text-[#0f1623]">{session.browser} on {session.os}</p>
-                                <p className="text-xs text-[#7a87a8]">{session.ip} · Created {formatRelative(session.createdAt)}</p>
+                                <p className="text-sm font-medium text-[var(--ds-color-text-primary)]">
+                                    {session.browser} on {session.os}
+                                </p>
+                                <p className="text-xs text-[var(--ds-color-text-muted)]">
+                                    {session.ip} · Created {formatRelative(session.createdAt)}
+                                </p>
                             </div>
                         </div>
 
                         <div className="text-right">
                             {session.isCurrent ? (
-                                <span className="text-xs font-semibold bg-[#16a34a]/10 text-[#16a34a] px-2 py-1 rounded-full">Current</span>
+                                <span className="text-xs font-semibold bg-[var(--ds-color-success)]/10 text-[var(--ds-color-success)] px-2 py-1 rounded-full">
+                                    Current
+                                </span>
                             ) : (
                                 <button
                                     type="button"
                                     onClick={() => revokeMutation.mutate(session.id)}
-                                    className="px-3 py-1.5 text-xs border border-red-200 text-[#dc2626] rounded-lg hover:bg-red-50"
+                                    className="px-3 py-1.5 text-xs border border-red-200 text-[var(--ds-color-danger)] rounded-lg hover:bg-red-50"
                                 >
                                     Revoke
                                 </button>
                             )}
-                            <p className="text-xs text-[#7a87a8] mt-1">Expires {formatDate(session.expiresAt)}</p>
+                            <p className="text-xs text-[var(--ds-color-text-muted)] mt-1">
+                                Expires {formatDate(session.expiresAt)}
+                            </p>
                         </div>
                     </div>
                 ))}
 
                 {sessions.length === 0 ? (
-                    <div className="px-6 py-6 text-sm text-[#7a87a8]">No active sessions found.</div>
+                    <div className="px-6 py-6 text-sm text-[var(--ds-color-text-muted)]">
+                        No active sessions found.
+                    </div>
                 ) : null}
             </div>
         </div>
@@ -1087,21 +1243,27 @@ function NotificationsTab() {
             setLocalPrefs({});
             await queryClient.invalidateQueries({ queryKey: ['settings-notifications'] });
         },
-        onError: (err) => toast.error(err.response?.data?.error?.message || 'Failed to update preferences'),
+        onError: (err) =>
+            toast.error(err.response?.data?.error?.message || 'Failed to update preferences'),
     });
 
     const renderCard = (title, rows) => (
-        <div className="bg-white border border-[#d0d7e8] rounded-2xl overflow-hidden shadow-sm">
-            <div className="px-6 py-4 border-b border-[#f0f2f8] flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#4f46e5]/10 text-[#4f46e5] flex items-center justify-center">
+        <div className="bg-white border border-[var(--ds-color-border)] rounded-2xl overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-[var(--ds-color-bg-0)] flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[var(--ds-color-accent)]/10 text-[var(--ds-color-accent)] flex items-center justify-center">
                     <Bell size={16} />
                 </div>
-                <h3 className="text-[15px] font-semibold text-[#0f1623]">{title}</h3>
+                <h3 className="text-[15px] font-semibold text-[var(--ds-color-text-primary)]">{title}</h3>
             </div>
 
             <div>
                 {rows.map((row) => (
-                    <NotificationPrefRow key={row.keyEmail} row={row} mergedPrefs={mergedPrefs} setLocalPrefs={setLocalPrefs} />
+                    <NotificationPrefRow
+                        key={row.keyEmail}
+                        row={row}
+                        mergedPrefs={mergedPrefs}
+                        setLocalPrefs={setLocalPrefs}
+                    />
                 ))}
             </div>
         </div>
@@ -1116,7 +1278,7 @@ function NotificationsTab() {
                 <button
                     type="button"
                     onClick={() => updateMutation.mutate(localPrefs)}
-                    className="px-4 py-2 rounded-lg text-sm bg-[#4f46e5] text-white hover:bg-[#3730a3]"
+                    className="px-4 py-2 rounded-lg text-sm bg-[var(--ds-color-accent)] text-white hover:bg-[var(--ds-color-accent)]"
                     disabled={!Object.keys(localPrefs).length || updateMutation.isPending}
                 >
                     Save Preferences
@@ -1150,7 +1312,10 @@ function OrganizationTab() {
             setForm(null);
             await queryClient.invalidateQueries({ queryKey: ['settings-organization'] });
         },
-        onError: (err) => toast.error(err.response?.data?.error?.message || 'Failed to update organization settings'),
+        onError: (err) =>
+            toast.error(
+                err.response?.data?.error?.message || 'Failed to update organization settings',
+            ),
     });
 
     const exportMutation = useMutation({
@@ -1165,7 +1330,8 @@ function OrganizationTab() {
             URL.revokeObjectURL(url);
             toast.success('Export generated');
         },
-        onError: (err) => toast.error(err.response?.data?.error?.message || 'Failed to export data'),
+        onError: (err) =>
+            toast.error(err.response?.data?.error?.message || 'Failed to export data'),
     });
 
     const resetMutation = useMutation({
@@ -1177,7 +1343,8 @@ function OrganizationTab() {
             setResetPassword('');
             await queryClient.invalidateQueries({ queryKey: ['settings-organization'] });
         },
-        onError: (err) => toast.error(err.response?.data?.error?.message || 'Failed to reset policies'),
+        onError: (err) =>
+            toast.error(err.response?.data?.error?.message || 'Failed to reset policies'),
     });
 
     const updateField = (key, value) => {
@@ -1195,7 +1362,10 @@ function OrganizationTab() {
             requireUppercase: Boolean(form.requireUppercase),
             requireNumber: Boolean(form.requireNumber),
             requireSymbol: Boolean(form.requireSymbol),
-            passwordExpiryDays: form.passwordExpiryDays === '' || form.passwordExpiryDays === null ? null : Number(form.passwordExpiryDays),
+            passwordExpiryDays:
+                form.passwordExpiryDays === '' || form.passwordExpiryDays === null
+                    ? null
+                    : Number(form.passwordExpiryDays),
             maxFailedAttempts: Number(form.maxFailedAttempts),
             sessionTimeoutMinutes: Number(form.sessionTimeoutMinutes),
             requireMfaForAll: Boolean(form.requireMfaForAll),
@@ -1210,7 +1380,7 @@ function OrganizationTab() {
     };
 
     if (!organization) {
-        return <div className="text-sm text-[#7a87a8]">Loading organization settings...</div>;
+        return <div className="text-sm text-[var(--ds-color-text-muted)]">Loading organization settings...</div>;
     }
 
     return (
@@ -1222,7 +1392,7 @@ function OrganizationTab() {
                         <input
                             value={working.orgName || ''}
                             onChange={(e) => updateField('orgName', e.target.value)}
-                            className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm"
+                            className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm"
                         />
                     </Field>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -1231,20 +1401,24 @@ function OrganizationTab() {
                                 <input
                                     value={working.accountId || ''}
                                     readOnly
-                                    className="flex-1 border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm bg-[#f4f6fb]"
+                                    className="flex-1 border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm bg-[var(--ds-color-bg-0)]"
                                 />
                                 <button
                                     type="button"
-                                    onClick={() => navigator.clipboard.writeText(working.accountId || '')}
-                                    className="px-3 py-2 text-xs border border-[#d0d7e8] rounded-lg"
+                                    onClick={() =>
+                                        navigator.clipboard.writeText(working.accountId || '')
+                                    }
+                                    className="px-3 py-2 text-xs border border-[var(--ds-color-border)] rounded-lg"
                                 >
                                     Copy
                                 </button>
                             </div>
                         </Field>
                         <Field label="Plan">
-                            <div className="h-10 flex items-center px-3 text-sm rounded-xl bg-[#f4f6fb] border border-[#d0d7e8]">
-                                <span className="text-[#4f46e5] font-semibold uppercase">{working.plan}</span>
+                            <div className="h-10 flex items-center px-3 text-sm rounded-xl bg-[var(--ds-color-bg-0)] border border-[var(--ds-color-border)]">
+                                <span className="text-[var(--ds-color-accent)] font-semibold uppercase">
+                                    {working.plan}
+                                </span>
                             </div>
                         </Field>
                     </div>
@@ -1252,7 +1426,7 @@ function OrganizationTab() {
                         <input
                             value={working.region || ''}
                             onChange={(e) => updateField('region', e.target.value)}
-                            className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm"
+                            className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm"
                         />
                     </Field>
                 </div>
@@ -1268,7 +1442,7 @@ function OrganizationTab() {
                             max={32}
                             value={working.minPasswordLength ?? 8}
                             onChange={(e) => updateField('minPasswordLength', e.target.value)}
-                            className="w-36 border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm"
+                            className="w-36 border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm"
                         />
                     </Field>
 
@@ -1291,8 +1465,13 @@ function OrganizationTab() {
                     <Field label="Password expiry">
                         <select
                             value={working.passwordExpiryDays ?? ''}
-                            onChange={(e) => updateField('passwordExpiryDays', e.target.value === '' ? null : e.target.value)}
-                            className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm bg-white"
+                            onChange={(e) =>
+                                updateField(
+                                    'passwordExpiryDays',
+                                    e.target.value === '' ? null : e.target.value,
+                                )
+                            }
+                            className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm bg-white"
                         >
                             <option value="">Never</option>
                             <option value="30">30 days</option>
@@ -1313,15 +1492,17 @@ function OrganizationTab() {
                             max={20}
                             value={working.maxFailedAttempts ?? 5}
                             onChange={(e) => updateField('maxFailedAttempts', e.target.value)}
-                            className="w-36 border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm"
+                            className="w-36 border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm"
                         />
                     </Field>
 
                     <Field label="Session timeout (minutes)">
                         <select
                             value={working.sessionTimeoutMinutes ?? 480}
-                            onChange={(e) => updateField('sessionTimeoutMinutes', Number(e.target.value))}
-                            className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm bg-white"
+                            onChange={(e) =>
+                                updateField('sessionTimeoutMinutes', Number(e.target.value))
+                            }
+                            className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm bg-white"
                         >
                             <option value={60}>60 minutes</option>
                             <option value={240}>4 hours</option>
@@ -1337,7 +1518,9 @@ function OrganizationTab() {
                         onChange={() => updateField('requireMfaForAll', !working.requireMfaForAll)}
                     />
                     {working.requireMfaForAll ? (
-                        <p className="text-xs text-[#b45309]">Enabling this will lock out users without MFA configured</p>
+                        <p className="text-xs text-[var(--ds-color-warning)]">
+                            Enabling this will lock out users without MFA configured
+                        </p>
                     ) : null}
 
                     <PolicyToggleRow
@@ -1352,19 +1535,23 @@ function OrganizationTab() {
                 <CardHeader icon={Monitor} title="IP Allowlist" />
                 <div className="p-6 space-y-3">
                     <textarea
-                        value={Array.isArray(working.ipAllowlist) ? working.ipAllowlist.join('\n') : (working.ipAllowlist || '')}
+                        value={
+                            Array.isArray(working.ipAllowlist)
+                                ? working.ipAllowlist.join('\n')
+                                : working.ipAllowlist || ''
+                        }
                         onChange={(e) => updateField('ipAllowlist', e.target.value)}
-                        className="w-full min-h-[120px] font-mono text-sm border border-[#d0d7e8] rounded-xl px-3 py-2"
+                        className="w-full min-h-[120px] font-mono text-sm border border-[var(--ds-color-border)] rounded-xl px-3 py-2"
                         placeholder={'Leave empty to allow all IPs\n203.45.112.0/24\n10.0.0.0/8'}
                     />
                 </div>
             </CardShell>
 
             <CardShell>
-                <div className="bg-[#dc2626]/5 px-6 py-4 border-b border-[#dc2626]/15">
+                <div className="bg-[var(--ds-color-danger)]/5 px-6 py-4 border-b border-[var(--ds-color-danger)]/15">
                     <div className="flex items-center gap-3">
-                        <AlertTriangle size={16} className="text-[#dc2626]" />
-                        <h3 className="text-[15px] font-semibold text-[#dc2626]">Danger Zone</h3>
+                        <AlertTriangle size={16} className="text-[var(--ds-color-danger)]" />
+                        <h3 className="text-[15px] font-semibold text-[var(--ds-color-danger)]">Danger Zone</h3>
                     </div>
                 </div>
                 <DangerRow
@@ -1391,7 +1578,7 @@ function OrganizationTab() {
                 <button
                     type="button"
                     onClick={save}
-                    className="px-4 py-2 rounded-lg text-sm bg-[#4f46e5] text-white hover:bg-[#3730a3]"
+                    className="px-4 py-2 rounded-lg text-sm bg-[var(--ds-color-accent)] text-white hover:bg-[var(--ds-color-accent)]"
                     disabled={!form || updateMutation.isPending}
                 >
                     Save Organization Settings
@@ -1399,28 +1586,40 @@ function OrganizationTab() {
             </div>
 
             {showResetModal ? (
-                <Modal title="Reset Policies" icon={AlertTriangle} onClose={() => setShowResetModal(false)}>
+                <Modal
+                    title="Reset Policies"
+                    icon={AlertTriangle}
+                    onClose={() => setShowResetModal(false)}
+                >
                     <div className="space-y-4">
-                        <p className="text-sm text-[#3a4560]">Type <span className="font-mono">RESET</span> and confirm your password to continue.</p>
+                        <p className="text-sm text-[var(--ds-color-text-secondary)]">
+                            Type <span className="font-mono">RESET</span> and confirm your password
+                            to continue.
+                        </p>
                         <input
                             value={resetConfirmText}
                             onChange={(e) => setResetConfirmText(e.target.value)}
                             placeholder="Type RESET"
-                            className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm"
+                            className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm"
                         />
                         <input
                             type="password"
                             value={resetPassword}
                             onChange={(e) => setResetPassword(e.target.value)}
                             placeholder="Password"
-                            className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm"
+                            className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm"
                         />
                         <div className="flex justify-end">
                             <button
                                 type="button"
-                                onClick={() => resetMutation.mutate({ password: resetPassword, confirm: 'CONFIRM' })}
+                                onClick={() =>
+                                    resetMutation.mutate({
+                                        password: resetPassword,
+                                        confirm: 'CONFIRM',
+                                    })
+                                }
                                 disabled={resetConfirmText !== 'RESET' || !resetPassword}
-                                className="px-3 py-2 text-sm rounded-lg bg-[#dc2626] text-white disabled:opacity-50"
+                                className="px-3 py-2 text-sm rounded-lg bg-[var(--ds-color-danger)] text-white disabled:opacity-50"
                             >
                                 Confirm Reset
                             </button>
@@ -1430,19 +1629,27 @@ function OrganizationTab() {
             ) : null}
 
             {showDeleteModal ? (
-                <Modal title="Delete Organization" icon={AlertTriangle} onClose={() => setShowDeleteModal(false)}>
+                <Modal
+                    title="Delete Organization"
+                    icon={AlertTriangle}
+                    onClose={() => setShowDeleteModal(false)}
+                >
                     <div className="space-y-4">
-                        <p className="text-sm text-[#3a4560]">Type the organization name <span className="font-medium">{organization.orgName}</span> to confirm. This action is currently disabled.</p>
+                        <p className="text-sm text-[var(--ds-color-text-secondary)]">
+                            Type the organization name{' '}
+                            <span className="font-medium">{organization.orgName}</span> to confirm.
+                            This action is currently disabled.
+                        </p>
                         <input
                             value={deleteConfirmText}
                             onChange={(e) => setDeleteConfirmText(e.target.value)}
-                            className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm"
+                            className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm"
                         />
                         <div className="flex justify-end">
                             <button
                                 type="button"
                                 disabled
-                                className="px-3 py-2 text-sm rounded-lg bg-[#dc2626] text-white opacity-50 cursor-not-allowed"
+                                className="px-3 py-2 text-sm rounded-lg bg-[var(--ds-color-danger)] text-white opacity-50 cursor-not-allowed"
                             >
                                 Delete (Not Implemented)
                             </button>
@@ -1477,7 +1684,8 @@ function ApiKeysTab() {
             await queryClient.invalidateQueries({ queryKey: ['settings-api-keys'] });
             toast.success('API key created');
         },
-        onError: (err) => toast.error(err.response?.data?.error?.message || 'Failed to create API key'),
+        onError: (err) =>
+            toast.error(err.response?.data?.error?.message || 'Failed to create API key'),
     });
 
     const revokeMutation = useMutation({
@@ -1486,7 +1694,8 @@ function ApiKeysTab() {
             toast.success('API key revoked');
             await queryClient.invalidateQueries({ queryKey: ['settings-api-keys'] });
         },
-        onError: (err) => toast.error(err.response?.data?.error?.message || 'Failed to revoke API key'),
+        onError: (err) =>
+            toast.error(err.response?.data?.error?.message || 'Failed to revoke API key'),
     });
 
     const toggleScope = (scopeValue) => {
@@ -1503,8 +1712,10 @@ function ApiKeysTab() {
         <div className="w-full">
             <div className="flex items-center justify-between mb-5">
                 <div>
-                    <h3 className="text-[15px] font-semibold text-[#0f1623]">API Keys</h3>
-                    <p className="text-xs text-[#7a87a8] mt-0.5">Manage machine credentials and scoped token access.</p>
+                    <h3 className="text-[15px] font-semibold text-[var(--ds-color-text-primary)]">API Keys</h3>
+                    <p className="text-xs text-[var(--ds-color-text-muted)] mt-0.5">
+                        Manage machine credentials and scoped token access.
+                    </p>
                 </div>
                 <button
                     type="button"
@@ -1512,14 +1723,14 @@ function ApiKeysTab() {
                         setShowModal(true);
                         setCreatedToken(null);
                     }}
-                    className="px-4 py-2 rounded-lg text-sm bg-[#4f46e5] text-white hover:bg-[#3730a3]"
+                    className="px-4 py-2 rounded-lg text-sm bg-[var(--ds-color-accent)] text-white hover:bg-[var(--ds-color-accent)]"
                 >
                     + New API Key
                 </button>
             </div>
 
-            <div className="bg-white border border-[#d0d7e8] rounded-2xl overflow-hidden shadow-sm">
-                <div className="grid grid-cols-[1.1fr_0.9fr_1.4fr_0.9fr_0.9fr_0.9fr_0.6fr] px-5 py-3 border-b border-[#f0f2f8] text-[10px] font-semibold tracking-widest uppercase text-[#7a87a8]">
+            <div className="bg-white border border-[var(--ds-color-border)] rounded-2xl overflow-hidden shadow-sm">
+                <div className="grid grid-cols-[1.1fr_0.9fr_1.4fr_0.9fr_0.9fr_0.9fr_0.6fr] px-5 py-3 border-b border-[var(--ds-color-bg-0)] text-[10px] font-semibold tracking-widest uppercase text-[var(--ds-color-text-muted)]">
                     <span>Name</span>
                     <span>Prefix</span>
                     <span>Scopes</span>
@@ -1535,32 +1746,45 @@ function ApiKeysTab() {
                             <div
                                 key={token.id}
                                 className={classNames(
-                                    'grid grid-cols-[1.1fr_0.9fr_1.4fr_0.9fr_0.9fr_0.9fr_0.6fr] px-5 py-3 border-b border-[#f0f2f8] items-center text-sm',
-                                    expired ? 'opacity-50' : ''
+                                    'grid grid-cols-[1.1fr_0.9fr_1.4fr_0.9fr_0.9fr_0.9fr_0.6fr] px-5 py-3 border-b border-[var(--ds-color-bg-0)] items-center text-sm',
+                                    expired ? 'opacity-50' : '',
                                 )}
                             >
-                                <div className="font-medium text-[#0f1623]">{token.name}</div>
+                                <div className="font-medium text-[var(--ds-color-text-primary)]">{token.name}</div>
                                 <div>
-                                    <span className="font-mono text-xs bg-[#f4f6fb] px-2 py-0.5 rounded border border-[#d0d7e8]">{token.tokenPrefix}</span>
+                                    <span className="font-mono text-xs bg-[var(--ds-color-bg-0)] px-2 py-0.5 rounded border border-[var(--ds-color-border)]">
+                                        {token.tokenPrefix}
+                                    </span>
                                 </div>
                                 <div className="flex flex-wrap gap-1">
                                     {token.scopes?.map((scope) => (
-                                        <span key={scope} className="bg-[#4f46e5]/8 text-[#4f46e5] text-[10px] px-2 py-0.5 rounded-full">
+                                        <span
+                                            key={scope}
+                                            className="bg-[var(--ds-color-accent)]/8 text-[var(--ds-color-accent)] text-[10px] px-2 py-0.5 rounded-full"
+                                        >
                                             {scope}
                                         </span>
                                     ))}
                                 </div>
-                                <div className="text-xs text-[#7a87a8]">{formatDate(token.createdAt)}</div>
-                                <div className="text-xs text-[#7a87a8]">{token.lastUsedAt ? formatDate(token.lastUsedAt) : 'Never'}</div>
-                                <div className="text-xs text-[#7a87a8] flex items-center gap-2">
+                                <div className="text-xs text-[var(--ds-color-text-muted)]">
+                                    {formatDate(token.createdAt)}
+                                </div>
+                                <div className="text-xs text-[var(--ds-color-text-muted)]">
+                                    {token.lastUsedAt ? formatDate(token.lastUsedAt) : 'Never'}
+                                </div>
+                                <div className="text-xs text-[var(--ds-color-text-muted)] flex items-center gap-2">
                                     {token.expiresAt ? formatDate(token.expiresAt) : 'Never'}
-                                    {expired ? <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#dc2626]/10 text-[#dc2626]">Expired</span> : null}
+                                    {expired ? (
+                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--ds-color-danger)]/10 text-[var(--ds-color-danger)]">
+                                            Expired
+                                        </span>
+                                    ) : null}
                                 </div>
                                 <div>
                                     <button
                                         type="button"
                                         onClick={() => revokeMutation.mutate(token.id)}
-                                        className="text-[#dc2626] hover:text-[#b91c1c]"
+                                        className="text-[var(--ds-color-danger)] hover:text-[var(--ds-color-danger)]"
                                     >
                                         <Trash2 size={14} />
                                     </button>
@@ -1570,7 +1794,9 @@ function ApiKeysTab() {
                     })}
 
                     {apiKeys.length === 0 ? (
-                        <div className="px-5 py-6 text-sm text-[#7a87a8]">No API keys created yet.</div>
+                        <div className="px-5 py-6 text-sm text-[var(--ds-color-text-muted)]">
+                            No API keys created yet.
+                        </div>
                     ) : null}
                 </div>
             </div>
@@ -1579,20 +1805,23 @@ function ApiKeysTab() {
                 <Modal title="Create API Key" icon={Key} onClose={() => setShowModal(false)}>
                     {createdToken ? (
                         <div className="space-y-4">
-                            <div className="bg-[#f4f6fb] border border-[#d0d7e8] rounded-xl p-4 font-mono text-sm break-all relative">
+                            <div className="bg-[var(--ds-color-bg-0)] border border-[var(--ds-color-border)] rounded-xl p-4 font-mono text-sm break-all relative">
                                 {createdToken}
                                 <button
                                     type="button"
                                     onClick={() => navigator.clipboard.writeText(createdToken)}
-                                    className="absolute top-2 right-2 text-xs px-2 py-1 border border-[#d0d7e8] rounded bg-white"
+                                    className="absolute top-2 right-2 text-xs px-2 py-1 border border-[var(--ds-color-border)] rounded bg-white"
                                 >
                                     Copy
                                 </button>
                             </div>
 
-                            <div className="bg-[#d97706]/10 border border-[#d97706]/20 rounded-xl px-4 py-3 flex gap-2 text-sm text-[#92400e]">
+                            <div className="bg-[var(--ds-color-warning)]/10 border border-[var(--ds-color-warning)]/20 rounded-xl px-4 py-3 flex gap-2 text-sm text-[var(--ds-color-warning)]">
                                 <AlertTriangle size={16} />
-                                <span>This token will not be shown again. Copy it now and store it securely.</span>
+                                <span>
+                                    This token will not be shown again. Copy it now and store it
+                                    securely.
+                                </span>
                             </div>
 
                             <div className="flex justify-end">
@@ -1601,9 +1830,13 @@ function ApiKeysTab() {
                                     onClick={() => {
                                         setShowModal(false);
                                         setCreatedToken(null);
-                                        setTokenForm({ name: '', expiresIn: 30, scopes: ['read:users'] });
+                                        setTokenForm({
+                                            name: '',
+                                            expiresIn: 30,
+                                            scopes: ['read:users'],
+                                        });
                                     }}
-                                    className="px-4 py-2 rounded-lg text-sm bg-[#4f46e5] text-white hover:bg-[#3730a3]"
+                                    className="px-4 py-2 rounded-lg text-sm bg-[var(--ds-color-accent)] text-white hover:bg-[var(--ds-color-accent)]"
                                 >
                                     Done
                                 </button>
@@ -1614,16 +1847,26 @@ function ApiKeysTab() {
                             <Field label="Token Name">
                                 <input
                                     value={tokenForm.name}
-                                    onChange={(e) => setTokenForm((prev) => ({ ...prev, name: e.target.value }))}
-                                    className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm"
+                                    onChange={(e) =>
+                                        setTokenForm((prev) => ({ ...prev, name: e.target.value }))
+                                    }
+                                    className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm"
                                 />
                             </Field>
 
                             <Field label="Expiry">
                                 <select
                                     value={String(tokenForm.expiresIn)}
-                                    onChange={(e) => setTokenForm((prev) => ({ ...prev, expiresIn: e.target.value === 'null' ? null : Number(e.target.value) }))}
-                                    className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm"
+                                    onChange={(e) =>
+                                        setTokenForm((prev) => ({
+                                            ...prev,
+                                            expiresIn:
+                                                e.target.value === 'null'
+                                                    ? null
+                                                    : Number(e.target.value),
+                                        }))
+                                    }
+                                    className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm"
                                 >
                                     <option value={7}>7 days</option>
                                     <option value={30}>30 days</option>
@@ -1634,7 +1877,9 @@ function ApiKeysTab() {
                             </Field>
 
                             <div>
-                                <p className="text-xs text-[#7a87a8] font-medium block mb-2">Scopes</p>
+                                <p className="text-xs text-[var(--ds-color-text-muted)] font-medium block mb-2">
+                                    Scopes
+                                </p>
                                 <div className="grid grid-cols-2 gap-2">
                                     {API_SCOPE_OPTIONS.map((scope) => {
                                         const checked = tokenForm.scopes.includes(scope.value);
@@ -1644,15 +1889,25 @@ function ApiKeysTab() {
                                                 type="button"
                                                 onClick={() => toggleScope(scope.value)}
                                                 className={classNames(
-                                                    'border border-[#d0d7e8] rounded-xl px-4 py-3 text-left hover:bg-[#f8f9fd]',
-                                                    checked ? 'border-[#4f46e5] bg-[#4f46e5]/5' : ''
+                                                    'border border-[var(--ds-color-border)] rounded-xl px-4 py-3 text-left hover:bg-[var(--ds-color-bg-0)]',
+                                                    checked
+                                                        ? 'border-[var(--ds-color-accent)] bg-[var(--ds-color-accent)]/5'
+                                                        : '',
                                                 )}
                                             >
                                                 <div className="flex items-center gap-2">
-                                                    <input type="checkbox" readOnly checked={checked} />
-                                                    <span className="text-sm font-medium text-[#0f1623]">{scope.value}</span>
+                                                    <input
+                                                        type="checkbox"
+                                                        readOnly
+                                                        checked={checked}
+                                                    />
+                                                    <span className="text-sm font-medium text-[var(--ds-color-text-primary)]">
+                                                        {scope.value}
+                                                    </span>
                                                 </div>
-                                                <p className="text-xs text-[#7a87a8] mt-1">{scope.description}</p>
+                                                <p className="text-xs text-[var(--ds-color-text-muted)] mt-1">
+                                                    {scope.description}
+                                                </p>
                                             </button>
                                         );
                                     })}
@@ -1663,8 +1918,12 @@ function ApiKeysTab() {
                                 <button
                                     type="button"
                                     onClick={() => createMutation.mutate(tokenForm)}
-                                    className="px-4 py-2 rounded-lg text-sm bg-[#4f46e5] text-white hover:bg-[#3730a3]"
-                                    disabled={!tokenForm.name || !tokenForm.scopes.length || createMutation.isPending}
+                                    className="px-4 py-2 rounded-lg text-sm bg-[var(--ds-color-accent)] text-white hover:bg-[var(--ds-color-accent)]"
+                                    disabled={
+                                        !tokenForm.name ||
+                                        !tokenForm.scopes.length ||
+                                        createMutation.isPending
+                                    }
                                 >
                                     Create API Key
                                 </button>
@@ -1689,18 +1948,20 @@ function Field({ label, error, children }) {
 
         return (
             <div>
-                <label htmlFor={idToUse} className="text-xs text-[#7a87a8] font-medium mb-1 block">{label}</label>
+                <label htmlFor={idToUse} className="text-xs text-[var(--ds-color-text-muted)] font-medium mb-1 block">
+                    {label}
+                </label>
                 {renderedChild}
-                {error ? <p className="text-xs text-[#dc2626] mt-1">{error}</p> : null}
+                {error ? <p className="text-xs text-[var(--ds-color-danger)] mt-1">{error}</p> : null}
             </div>
         );
     }
 
     return (
         <div>
-            <div className="text-xs text-[#7a87a8] font-medium mb-1 block">{label}</div>
+            <div className="text-xs text-[var(--ds-color-text-muted)] font-medium mb-1 block">{label}</div>
             {children}
-            {error ? <p className="text-xs text-[#dc2626] mt-1">{error}</p> : null}
+            {error ? <p className="text-xs text-[var(--ds-color-danger)] mt-1">{error}</p> : null}
         </div>
     );
 }
@@ -1713,12 +1974,12 @@ function PasswordField({ label, value, onChange, visible, onToggle, error }) {
                     type={visible ? 'text' : 'password'}
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    className="w-full border border-[#d0d7e8] rounded-xl px-3 py-2 text-sm pr-10"
+                    className="w-full border border-[var(--ds-color-border)] rounded-xl px-3 py-2 text-sm pr-10"
                 />
                 <button
                     type="button"
                     onClick={onToggle}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a87a8]"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--ds-color-text-muted)]"
                 >
                     {visible ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
@@ -1730,7 +1991,7 @@ function PasswordField({ label, value, onChange, visible, onToggle, error }) {
 function PolicyToggleRow({ label, value, onChange }) {
     return (
         <div className="flex items-center justify-between">
-            <span className="text-sm text-[#0f1623]">{label}</span>
+            <span className="text-sm text-[var(--ds-color-text-primary)]">{label}</span>
             <Toggle checked={value} onChange={onChange} />
         </div>
     );
@@ -1744,15 +2005,15 @@ PolicyToggleRow.propTypes = {
 
 function DangerRow({ title, description, actionLabel, onAction }) {
     return (
-        <div className="px-6 py-4 border-b border-[#f0f2f8] last:border-0 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-[var(--ds-color-bg-0)] last:border-0 flex items-center justify-between">
             <div>
-                <p className="text-sm font-medium text-[#0f1623]">{title}</p>
-                <p className="text-xs text-[#7a87a8] mt-0.5">{description}</p>
+                <p className="text-sm font-medium text-[var(--ds-color-text-primary)]">{title}</p>
+                <p className="text-xs text-[var(--ds-color-text-muted)] mt-0.5">{description}</p>
             </div>
             <button
                 type="button"
                 onClick={onAction}
-                className="px-3 py-1.5 rounded-lg text-sm border border-red-200 text-[#dc2626] hover:bg-red-50"
+                className="px-3 py-1.5 rounded-lg text-sm border border-red-200 text-[var(--ds-color-danger)] hover:bg-red-50"
             >
                 {actionLabel}
             </button>
@@ -1780,15 +2041,19 @@ function NotificationPrefRow({ row, mergedPrefs, setLocalPrefs }) {
     };
 
     return (
-        <div className="px-6 py-[14px] border-b border-[#f8fafc] last:border-0 flex items-center justify-between gap-4">
+        <div className="px-6 py-[14px] border-b border-[var(--ds-color-bg-0)] last:border-0 flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0 pr-3">
-                <p className="text-[13px] font-medium text-[#0f172a]">{row.label}</p>
-                <p className="text-[11px] text-[#94a3b8] mt-0.5">{row.description}</p>
+                <p className="text-[13px] font-medium text-[var(--ds-color-text-primary)]">{row.label}</p>
+                <p className="text-[11px] text-[var(--ds-color-text-muted)] mt-0.5">{row.description}</p>
             </div>
             <div className="flex items-center gap-3 shrink-0">
-                <span className="text-[10px] font-semibold text-[#94a3b8] uppercase tracking-[0.05em]">EMAIL</span>
+                <span className="text-[10px] font-semibold text-[var(--ds-color-text-muted)] uppercase tracking-[0.05em]">
+                    EMAIL
+                </span>
                 <Toggle checked={emailEnabled} onChange={handleToggleEmail} />
-                <span className="text-[10px] font-semibold text-[#94a3b8] uppercase tracking-[0.05em]">IN-APP</span>
+                <span className="text-[10px] font-semibold text-[var(--ds-color-text-muted)] uppercase tracking-[0.05em]">
+                    IN-APP
+                </span>
                 <Toggle checked={inAppEnabled} onChange={handleToggleInApp} />
             </div>
         </div>
@@ -1830,18 +2095,27 @@ export default function SettingsPage({ initialTabOverride = null }) {
         ...profileData,
     };
 
-    const fullName = `${effectiveUser?.firstName || ''} ${effectiveUser?.lastName || ''}`.trim() || effectiveUser?.email || 'User';
-    const roleLabel = effectiveUser?.role?.name
-        || (typeof effectiveUser?.role === 'string' ? effectiveUser.role : null)
-        || effectiveUser?.primaryRole?.name
-        || 'Member';
+    const fullName =
+        `${effectiveUser?.firstName || ''} ${effectiveUser?.lastName || ''}`.trim() ||
+        effectiveUser?.email ||
+        'User';
+    const roleLabel =
+        effectiveUser?.role?.name ||
+        (typeof effectiveUser?.role === 'string' ? effectiveUser.role : null) ||
+        effectiveUser?.primaryRole?.name ||
+        'Member';
 
     const tabs = TAB_DEFS.filter((tab) => tab.id !== 'organization' || user?.role === 'SuperAdmin');
 
     let activeContent = null;
 
     if (activeTab === 'profile') {
-        activeContent = <ProfileTab user={effectiveUser} onProfileUpdated={(nextProfile) => updateUser(nextProfile)} />;
+        activeContent = (
+            <ProfileTab
+                user={effectiveUser}
+                onProfileUpdated={(nextProfile) => updateUser(nextProfile)}
+            />
+        );
     } else if (activeTab === 'notifications') {
         activeContent = <NotificationsTab />;
     } else if (activeTab === 'organization' && user?.role === 'SuperAdmin') {
@@ -1852,8 +2126,10 @@ export default function SettingsPage({ initialTabOverride = null }) {
         activeContent = (
             <div className="w-full">
                 <div className="mb-5">
-                    <h3 className="text-[18px] font-bold text-[#0f172a]">Connected Apps</h3>
-                    <p className="mt-1 text-[13px] text-[#64748b]">Apps and API tokens with access to your account</p>
+                    <h3 className="text-[18px] font-bold text-[var(--ds-color-text-primary)]">Connected Apps</h3>
+                    <p className="mt-1 text-[13px] text-[var(--ds-color-text-muted)]">
+                        Apps and API tokens with access to your account
+                    </p>
                 </div>
                 <ConnectedApps />
             </div>
@@ -1861,10 +2137,10 @@ export default function SettingsPage({ initialTabOverride = null }) {
     }
 
     return (
-        <div className="min-h-[calc(100vh-64px)] bg-[#f4f6fb]">
+        <div className="min-h-[calc(100vh-64px)] bg-[var(--ds-color-bg-0)]">
             <div className="w-full px-0 py-0">
                 <div className="flex w-full min-h-[calc(100vh-64px)] flex-col gap-0 items-start md:flex-row">
-                    <aside className="flex w-full shrink-0 flex-col overflow-hidden border-r border-[#e2e8f0] bg-white md:w-[240px] md:self-stretch md:sticky md:top-0">
+                    <aside className="flex w-full shrink-0 flex-col overflow-hidden border-r border-[var(--ds-color-border)] bg-white md:w-[240px] md:self-stretch md:sticky md:top-0">
                         <div
                             className="flex gap-0 overflow-x-auto px-0 py-0 md:flex-col"
                             style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
@@ -1879,14 +2155,16 @@ export default function SettingsPage({ initialTabOverride = null }) {
                             ))}
                         </div>
 
-                        <div className="mt-auto hidden border-t border-[#f1f5f9] px-[16px] pb-4 pt-4 md:block">
+                        <div className="mt-auto hidden border-t border-[var(--ds-color-bg-0)] px-[16px] pb-4 pt-4 md:block">
                             <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-full bg-[#6366f1] text-white text-[13px] font-bold flex items-center justify-center shrink-0">
+                                <div className="w-9 h-9 rounded-full bg-[var(--ds-color-accent)] text-white text-[13px] font-bold flex items-center justify-center shrink-0">
                                     {getInitials(effectiveUser)}
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[13px] font-bold text-[#0f172a] truncate">{fullName}</p>
-                                    <span className="inline-flex items-center text-[10px] text-[#7c3aed] bg-[#ede9fe] px-[8px] py-[2px] rounded-full font-bold mt-1 uppercase tracking-tight">
+                                    <p className="text-[13px] font-bold text-[var(--ds-color-text-primary)] truncate">
+                                        {fullName}
+                                    </p>
+                                    <span className="inline-flex items-center text-[10px] text-[var(--ds-color-accent)] bg-[var(--ds-color-bg-1)] px-[8px] py-[2px] rounded-full font-bold mt-1 uppercase tracking-tight">
                                         {roleLabel}
                                     </span>
                                 </div>
@@ -1894,16 +2172,18 @@ export default function SettingsPage({ initialTabOverride = null }) {
                         </div>
                     </aside>
 
-                    <div className="flex-1 min-w-0 w-full bg-white md:bg-[#f8fafc] md:p-8">
+                    <div className="flex-1 min-w-0 w-full bg-white md:bg-[var(--ds-color-bg-0)] md:p-8">
                         <div className="max-w-4xl mx-auto">
                             <div className="mb-6 w-full">
-                                <h1 className="text-[22px] font-bold text-[#0f1623]">Settings</h1>
-                                <p className="text-sm text-[#7a87a8] mt-1">
+                                <h1 className="text-[22px] font-bold text-[var(--ds-color-text-primary)]">Settings</h1>
+                                <p className="text-sm text-[var(--ds-color-text-muted)] mt-1">
                                     Manage your account and system preferences.
                                 </p>
                             </div>
 
-                            <div className="w-full" data-testid={`${activeTab}-tab`}>{activeContent}</div>
+                            <div className="w-full" data-testid={`${activeTab}-tab`}>
+                                {activeContent}
+                            </div>
                         </div>
                     </div>
                 </div>

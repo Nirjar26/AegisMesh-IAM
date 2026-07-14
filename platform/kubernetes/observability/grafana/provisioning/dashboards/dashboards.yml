@@ -1,9 +1,9 @@
 apiVersion: 1
 
 providers:
-  - name: AegisMesh
+  - name: Bastion
     orgId: 1
-    folder: AegisMesh
+    folder: Bastion
     type: file
     disableDeletion: false
     updateIntervalSeconds: 30

@@ -4,14 +4,14 @@ set -euo pipefail
 # Usage: ./setup-ec2-k3s-argocd.sh <KEY_NAME> <SSH_CIDR>
 # This script assumes AWS CLI is configured locally with permissions to create EC2 and ECR resources.
 
-KEY_NAME=${1:-aegismesh-key}
+KEY_NAME=${1:-Bastion-key}
 SSH_CIDR=${2:-0.0.0.0/0}
 INSTANCE_TYPE=${3:-t2.micro}
 AMI=${4:-ami-0a313d6098716f372} # Ubuntu 22.04 LTS (example, replace with region-specific AMI)
 ALLOW_CIDR=${5:-0.0.0.0/0}
 
 echo "Creating security group..."
-SG_ID=$(aws ec2 create-security-group --group-name aegismesh-sg --description "AegisMesh SG" --query 'GroupId' --output text)
+SG_ID=$(aws ec2 create-security-group --group-name Bastion-sg --description "Bastion SG" --query 'GroupId' --output text)
 aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 22 --cidr $SSH_CIDR
 aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 80 --cidr $ALLOW_CIDR
 aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 443 --cidr $ALLOW_CIDR

@@ -39,8 +39,12 @@ async function upsertTrustedDevice(userId, userAgent, ipAddress) {
     const details = parseDeviceInfo(userAgent);
     const now = new Date().toISOString();
 
-    const existingIndex = devices.findIndex((device) =>
-        device && device.ip === ipAddress && device.browser === details.browser && device.os === details.os
+    const existingIndex = devices.findIndex(
+        (device) =>
+            device &&
+            device.ip === ipAddress &&
+            device.browser === details.browser &&
+            device.os === details.os,
     );
 
     if (existingIndex >= 0) {

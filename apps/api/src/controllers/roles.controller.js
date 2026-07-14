@@ -19,17 +19,19 @@ exports.getRoles = async (req, res, next) => {
                     _count: { select: { userRoles: true, rolePolicies: true } },
                     rolePolicies: {
                         include: {
-                            policy: true
-                        }
-                    }
+                            policy: true,
+                        },
+                    },
                 },
-                orderBy: { createdAt: 'desc' }
+                orderBy: { createdAt: 'desc' },
             }),
-            prisma.role.count({ where })
+            prisma.role.count({ where }),
         ]);
 
         res.json({ success: true, data: roles, pagination: { total, page, limit } });
-    } catch (error) { next(error); }
+    } catch (error) {
+        next(error);
+    }
 };
 
 exports.getRole = async (req, res, next) => {
@@ -38,12 +40,20 @@ exports.getRole = async (req, res, next) => {
             where: { id: req.params.id },
             include: {
                 rolePolicies: { include: { policy: true } },
-                userRoles: { include: { user: { select: { id: true, email: true, firstName: true, lastName: true } } } }
-            }
+                userRoles: {
+                    include: {
+                        user: {
+                            select: { id: true, email: true, firstName: true, lastName: true },
+                        },
+                    },
+                },
+            },
         });
         if (!role) throw createError('RBAC_002');
         res.json({ success: true, data: role });
-    } catch (error) { next(error); }
+    } catch (error) {
+        next(error);
+    }
 };
 
 exports.createRole = async (req, res, next) => {
@@ -56,20 +66,24 @@ exports.createRole = async (req, res, next) => {
         }
 
         const existing = await prisma.role.findFirst({
-            where: { name: { equals: trimmedName, mode: 'insensitive' } }
+            where: { name: { equals: trimmedName, mode: 'insensitive' } },
         });
 
         if (existing) {
-            return res.status(409).json({ success: false, error: `Role "${trimmedName}" already exists` });
+            return res
+                .status(409)
+                .json({ success: false, error: `Role "${trimmedName}" already exists` });
         }
 
         const role = await prisma.role.create({
-            data: { name: trimmedName, description, isSystem: false }
+            data: { name: trimmedName, description, isSystem: false },
         });
 
         await auditRole.created(req, role.id, trimmedName);
         res.status(201).json({ success: true, data: role });
-    } catch (error) { next(error); }
+    } catch (error) {
+        next(error);
+    }
 };
 
 exports.updateRole = async (req, res, next) => {
@@ -79,11 +93,16 @@ exports.updateRole = async (req, res, next) => {
         if (!role) throw createError('RBAC_002');
         if (role.isSystem) throw createError('RBAC_005');
 
-        const updatedRole = await prisma.role.update({ where: { id: req.params.id }, data: { name, description } });
+        const updatedRole = await prisma.role.update({
+            where: { id: req.params.id },
+            data: { name, description },
+        });
         await auditRole.updated(req, updatedRole.id, { name, description });
 
         res.json({ success: true, data: updatedRole });
-    } catch (error) { next(error); }
+    } catch (error) {
+        next(error);
+    }
 };
 
 exports.deleteRole = async (req, res, next) => {
@@ -96,7 +115,9 @@ exports.deleteRole = async (req, res, next) => {
         await auditRole.deleted(req, role.id, role.name);
 
         res.json({ success: true, message: 'Role deleted' });
-    } catch (error) { next(error); }
+    } catch (error) {
+        next(error);
+    }
 };
 
 exports.attachPolicy = async (req, res, next) => {
@@ -111,7 +132,8 @@ exports.attachPolicy = async (req, res, next) => {
 
         res.json({ success: true, message: 'Policy attached to role' });
     } catch (error) {
-        if (error.code === 'P2002') return res.status(400).json({ success: false, error: 'Policy already attached' });
+        if (error.code === 'P2002')
+            return res.status(400).json({ success: false, error: 'Policy already attached' });
         next(error);
     }
 };
@@ -119,13 +141,17 @@ exports.attachPolicy = async (req, res, next) => {
 exports.detachPolicy = async (req, res, next) => {
     try {
         const { id: roleId, policyId } = req.params;
-        const rp = await prisma.rolePolicy.findUnique({ where: { roleId_policyId: { roleId, policyId } } });
+        const rp = await prisma.rolePolicy.findUnique({
+            where: { roleId_policyId: { roleId, policyId } },
+        });
         if (rp) {
             await prisma.rolePolicy.delete({ where: { roleId_policyId: { roleId, policyId } } });
             await auditPolicy.detached(req, policyId, roleId);
         }
         res.json({ success: true, message: 'Policy detached from role' });
-    } catch (error) { next(error); }
+    } catch (error) {
+        next(error);
+    }
 };
 
 exports.getRoleUsers = async (req, res, next) => {
@@ -138,12 +164,28 @@ exports.getRoleUsers = async (req, res, next) => {
                 where: { roleId: req.params.id },
                 skip,
                 take: limit,
-                include: { user: { select: { id: true, email: true, firstName: true, lastName: true, status: true } } }
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            email: true,
+                            firstName: true,
+                            lastName: true,
+                            status: true,
+                        },
+                    },
+                },
             }),
-            prisma.userRole.count({ where: { roleId: req.params.id } })
+            prisma.userRole.count({ where: { roleId: req.params.id } }),
         ]);
-        res.json({ success: true, data: userRoles.map(ur => ur.user), pagination: { total, page, limit } });
-    } catch (error) { next(error); }
+        res.json({
+            success: true,
+            data: userRoles.map((ur) => ur.user),
+            pagination: { total, page, limit },
+        });
+    } catch (error) {
+        next(error);
+    }
 };
 
 exports.getRoleTemplates = async (req, res) => {
@@ -194,8 +236,12 @@ exports.applyTemplate = async (req, res, next) => {
             });
         }
 
-        const userIds = [...new Set((assignToUserIds || []).map((id) => String(id).trim()).filter(Boolean))];
-        const groupIds = [...new Set((assignToGroupIds || []).map((id) => String(id).trim()).filter(Boolean))];
+        const userIds = [
+            ...new Set((assignToUserIds || []).map((id) => String(id).trim()).filter(Boolean)),
+        ];
+        const groupIds = [
+            ...new Set((assignToGroupIds || []).map((id) => String(id).trim()).filter(Boolean)),
+        ];
 
         const result = await prisma.$transaction(async (tx) => {
             const role = await tx.role.create({

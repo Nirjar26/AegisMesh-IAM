@@ -16,7 +16,10 @@ function RolesSelection({ loading, roles, currentRoleIds }) {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {roles.map((role) => (
-                <div key={role.id} className="flex items-start gap-2 border border-[#e3e8f4] rounded-lg px-3 py-2">
+                <div
+                    key={role.id}
+                    className="flex items-start gap-2 border border-[#e3e8f4] rounded-lg px-3 py-2"
+                >
                     <input
                         id={`role-${role.id}`}
                         type="checkbox"
@@ -26,8 +29,12 @@ function RolesSelection({ loading, roles, currentRoleIds }) {
                         className="mt-1"
                     />
                     <label htmlFor={`role-${role.id}`} className="cursor-pointer">
-                        <span className="block text-sm font-medium text-[#0f1623]">{role.name}</span>
-                        <span className="block text-xs text-[#7a87a8]">{role.description || 'No description'}</span>
+                        <span className="block text-sm font-medium text-[#0f1623]">
+                            {role.name}
+                        </span>
+                        <span className="block text-xs text-[#7a87a8]">
+                            {role.description || 'No description'}
+                        </span>
                     </label>
                 </div>
             ))}
@@ -44,9 +51,14 @@ RolesSelection.propTypes = {
 export default function UserEdit() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const inputClass = 'w-full border border-[#d0d7e8] rounded-xl px-3 py-2.5 text-sm text-[#0f1623] focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] outline-none';
+    const inputClass =
+        'w-full border border-[#d0d7e8] rounded-xl px-3 py-2.5 text-sm text-[#0f1623] focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] outline-none';
 
-    const { data: userData, isLoading: userLoading, isError: userError } = useQuery({
+    const {
+        data: userData,
+        isLoading: userLoading,
+        isError: userError,
+    } = useQuery({
         queryKey: ['user', id, 'edit'],
         queryFn: () => userAPI.getUser(id).then((res) => res.data?.data),
         enabled: Boolean(id),
@@ -64,17 +76,28 @@ export default function UserEdit() {
             navigate(`/dashboard/users/${id}`);
         },
         onError: (error) => {
-            const message = error?.response?.data?.error?.message || error?.response?.data?.error || 'Failed to update user';
+            const message =
+                error?.response?.data?.error?.message ||
+                error?.response?.data?.error ||
+                'Failed to update user';
             toast.error(message);
         },
     });
 
     if (userLoading) {
-        return <div className="min-h-[calc(100vh-64px)] bg-[#f4f6fb] px-6 py-8 text-[#7a87a8]">Loading user...</div>;
+        return (
+            <div className="min-h-[calc(100vh-64px)] bg-[#f4f6fb] px-6 py-8 text-[#7a87a8]">
+                Loading user...
+            </div>
+        );
     }
 
     if (userError || !userData) {
-        return <div className="min-h-[calc(100vh-64px)] bg-[#f4f6fb] px-6 py-8 text-red-500">Failed to load user.</div>;
+        return (
+            <div className="min-h-[calc(100vh-64px)] bg-[#f4f6fb] px-6 py-8 text-red-500">
+                Failed to load user.
+            </div>
+        );
     }
 
     const currentRoleIds = new Set((userData.roles || []).map((role) => role.id));
@@ -98,32 +121,61 @@ export default function UserEdit() {
     return (
         <div className="min-h-[calc(100vh-64px)] bg-[#f4f6fb] px-6 py-8">
             <div className="max-w-3xl mx-auto">
-                <Link to={`/dashboard/users/${id}`} className="text-sm text-[#7a87a8] hover:text-[#0f1623]">
+                <Link
+                    to={`/dashboard/users/${id}`}
+                    className="text-sm text-[#7a87a8] hover:text-[#0f1623]"
+                >
                     &larr; Back to User
                 </Link>
 
                 <div className="mt-4 bg-white border border-[#d0d7e8] rounded-2xl shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-[#f0f2f8]">
                         <h1 className="text-[20px] font-semibold text-[#0f1623]">Edit User</h1>
-                        <p className="text-[13px] text-[#7a87a8] mt-1">Update identity details and role assignments.</p>
+                        <p className="text-[13px] text-[#7a87a8] mt-1">
+                            Update identity details and role assignments.
+                        </p>
                     </div>
 
                     <form key={userData.id} onSubmit={handleSubmit} className="p-6 space-y-5">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Field label="First Name" htmlFor="user-first-name">
-                                <input id="user-first-name" name="firstName" required defaultValue={userData.firstName || ''} className={inputClass} />
+                                <input
+                                    id="user-first-name"
+                                    name="firstName"
+                                    required
+                                    defaultValue={userData.firstName || ''}
+                                    className={inputClass}
+                                />
                             </Field>
                             <Field label="Last Name" htmlFor="user-last-name">
-                                <input id="user-last-name" name="lastName" required defaultValue={userData.lastName || ''} className={inputClass} />
+                                <input
+                                    id="user-last-name"
+                                    name="lastName"
+                                    required
+                                    defaultValue={userData.lastName || ''}
+                                    className={inputClass}
+                                />
                             </Field>
                         </div>
 
                         <Field label="Email" htmlFor="user-email">
-                            <input id="user-email" name="email" type="email" required defaultValue={userData.email || ''} className={inputClass} />
+                            <input
+                                id="user-email"
+                                name="email"
+                                type="email"
+                                required
+                                defaultValue={userData.email || ''}
+                                className={inputClass}
+                            />
                         </Field>
 
                         <Field label="Status" htmlFor="user-status">
-                            <select id="user-status" name="status" defaultValue={userData.status || 'ACTIVE'} className={inputClass}>
+                            <select
+                                id="user-status"
+                                name="status"
+                                defaultValue={userData.status || 'ACTIVE'}
+                                className={inputClass}
+                            >
                                 <option value="ACTIVE">Active</option>
                                 <option value="INACTIVE">Inactive</option>
                                 <option value="LOCKED">Locked</option>
@@ -131,7 +183,9 @@ export default function UserEdit() {
                         </Field>
 
                         <div>
-                            <p className="text-sm font-medium text-[#3a4560] mb-2">Assigned Roles</p>
+                            <p className="text-sm font-medium text-[#3a4560] mb-2">
+                                Assigned Roles
+                            </p>
                             <RolesSelection
                                 loading={rolesLoading}
                                 roles={roles}
@@ -165,7 +219,9 @@ export default function UserEdit() {
 function Field({ label, htmlFor, children }) {
     return (
         <div>
-            <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-[#3a4560]">{label}</label>
+            <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-[#3a4560]">
+                {label}
+            </label>
             {children}
         </div>
     );

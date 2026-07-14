@@ -31,7 +31,9 @@ exports.getUserSessions = async (req, res, next) => {
 
         const user = await prisma.user.findUnique({ where: { id } });
         if (!user) {
-            return res.status(404).json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
+            return res
+                .status(404)
+                .json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
         }
 
         const sessions = await prisma.session.findMany({
@@ -68,7 +70,9 @@ exports.revokeUserSessions = async (req, res, next) => {
         const { id } = req.params;
         const user = await prisma.user.findUnique({ where: { id } });
         if (!user) {
-            return res.status(404).json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
+            return res
+                .status(404)
+                .json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
         }
 
         const countRes = await prisma.session.count({ where: { userId: id } });
@@ -77,7 +81,11 @@ exports.revokeUserSessions = async (req, res, next) => {
 
         await auditUser.sessionsRevoked(req, id, user.email, countRes);
 
-        res.json({ success: true, message: `${countRes} sessions revoked`, data: { revoked: countRes } });
+        res.json({
+            success: true,
+            message: `${countRes} sessions revoked`,
+            data: { revoked: countRes },
+        });
     } catch (error) {
         next(error);
     }

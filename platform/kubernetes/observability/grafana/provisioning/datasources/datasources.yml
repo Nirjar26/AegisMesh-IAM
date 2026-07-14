@@ -9,8 +9,8 @@ datasources:
     isDefault: true
     editable: true
 
-  - name: AegisMesh PostgreSQL
-    uid: aegismesh-postgres
+  - name: Bastion PostgreSQL
+    uid: Bastion-postgres
     type: postgres
     access: proxy
     url: db:5432

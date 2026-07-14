@@ -42,12 +42,23 @@ export default function ForgotPassword() {
             <AuthLayout title="Check Your Email" subtitle="Password reset instructions sent">
                 <div className="text-center space-y-4 animate-fade-in-up">
                     <div className="w-16 h-16 mx-auto bg-aws-orange/10 rounded-2xl flex items-center justify-center">
-                        <svg className="w-8 h-8 text-aws-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                        <svg
+                            className="w-8 h-8 text-aws-orange"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+                            />
                         </svg>
                     </div>
                     <p className="text-sm text-aws-text-dim">
-                        If an account exists with that email, we've sent you password reset instructions.
+                        If an account exists with that email, we've sent you password reset
+                        instructions.
                     </p>
                     <Link
                         to="/login"
@@ -95,12 +106,13 @@ export default function ForgotPassword() {
 
             <p className="text-center text-sm text-aws-text-dim mt-6">
                 Remember your password?{' '}
-                <Link to="/login" className="text-aws-orange hover:text-aws-orange-light font-medium transition-colors">
+                <Link
+                    to="/login"
+                    className="text-aws-orange hover:text-aws-orange-light font-medium transition-colors"
+                >
                     Sign in
                 </Link>
             </p>
         </AuthLayout>
     );
 }
-
-

@@ -36,10 +36,11 @@ export default function SettingsLayout() {
                                     <Link
                                         key={tab.id}
                                         to={tab.path}
-                                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.id
-                                            ? 'bg-aws-orange/10 text-aws-orange border border-aws-orange/20'
-                                            : 'text-aws-text-dim hover:text-[#0f1623] hover:bg-aws-navy-light border border-transparent'
-                                            }`}
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                                            activeTab === tab.id
+                                                ? 'bg-aws-orange/10 text-aws-orange border border-aws-orange/20'
+                                                : 'text-aws-text-dim hover:text-[#0f1623] hover:bg-aws-navy-light border border-transparent'
+                                        }`}
                                     >
                                         <span className="text-lg">{tab.icon}</span>
                                         {tab.label}
@@ -60,5 +61,3 @@ export default function SettingsLayout() {
         </div>
     );
 }
-
-

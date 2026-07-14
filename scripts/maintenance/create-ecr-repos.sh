@@ -2,7 +2,7 @@
 set -euo pipefail
 
 AWS_REGION=${AWS_REGION:-us-east-1}
-REPOS=("aegismesh-backend" "aegismesh-frontend" "aegismesh-security-engine")
+REPOS=("bastion-backend" "bastion-frontend" "bastion-security-engine")
 
 for r in "${REPOS[@]}"; do
   echo "Creating ECR repo: $r"

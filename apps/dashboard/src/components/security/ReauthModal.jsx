@@ -3,12 +3,21 @@ import { useEffect, useRef, useState } from 'react';
 import { Eye, EyeOff, ShieldAlert, XCircle } from 'lucide-react';
 
 function getErrorMessage(error) {
-    return error?.response?.data?.message
-        || error?.response?.data?.error?.message
-        || 'Verification failed. Please try again.';
+    return (
+        error?.response?.data?.message ||
+        error?.response?.data?.error?.message ||
+        'Verification failed. Please try again.'
+    );
 }
 
-export default function ReauthModal({ isOpen, onClose, onSuccess, action, requiresMfa, actionLabel }) {
+export default function ReauthModal({
+    isOpen,
+    onClose,
+    onSuccess,
+    action,
+    requiresMfa,
+    actionLabel,
+}) {
     const [password, setPassword] = useState('');
     const [mfaToken, setMfaToken] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -77,9 +86,7 @@ export default function ReauthModal({ isOpen, onClose, onSuccess, action, requir
     };
 
     return (
-        <div
-            className="fixed inset-0 z-[90] flex items-end justify-center bg-slate-900/50 backdrop-blur-sm p-0 sm:items-center sm:p-4"
-        >
+        <div className="fixed inset-0 z-[90] flex items-end justify-center bg-slate-900/50 backdrop-blur-sm p-0 sm:items-center sm:p-4">
             <button
                 type="button"
                 aria-label="Close verification dialog"
@@ -96,15 +103,23 @@ export default function ReauthModal({ isOpen, onClose, onSuccess, action, requir
                     <ShieldAlert size={26} />
                 </div>
 
-                <h3 className="text-xl font-bold text-slate-900 text-center">Verify your identity</h3>
+                <h3 className="text-xl font-bold text-slate-900 text-center">
+                    Verify your identity
+                </h3>
                 <p className="text-sm text-slate-500 text-center mt-1">
-                    For your security, please confirm your identity before {actionLabel || 'continuing'}.
+                    For your security, please confirm your identity before{' '}
+                    {actionLabel || 'continuing'}.
                 </p>
 
                 <div className="mt-6 space-y-4">
                     {requiresMfa ? (
                         <div>
-                            <label htmlFor="reauth-mfa-code" className="text-sm font-medium text-slate-700 block mb-2">Authenticator code</label>
+                            <label
+                                htmlFor="reauth-mfa-code"
+                                className="text-sm font-medium text-slate-700 block mb-2"
+                            >
+                                Authenticator code
+                            </label>
                             <input
                                 id="reauth-mfa-code"
                                 ref={mfaInputRef}
@@ -129,10 +144,19 @@ export default function ReauthModal({ isOpen, onClose, onSuccess, action, requir
                         </div>
                     ) : null}
 
-                    {requiresMfa ? <p className="text-xs text-slate-400 text-center -mt-1">Or use your password instead</p> : null}
+                    {requiresMfa ? (
+                        <p className="text-xs text-slate-400 text-center -mt-1">
+                            Or use your password instead
+                        </p>
+                    ) : null}
 
                     <div>
-                        <label htmlFor="reauth-password" className="text-sm font-medium text-slate-700 block mb-2">Current password</label>
+                        <label
+                            htmlFor="reauth-password"
+                            className="text-sm font-medium text-slate-700 block mb-2"
+                        >
+                            Current password
+                        </label>
                         <div className="relative">
                             <input
                                 id="reauth-password"
@@ -180,11 +204,12 @@ export default function ReauthModal({ isOpen, onClose, onSuccess, action, requir
                         >
                             {isSubmitting ? (
                                 <>
-                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    {' '}
+                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{' '}
                                     Verifying...
                                 </>
-                            ) : 'Verify & Continue'}
+                            ) : (
+                                'Verify & Continue'
+                            )}
                         </button>
                     </div>
                 </div>

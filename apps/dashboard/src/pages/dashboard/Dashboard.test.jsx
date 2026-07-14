@@ -8,7 +8,7 @@ vi.mock('../../context/AuthContext', () => ({
         user: {
             firstName: 'Admin',
             lastName: 'User',
-            email: 'admin@aegismesh.io',
+            email: 'admin@bastion.dev',
             role: { name: 'SuperAdmin' },
             mfaEnabled: true,
         },
@@ -74,8 +74,28 @@ function renderDashboard() {
         if (queryKey[0] === 'overview-users') {
             return buildQueryResult({
                 data: [
-                    { id: 1, email: 'alice@test.com', firstName: 'Alice', lastName: 'Smith', status: 'ACTIVE', mfaEnabled: true, emailVerified: true, roles: [{ name: 'Admin' }], lastLoginAt: new Date().toISOString() },
-                    { id: 2, email: 'bob@test.com', firstName: 'Bob', lastName: 'Jones', status: 'ACTIVE', mfaEnabled: false, emailVerified: true, roles: [{ name: 'User' }], lastLoginAt: null },
+                    {
+                        id: 1,
+                        email: 'alice@test.com',
+                        firstName: 'Alice',
+                        lastName: 'Smith',
+                        status: 'ACTIVE',
+                        mfaEnabled: true,
+                        emailVerified: true,
+                        roles: [{ name: 'Admin' }],
+                        lastLoginAt: new Date().toISOString(),
+                    },
+                    {
+                        id: 2,
+                        email: 'bob@test.com',
+                        firstName: 'Bob',
+                        lastName: 'Jones',
+                        status: 'ACTIVE',
+                        mfaEnabled: false,
+                        emailVerified: true,
+                        roles: [{ name: 'User' }],
+                        lastLoginAt: null,
+                    },
                 ],
                 summary: { total: 2, unverified: 0 },
             });
@@ -91,7 +111,13 @@ function renderDashboard() {
         if (queryKey[0] === 'overview-policies') {
             return buildQueryResult({
                 data: [
-                    { id: 1, name: 'FullAccess', updatedAt: new Date(Date.now() - 3600000).toISOString(), actions: ['*'], resources: ['*'] },
+                    {
+                        id: 1,
+                        name: 'FullAccess',
+                        updatedAt: new Date(Date.now() - 3600000).toISOString(),
+                        actions: ['*'],
+                        resources: ['*'],
+                    },
                 ],
             });
         }
@@ -120,7 +146,7 @@ function renderDashboard() {
             <MemoryRouter>
                 <Dashboard />
             </MemoryRouter>
-        </QueryClientProvider>
+        </QueryClientProvider>,
     );
 }
 
@@ -134,7 +160,7 @@ describe('Dashboard', () => {
     it('renders the overview section by default', async () => {
         renderDashboard();
 
-        expect(screen.getByText('AegisMesh Console')).toBeInTheDocument();
+        expect(screen.getByText('Bastion Console')).toBeInTheDocument();
         expect(screen.getByText('All Systems Operational')).toBeInTheDocument();
     });
 

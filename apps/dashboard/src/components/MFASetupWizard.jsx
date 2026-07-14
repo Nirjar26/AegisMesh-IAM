@@ -54,18 +54,35 @@ export default function MFASetupWizard({ onComplete, onClose }) {
             <div className="flex items-center justify-center gap-2 mb-6">
                 {[1, 2, 3, 4].map((s) => (
                     <div key={s} className="flex items-center">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${step >= s
-                                ? 'bg-aws-orange text-black'
-                                : 'bg-aws-navy-light text-aws-text-dim border border-aws-border'
-                            }`}>
+                        <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                                step >= s
+                                    ? 'bg-aws-orange text-black'
+                                    : 'bg-aws-navy-light text-aws-text-dim border border-aws-border'
+                            }`}
+                        >
                             {step > s ? (
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth={3}
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M5 13l4 4L19 7"
+                                    />
                                 </svg>
-                            ) : s}
+                            ) : (
+                                s
+                            )}
                         </div>
                         {s < 4 && (
-                            <div className={`w-8 h-0.5 transition-colors ${step > s ? 'bg-aws-orange' : 'bg-aws-border'}`}></div>
+                            <div
+                                className={`w-8 h-0.5 transition-colors ${step > s ? 'bg-aws-orange' : 'bg-aws-border'}`}
+                            ></div>
                         )}
                     </div>
                 ))}
@@ -75,14 +92,26 @@ export default function MFASetupWizard({ onComplete, onClose }) {
             {step === 1 && (
                 <div className="text-center space-y-4 animate-fade-in-up">
                     <div className="w-16 h-16 mx-auto bg-aws-orange/10 rounded-2xl flex items-center justify-center">
-                        <svg className="w-8 h-8 text-aws-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                        <svg
+                            className="w-8 h-8 text-aws-orange"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+                            />
                         </svg>
                     </div>
-                    <h3 className="text-lg font-bold text-[#0f1623]">Enable Two-Factor Authentication</h3>
+                    <h3 className="text-lg font-bold text-[#0f1623]">
+                        Enable Two-Factor Authentication
+                    </h3>
                     <p className="text-sm text-aws-text-dim leading-relaxed">
-                        Add an extra layer of security to your account. You'll need an authenticator app like
-                        Google Authenticator, Authy, or 1Password.
+                        Add an extra layer of security to your account. You'll need an authenticator
+                        app like Google Authenticator, Authy, or 1Password.
                     </p>
                     <button
                         onClick={handleSetup}
@@ -105,7 +134,9 @@ export default function MFASetupWizard({ onComplete, onClose }) {
                         <img src={qrData.qrCodeUrl} alt="MFA QR Code" className="w-48 h-48" />
                     </div>
                     <div className="text-left">
-                        <p className="text-xs text-aws-text-dim mb-1">Can't scan? Enter this key manually:</p>
+                        <p className="text-xs text-aws-text-dim mb-1">
+                            Can't scan? Enter this key manually:
+                        </p>
                         <div className="bg-aws-input border border-aws-border rounded-lg p-3 font-mono text-sm text-aws-orange break-all select-all">
                             {qrData.secret}
                         </div>
@@ -141,9 +172,7 @@ export default function MFASetupWizard({ onComplete, onClose }) {
                             autoFocus
                         />
                     </div>
-                    {error && (
-                        <p className="text-aws-red text-sm">{error}</p>
-                    )}
+                    {error && <p className="text-aws-red text-sm">{error}</p>}
                     <button
                         onClick={handleVerify}
                         disabled={loading || totpCode.length !== 6}
@@ -158,8 +187,18 @@ export default function MFASetupWizard({ onComplete, onClose }) {
             {step === 4 && (
                 <div className="text-center space-y-4 animate-fade-in-up">
                     <div className="w-16 h-16 mx-auto bg-green-500/10 rounded-2xl flex items-center justify-center">
-                        <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg
+                            className="w-8 h-8 text-green-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
                         </svg>
                     </div>
                     <h3 className="text-lg font-bold text-[#0f1623]">MFA Enabled Successfully!</h3>
@@ -170,7 +209,10 @@ export default function MFASetupWizard({ onComplete, onClose }) {
                     <div className="bg-aws-input border border-aws-border rounded-xl p-4">
                         <div className="grid grid-cols-2 gap-2">
                             {backupCodes.map((code) => (
-                                <div key={code} className="font-mono text-sm text-aws-orange bg-aws-navy-light rounded px-3 py-1.5">
+                                <div
+                                    key={code}
+                                    className="font-mono text-sm text-aws-orange bg-aws-navy-light rounded px-3 py-1.5"
+                                >
                                     {code}
                                 </div>
                             ))}
@@ -181,8 +223,18 @@ export default function MFASetupWizard({ onComplete, onClose }) {
                         onClick={handleCopyBackupCodes}
                         className="flex items-center justify-center gap-2 w-full bg-aws-navy-light hover:bg-aws-navy text-aws-text py-2.5 rounded-lg border border-aws-border hover:border-aws-orange/30 transition-all text-sm"
                     >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                            />
                         </svg>
                         Copy Backup Codes
                     </button>
@@ -213,5 +265,3 @@ MFASetupWizard.propTypes = {
     onComplete: PropTypes.func,
     onClose: PropTypes.func,
 };
-
-

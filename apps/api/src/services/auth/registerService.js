@@ -19,7 +19,14 @@ async function register({ email, password, firstName, lastName, req }) {
     const hashedVerifyToken = crypto.createHash('sha256').update(emailVerifyToken).digest('hex');
 
     const user = await prisma.user.create({
-        data: { email, passwordHash, firstName, lastName, emailVerifyToken: hashedVerifyToken, emailVerifyTokenCreatedAt: new Date() },
+        data: {
+            email,
+            passwordHash,
+            firstName,
+            lastName,
+            emailVerifyToken: hashedVerifyToken,
+            emailVerifyTokenCreatedAt: new Date(),
+        },
     });
 
     try {

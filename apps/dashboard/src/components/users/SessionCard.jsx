@@ -77,9 +77,7 @@ export default function SessionCard({ session, isCurrent, onRevoke, isRevoking }
 
             <div className="min-w-0 flex-1">
                 <div className="flex items-center flex-wrap gap-2">
-                    <h4 className="text-[13px] font-semibold text-slate-900">
-                        {parsed.name}
-                    </h4>
+                    <h4 className="text-[13px] font-semibold text-slate-900">{parsed.name}</h4>
                     {currentSession ? (
                         <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full px-2.5 py-0.5 text-[10px] font-semibold">
                             Current Session
@@ -97,8 +95,8 @@ export default function SessionCard({ session, isCurrent, onRevoke, isRevoking }
 
             {currentSession ? (
                 <span className="text-[11px] text-emerald-500 inline-flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />{" "}
-                    Active now
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Active
+                    now
                 </span>
             ) : (
                 <button
@@ -128,5 +126,3 @@ SessionCard.propTypes = {
     onRevoke: PropTypes.func.isRequired,
     isRevoking: PropTypes.bool,
 };
-
-

@@ -33,7 +33,9 @@ function JsonHighlighter({ jsonObject }) {
         const valueMatch = VALUE_REGEXP.exec(line);
         const punctuationMatch = PUNCTUATION_REGEXP.exec(line);
 
-        const safeKey = keyMatch ? `${index}-${keyMatch[2]}` : `${index}-${line.slice(0, 20).replace(/\s+/g, '_')}`;
+        const safeKey = keyMatch
+            ? `${index}-${keyMatch[2]}`
+            : `${index}-${line.slice(0, 20).replace(/\s+/g, '_')}`;
 
         if (keyMatch) {
             const indent = keyMatch[1];
@@ -43,14 +45,16 @@ function JsonHighlighter({ jsonObject }) {
             return (
                 <div key={safeKey}>
                     <span>{indent}</span>
-                    <span style={{ color: '#7dd3fc' }}>"{key}"</span>
+                    <span style={{ color: 'var(--ds-color-info)' }}>"{key}"</span>
                     <span>:</span>
                     {valueMatch ? (
                         <>
-                            <span style={{ color: '#86efac' }}> "{valueMatch[1]}"</span>
+                            <span style={{ color: 'var(--ds-color-success)' }}> "{valueMatch[1]}"</span>
                             <span>{valueMatch[2]}</span>
                         </>
-                    ) : rest}
+                    ) : (
+                        rest
+                    )}
                 </div>
             );
         }
@@ -59,7 +63,7 @@ function JsonHighlighter({ jsonObject }) {
             return (
                 <div key={safeKey}>
                     <span>{punctuationMatch[1]}</span>
-                    <span style={{ color: '#f8fafc' }}>{punctuationMatch[2]}</span>
+                    <span style={{ color: 'var(--ds-color-white)' }}>{punctuationMatch[2]}</span>
                 </div>
             );
         }
@@ -69,20 +73,20 @@ function JsonHighlighter({ jsonObject }) {
 }
 
 JsonHighlighter.propTypes = {
-    jsonObject: PropTypes.object
+    jsonObject: PropTypes.object,
 };
 
 function getPolicyJson(policy) {
     if (!policy) return null;
     return {
-        Version: "2012-10-17",
+        Version: '2012-10-17',
         Statement: [
             {
                 Effect: policy.effect,
                 Action: policy.actions,
-                Resource: policy.resources
-            }
-        ]
+                Resource: policy.resources,
+            },
+        ],
     };
 }
 
@@ -117,10 +121,15 @@ export default function PolicyDetail() {
         }
     };
 
-    if (isLoading) return <div className="p-8 text-center text-slate-500 text-[13px]">Loading policy details...</div>;
+    if (isLoading)
+        return (
+            <div className="p-8 text-center text-slate-500 text-[13px]">
+                Loading policy details...
+            </div>
+        );
     if (!policy) return <div className="p-8 text-center text-red-400">Policy not found</div>;
 
-    const policyArn = `arn:aegismesh::account:policy/${policy.name}`;
+    const policyArn = `arn:bastion::account:policy/${policy.name}`;
     const isAllow = policy.effect === 'ALLOW';
 
     return (
@@ -138,12 +147,18 @@ export default function PolicyDetail() {
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                             <div className="flex flex-wrap items-center gap-3">
-                                <h1 className="text-[24px] font-extrabold tracking-[-0.03em] text-slate-900">{policy.name}</h1>
-                                <span className={`rounded-lg border px-3 py-1 text-[12px] font-bold ${isAllow ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}`}>
+                                <h1 className="text-[24px] font-extrabold tracking-[-0.03em] text-slate-900">
+                                    {policy.name}
+                                </h1>
+                                <span
+                                    className={`rounded-lg border px-3 py-1 text-[12px] font-bold ${isAllow ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}`}
+                                >
                                     {policy.effect}
                                 </span>
                             </div>
-                            <p className="mt-1.5 text-[14px] text-slate-500">{policy.description || 'No description provided.'}</p>
+                            <p className="mt-1.5 text-[14px] text-slate-500">
+                                {policy.description || 'No description provided.'}
+                            </p>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2">
@@ -181,7 +196,9 @@ export default function PolicyDetail() {
                                 <span className="mr-3 rounded-lg bg-slate-100 p-1.5 text-slate-600">
                                     <Code2 size={16} />
                                 </span>
-                                <h2 className="text-[15px] font-bold text-slate-900">Policy Document</h2>
+                                <h2 className="text-[15px] font-bold text-slate-900">
+                                    Policy Document
+                                </h2>
                             </div>
 
                             <div className="inline-flex gap-1 rounded-lg bg-slate-100 p-1">
@@ -204,9 +221,17 @@ export default function PolicyDetail() {
 
                         {activeTab === 'visual' ? (
                             <div className="px-6 py-5">
-                                <div className={`mb-5 flex items-center gap-3 rounded-r-xl border-l-4 px-4 py-3 ${isAllow ? 'border-emerald-500 bg-emerald-50' : 'border-red-500 bg-red-50'}`}>
-                                    {isAllow ? <CheckCircle2 size={18} className="text-emerald-500" /> : <XCircle size={18} className="text-red-500" />}
-                                    <span className={`text-[14px] font-bold ${isAllow ? 'text-emerald-900' : 'text-red-900'}`}>
+                                <div
+                                    className={`mb-5 flex items-center gap-3 rounded-r-xl border-l-4 px-4 py-3 ${isAllow ? 'border-emerald-500 bg-emerald-50' : 'border-red-500 bg-red-50'}`}
+                                >
+                                    {isAllow ? (
+                                        <CheckCircle2 size={18} className="text-emerald-500" />
+                                    ) : (
+                                        <XCircle size={18} className="text-red-500" />
+                                    )}
+                                    <span
+                                        className={`text-[14px] font-bold ${isAllow ? 'text-emerald-900' : 'text-red-900'}`}
+                                    >
                                         Effect: {policy.effect}
                                     </span>
                                 </div>
@@ -269,7 +294,7 @@ export default function PolicyDetail() {
                                 </button>
                                 <pre
                                     className="m-0 text-[13px] leading-[1.7] text-slate-200"
-                                    style={{ fontFamily: "JetBrains Mono, Fira Code, monospace" }}
+                                    style={{ fontFamily: 'JetBrains Mono, Fira Code, monospace' }}
                                 >
                                     <JsonHighlighter jsonObject={policyJson} />
                                 </pre>
@@ -284,7 +309,9 @@ export default function PolicyDetail() {
                                     <span className="mr-3 rounded-lg bg-indigo-50 p-1.5 text-indigo-600">
                                         <LinkIcon size={15} />
                                     </span>
-                                    <h3 className="text-[14px] font-bold text-slate-900">Attached To</h3>
+                                    <h3 className="text-[14px] font-bold text-slate-900">
+                                        Attached To
+                                    </h3>
                                 </div>
                                 <span className="rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-[12px] font-semibold text-indigo-700">
                                     {policy.rolePolicies.length} Roles
@@ -294,18 +321,31 @@ export default function PolicyDetail() {
                             <div className="px-5 py-4">
                                 {policy.rolePolicies.length === 0 ? (
                                     <div className="py-8 text-center">
-                                        <Link2Off size={28} className="mx-auto mb-2 text-slate-300" />
-                                        <p className="text-[13px] text-slate-400">Not attached to any roles</p>
+                                        <Link2Off
+                                            size={28}
+                                            className="mx-auto mb-2 text-slate-300"
+                                        />
+                                        <p className="text-[13px] text-slate-400">
+                                            Not attached to any roles
+                                        </p>
                                     </div>
                                 ) : (
                                     <ul>
                                         {policy.rolePolicies.map(({ role }) => (
-                                            <li key={role.id} className="flex items-center gap-2.5 border-b border-slate-50 py-3 last:border-b-0">
+                                            <li
+                                                key={role.id}
+                                                className="flex items-center gap-2.5 border-b border-slate-50 py-3 last:border-b-0"
+                                            >
                                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500">
                                                     <Key size={14} />
                                                 </div>
-                                                <p className="min-w-0 flex-1 truncate text-[13px] font-semibold text-slate-900">{role.name}</p>
-                                                <Link to={`/dashboard/roles/${role.id}`} className="text-[11px] text-indigo-500 hover:underline">
+                                                <p className="min-w-0 flex-1 truncate text-[13px] font-semibold text-slate-900">
+                                                    {role.name}
+                                                </p>
+                                                <Link
+                                                    to={`/dashboard/roles/${role.id}`}
+                                                    className="text-[11px] text-indigo-500 hover:underline"
+                                                >
                                                     Manage →
                                                 </Link>
                                             </li>
@@ -316,35 +356,67 @@ export default function PolicyDetail() {
                         </div>
 
                         <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                            <h3 className="mb-4 text-[14px] font-bold text-slate-900">Policy Details</h3>
+                            <h3 className="mb-4 text-[14px] font-bold text-slate-900">
+                                Policy Details
+                            </h3>
 
                             <div className="flex items-center justify-between border-b border-slate-50 py-2.5">
-                                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">Effect</span>
-                                <span className={`text-[12px] font-semibold ${isAllow ? 'text-emerald-700' : 'text-red-700'}`}>{policy.effect}</span>
+                                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                                    Effect
+                                </span>
+                                <span
+                                    className={`text-[12px] font-semibold ${isAllow ? 'text-emerald-700' : 'text-red-700'}`}
+                                >
+                                    {policy.effect}
+                                </span>
                             </div>
                             <div className="flex items-center justify-between border-b border-slate-50 py-2.5">
-                                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">Actions</span>
-                                <span className="text-[12px] font-medium text-slate-700">{policy.actions.length} defined</span>
+                                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                                    Actions
+                                </span>
+                                <span className="text-[12px] font-medium text-slate-700">
+                                    {policy.actions.length} defined
+                                </span>
                             </div>
                             <div className="flex items-center justify-between border-b border-slate-50 py-2.5">
-                                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">Resources</span>
-                                <span className="text-[12px] font-medium text-slate-700">{policy.resources.length} defined</span>
+                                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                                    Resources
+                                </span>
+                                <span className="text-[12px] font-medium text-slate-700">
+                                    {policy.resources.length} defined
+                                </span>
                             </div>
                             <div className="flex items-center justify-between border-b border-slate-50 py-2.5">
-                                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">Roles</span>
-                                <span className="text-[12px] font-medium text-slate-700">{policy.rolePolicies.length} attached</span>
+                                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                                    Roles
+                                </span>
+                                <span className="text-[12px] font-medium text-slate-700">
+                                    {policy.rolePolicies.length} attached
+                                </span>
                             </div>
                             <div className="flex items-center justify-between border-b border-slate-50 py-2.5">
-                                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">Type</span>
-                                <span className="text-[12px] font-medium text-slate-700">{policy.isSystem ? 'System' : 'Custom'}</span>
+                                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                                    Type
+                                </span>
+                                <span className="text-[12px] font-medium text-slate-700">
+                                    {policy.isSystem ? 'System' : 'Custom'}
+                                </span>
                             </div>
                             <div className="flex items-center justify-between border-b border-slate-50 py-2.5">
-                                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">Created</span>
-                                <span className="text-[12px] font-medium text-slate-700">{formatDate(policy.createdAt)}</span>
+                                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                                    Created
+                                </span>
+                                <span className="text-[12px] font-medium text-slate-700">
+                                    {formatDate(policy.createdAt)}
+                                </span>
                             </div>
                             <div className="flex items-center justify-between py-2.5">
-                                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">Updated</span>
-                                <span className="text-[12px] font-medium text-slate-700">{formatDate(policy.updatedAt)}</span>
+                                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                                    Updated
+                                </span>
+                                <span className="text-[12px] font-medium text-slate-700">
+                                    {formatDate(policy.updatedAt)}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -353,5 +425,3 @@ export default function PolicyDetail() {
         </div>
     );
 }
-
-

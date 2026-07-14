@@ -120,9 +120,7 @@ const assignNumberField = (payload, data, errors, key, min, max) => {
     const value = Number(payload[key]);
 
     if (Number.isNaN(value) || value < min || value > max) {
-        errors.push(
-            fieldError(key, `${key} must be between ${min} and ${max}`)
-        );
+        errors.push(fieldError(key, `${key} must be between ${min} and ${max}`));
 
         return;
     }
@@ -133,10 +131,7 @@ const assignNumberField = (payload, data, errors, key, min, max) => {
 const handlePasswordExpiryDays = (payload, data, errors) => {
     if (payload.passwordExpiryDays === undefined) return;
 
-    if (
-        payload.passwordExpiryDays === null ||
-        payload.passwordExpiryDays === ''
-    ) {
+    if (payload.passwordExpiryDays === null || payload.passwordExpiryDays === '') {
         data.passwordExpiryDays = null;
         return;
     }
@@ -147,8 +142,8 @@ const handlePasswordExpiryDays = (payload, data, errors) => {
         errors.push(
             fieldError(
                 'passwordExpiryDays',
-                'passwordExpiryDays must be null or between 1 and 365'
-            )
+                'passwordExpiryDays must be null or between 1 and 365',
+            ),
         );
 
         return;
@@ -169,30 +164,19 @@ const handleIpAllowlist = (payload, data, errors) => {
     if (payload.ipAllowlist === undefined) return;
 
     if (!Array.isArray(payload.ipAllowlist)) {
-        errors.push(
-            fieldError('ipAllowlist', 'ipAllowlist must be an array')
-        );
+        errors.push(fieldError('ipAllowlist', 'ipAllowlist must be an array'));
 
         return;
     }
 
     const { isValidIpOrCidr } = require('../../services/organizationSettings.service');
 
-    const cleaned = payload.ipAllowlist
-        .map((entry) => String(entry).trim())
-        .filter(Boolean);
+    const cleaned = payload.ipAllowlist.map((entry) => String(entry).trim()).filter(Boolean);
 
-    const invalid = cleaned.filter(
-        (entry) => !isValidIpOrCidr(entry)
-    );
+    const invalid = cleaned.filter((entry) => !isValidIpOrCidr(entry));
 
     if (invalid.length > 0) {
-        errors.push(
-            fieldError(
-                'ipAllowlist',
-                `Invalid IP/CIDR values: ${invalid.join(', ')}`
-            )
-        );
+        errors.push(fieldError('ipAllowlist', `Invalid IP/CIDR values: ${invalid.join(', ')}`));
 
         return;
     }

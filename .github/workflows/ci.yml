@@ -49,8 +49,23 @@ jobs:
           path: .turbo/cache
           key: turbo-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - run: npm ci --no-audit --no-fund
-      - run: npx turbo run build --filter=@aegismesh/shared
+      - run: npx turbo run build --filter=@bastion/types
       - run: npx turbo run lint
+      - name: Check for hardcoded colors
+        run: '! grep -rn "#[0-9a-f]\{6\}" apps/dashboard/src/components/ packages/ui/src/ --include="*.{jsx,tsx,ts}" 2>/dev/null | grep -v node_modules'
+
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'npm' }
+      - run: npm ci
+      - name: Build shared package
+        run: npx turbo build --filter=@bastion/types
+      - name: TypeScript check
+        run: npx tsc --noEmit --project apps/dashboard/tsconfig.json
 
   backend:
     name: "Backend: test"
@@ -70,7 +85,7 @@ jobs:
           path: .turbo/cache
           key: turbo-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - run: npm ci --no-audit --no-fund
-      - run: npx turbo run build --filter=@aegismesh/shared
+      - run: npx turbo run build --filter=@bastion/types
       - run: npx turbo run test --filter=backend
 
   frontend:
@@ -94,10 +109,13 @@ jobs:
             turbo-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
             turbo-${{ runner.os }}-
       - run: npm ci --no-audit --no-fund
-      - run: npx turbo run build --filter=@aegismesh/shared
+      - run: npx turbo run build --filter=@bastion/types
       - run: npx turbo run lint --filter=frontend
       - run: npx turbo run test --filter=frontend
       - run: npx turbo run build --filter=frontend
+      - name: Build Storybook
+        run: npx storybook build -c apps/dashboard/.storybook -o apps/dashboard/storybook-static
+        continue-on-error: true
 
   docker:
     name: Build & push Docker images
@@ -131,7 +149,7 @@ jobs:
           context: apps/api
           file: apps/api/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: ${{ env.ECR_REGISTRY }}/aegismesh-backend:${{ github.sha }}
+          tags: ${{ env.ECR_REGISTRY }}/bastion-backend:${{ github.sha }}
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
 
@@ -141,7 +159,7 @@ jobs:
           context: .
           file: apps/dashboard/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: ${{ env.ECR_REGISTRY }}/aegismesh-frontend:${{ github.sha }}
+          tags: ${{ env.ECR_REGISTRY }}/bastion-frontend:${{ github.sha }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
 
@@ -151,7 +169,7 @@ jobs:
           context: apps/security-engine
           file: apps/security-engine/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: ${{ env.ECR_REGISTRY }}/aegismesh-security-engine:${{ github.sha }}
+          tags: ${{ env.ECR_REGISTRY }}/bastion-security-engine:${{ github.sha }}
           cache-from: type=gha,scope=security-engine
           cache-to: type=gha,mode=max,scope=security-engine
 
@@ -159,4 +177,4 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           echo "All 3 images built successfully (push skipped on PR)"
-          docker images --filter=reference='*aegismesh*'
+          docker images --filter=reference='*bastion*'

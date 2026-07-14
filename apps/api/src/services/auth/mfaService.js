@@ -32,11 +32,7 @@ async function validateMFA({ user, totpCode, req }) {
     }
 }
 
-async function validateHashedBackupCode({
-    user,
-    normalizedCode,
-    req,
-}) {
+async function validateHashedBackupCode({ user, normalizedCode, req }) {
     if (!Array.isArray(user.backupCodes) || user.backupCodes.length === 0) {
         return false;
     }

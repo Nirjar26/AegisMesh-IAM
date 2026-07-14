@@ -3,11 +3,14 @@ const prisma = require('../../src/config/database');
 async function verify() {
     try {
         console.log('\n=== Prisma Models Available ===\n');
-        const models = Object.keys(prisma).filter((key) =>
-            !key.startsWith('_') &&
-            !key.startsWith('$') &&
-            key !== 'constructor'
-        ).sort((left, right) => String(left).localeCompare(String(right), 'en', { numeric: true, sensitivity: 'base' }));
+        const models = Object.keys(prisma)
+            .filter((key) => !key.startsWith('_') && !key.startsWith('$') && key !== 'constructor')
+            .sort((left, right) =>
+                String(left).localeCompare(String(right), 'en', {
+                    numeric: true,
+                    sensitivity: 'base',
+                }),
+            );
 
         models.forEach((model, index) => {
             console.log(`  ${(index + 1).toString().padStart(2)}. ${model}`);

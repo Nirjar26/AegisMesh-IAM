@@ -8,10 +8,14 @@ const USER_AGENTS = [
 ];
 
 const COUNTRY_CITY = [
-    { country: 'United States', city: 'Austin' }, { country: 'United Kingdom', city: 'London' },
-    { country: 'India', city: 'Bengaluru' }, { country: 'Germany', city: 'Berlin' },
-    { country: 'France', city: 'Paris' }, { country: 'Japan', city: 'Tokyo' },
-    { country: 'Nigeria', city: 'Lagos' }, { country: 'Brazil', city: 'Sao Paulo' },
+    { country: 'United States', city: 'Austin' },
+    { country: 'United Kingdom', city: 'London' },
+    { country: 'India', city: 'Bengaluru' },
+    { country: 'Germany', city: 'Berlin' },
+    { country: 'France', city: 'Paris' },
+    { country: 'Japan', city: 'Tokyo' },
+    { country: 'Nigeria', city: 'Lagos' },
+    { country: 'Brazil', city: 'Sao Paulo' },
 ];
 
 const hoursAgo = (h) => new Date(now.getTime() - h * 60 * 60 * 1000);

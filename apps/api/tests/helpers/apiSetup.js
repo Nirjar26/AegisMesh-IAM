@@ -95,25 +95,65 @@ jest.mock('../../src/utils/auditLog', () => ({
     audit: jest.fn().mockResolvedValue({}),
     createAuditLog: jest.fn().mockResolvedValue({}),
     auditAuth: {
-        registered: jest.fn(), loginSuccess: jest.fn().mockResolvedValue(), loginFailed: jest.fn(),
-        loginMFAFailed: jest.fn(), logout: jest.fn(), tokenRefreshed: jest.fn(),
-        emailVerified: jest.fn(), passwordResetRequested: jest.fn(), passwordReset: jest.fn(),
-        oauthLogin: jest.fn()
+        registered: jest.fn(),
+        loginSuccess: jest.fn().mockResolvedValue(),
+        loginFailed: jest.fn(),
+        loginMFAFailed: jest.fn(),
+        logout: jest.fn(),
+        tokenRefreshed: jest.fn(),
+        emailVerified: jest.fn(),
+        passwordResetRequested: jest.fn(),
+        passwordReset: jest.fn(),
+        oauthLogin: jest.fn(),
     },
     auditSecurity: {
-        accountLocked: jest.fn(), suspiciousActivity: jest.fn(),
-        rateLimitExceeded: jest.fn(), unauthorizedAccess: jest.fn()
+        accountLocked: jest.fn(),
+        suspiciousActivity: jest.fn(),
+        rateLimitExceeded: jest.fn(),
+        unauthorizedAccess: jest.fn(),
     },
-    auditMFA: { enabled: jest.fn(), disabled: jest.fn(), backupCodeUsed: jest.fn(), setupInitiated: jest.fn() },
+    auditMFA: {
+        enabled: jest.fn(),
+        disabled: jest.fn(),
+        backupCodeUsed: jest.fn(),
+        setupInitiated: jest.fn(),
+    },
     auditSession: { revoked: jest.fn(), allRevoked: jest.fn() },
-    auditRole: { created: jest.fn(), updated: jest.fn(), deleted: jest.fn(), assigned: jest.fn(), removed: jest.fn() },
-    auditPolicy: { created: jest.fn(), updated: jest.fn(), deleted: jest.fn(), attached: jest.fn(), detached: jest.fn(), simulated: jest.fn() },
-    auditGroup: { created: jest.fn(), updated: jest.fn(), deleted: jest.fn(), memberAdded: jest.fn(), memberRemoved: jest.fn(), roleAttached: jest.fn(), roleDetached: jest.fn() },
+    auditRole: {
+        created: jest.fn(),
+        updated: jest.fn(),
+        deleted: jest.fn(),
+        assigned: jest.fn(),
+        removed: jest.fn(),
+    },
+    auditPolicy: {
+        created: jest.fn(),
+        updated: jest.fn(),
+        deleted: jest.fn(),
+        attached: jest.fn(),
+        detached: jest.fn(),
+        simulated: jest.fn(),
+    },
+    auditGroup: {
+        created: jest.fn(),
+        updated: jest.fn(),
+        deleted: jest.fn(),
+        memberAdded: jest.fn(),
+        memberRemoved: jest.fn(),
+        roleAttached: jest.fn(),
+        roleDetached: jest.fn(),
+    },
     auditPermission: { checked: jest.fn(), denied: jest.fn() },
-    auditUser: { created: jest.fn(), statusChanged: jest.fn(), emailVerified: jest.fn(), deleted: jest.fn(), sessionsRevoked: jest.fn() },
+    auditUser: {
+        created: jest.fn(),
+        statusChanged: jest.fn(),
+        emailVerified: jest.fn(),
+        deleted: jest.fn(),
+        sessionsRevoked: jest.fn(),
+    },
     addSSEClient: jest.fn(),
     removeSSEClient: jest.fn(),
-    sseClients: new Set()
+    sseClients: new Set(),
 }));
 
 // Mock Redis Config
@@ -134,7 +174,9 @@ jest.mock('../../src/services/token.service', () => ({
     createSession: jest.fn().mockResolvedValue({ id: 'mock-session-id' }),
     findSessionByToken: jest.fn().mockResolvedValue({ id: 'mock-session-id', user: {} }),
     deleteSession: jest.fn().mockResolvedValue(true),
-    rotateRefreshToken: jest.fn().mockResolvedValue({ refreshToken: 'new-refresh', session: { id: 'new-sess' } }),
+    rotateRefreshToken: jest
+        .fn()
+        .mockResolvedValue({ refreshToken: 'new-refresh', session: { id: 'new-sess' } }),
     getUserSessions: jest.fn().mockResolvedValue([]),
     revokeSession: jest.fn().mockResolvedValue({}),
 }));
@@ -156,23 +198,23 @@ const tokenService = require('../../src/services/token.service');
 
 const authenticatedRequest = (method, path, user = null) => {
     const req = request(app)[method](path);
-    
+
     if (user) {
-        tokenService.verifyAccessToken.mockReturnValue({ 
-            sub: user.id, 
+        tokenService.verifyAccessToken.mockReturnValue({
+            sub: user.id,
             email: user.email,
             type: 'access',
-            jti: 'mock-jti'
+            jti: 'mock-jti',
         });
-        
+
         prisma.user.findUnique.mockResolvedValue({
             ...user,
-            userRoles: user.userRoles || []
+            userRoles: user.userRoles || [],
         });
-        
+
         req.set('Authorization', 'Bearer mock-token');
     }
-    
+
     return req;
 };
 

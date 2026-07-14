@@ -9,12 +9,12 @@ export default function RoleSelector({ userId }) {
 
     const { data: allRolesData } = useQuery({
         queryKey: ['roles'],
-        queryFn: () => rbacAPI.getRoles({ limit: 100 })
+        queryFn: () => rbacAPI.getRoles({ limit: 100 }),
     });
 
     const { data: userRolesData } = useQuery({
         queryKey: ['userRoles', userId],
-        queryFn: () => rbacAPI.getUserRoles(userId)
+        queryFn: () => rbacAPI.getUserRoles(userId),
     });
 
     const assignMutation = useMutation({
@@ -23,7 +23,7 @@ export default function RoleSelector({ userId }) {
             queryClient.invalidateQueries(['userRoles', userId]);
             queryClient.invalidateQueries(['userPermissions', userId]);
             setSelectedRole('');
-        }
+        },
     });
 
     const removeMutation = useMutation({
@@ -31,7 +31,7 @@ export default function RoleSelector({ userId }) {
         onSuccess: () => {
             queryClient.invalidateQueries(['userRoles', userId]);
             queryClient.invalidateQueries(['userPermissions', userId]);
-        }
+        },
     });
 
     const handleAssign = () => {
@@ -43,12 +43,14 @@ export default function RoleSelector({ userId }) {
 
     const roles = allRolesData?.data?.data || [];
     const userRoles = userRolesData?.data?.data || [];
-    const assignedIds = new Set(userRoles.map(r => r.id));
-    const availableRoles = roles.filter(r => !assignedIds.has(r.id));
+    const assignedIds = new Set(userRoles.map((r) => r.id));
+    const availableRoles = roles.filter((r) => !assignedIds.has(r.id));
 
     return (
         <div className="bg-[#f4f6fb] p-4 rounded-lg border border-[#d0d7e8]">
-            <h3 className="text-lg font-medium text-[#0f1623] mb-4">Direct Roles ({userRoles.length})</h3>
+            <h3 className="text-lg font-medium text-[#0f1623] mb-4">
+                Direct Roles ({userRoles.length})
+            </h3>
 
             <div className="mb-6 flex gap-2">
                 <select
@@ -57,8 +59,10 @@ export default function RoleSelector({ userId }) {
                     className="flex-1 bg-[#ffffff] border border-[#d0d7e8] rounded p-2 text-[#0f1623] outline-none focus:border-[#4f46e5]"
                 >
                     <option value="">-- Select Role to Assign --</option>
-                    {availableRoles.map(r => (
-                        <option key={r.id} value={r.id}>{r.name}</option>
+                    {availableRoles.map((r) => (
+                        <option key={r.id} value={r.id}>
+                            {r.name}
+                        </option>
                     ))}
                 </select>
                 <button
@@ -71,14 +75,24 @@ export default function RoleSelector({ userId }) {
             </div>
 
             <ul className="space-y-2">
-                {userRoles.map(r => (
-                    <li key={r.id} className="flex items-center justify-between bg-[#ffffff] p-2 border border-[#d0d7e8] rounded">
+                {userRoles.map((r) => (
+                    <li
+                        key={r.id}
+                        className="flex items-center justify-between bg-[#ffffff] p-2 border border-[#d0d7e8] rounded"
+                    >
                         <div>
                             <span className="font-medium text-[#3a4560]">{r.name}</span>
-                            {r.isSystem && <span className="ml-2 text-xs bg-[#dde2f0] px-2 py-0.5 rounded text-[#3a4560]">System</span>}
+                            {r.isSystem && (
+                                <span className="ml-2 text-xs bg-[#dde2f0] px-2 py-0.5 rounded text-[#3a4560]">
+                                    System
+                                </span>
+                            )}
                         </div>
                         <button
-                            onClick={() => globalThis.confirm(`Remove ${r.name}?`) && removeMutation.mutate(r.id)}
+                            onClick={() =>
+                                globalThis.confirm(`Remove ${r.name}?`) &&
+                                removeMutation.mutate(r.id)
+                            }
                             className="text-red-400 hover:text-red-300 px-2 py-1 text-sm font-medium"
                         >
                             Remove
@@ -86,7 +100,9 @@ export default function RoleSelector({ userId }) {
                     </li>
                 ))}
                 {userRoles.length === 0 && (
-                    <p className="text-[#7a87a8] text-sm text-center py-4">No direct roles assigned</p>
+                    <p className="text-[#7a87a8] text-sm text-center py-4">
+                        No direct roles assigned
+                    </p>
                 )}
             </ul>
         </div>
@@ -96,5 +112,3 @@ export default function RoleSelector({ userId }) {
 RoleSelector.propTypes = {
     userId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 };
-
-

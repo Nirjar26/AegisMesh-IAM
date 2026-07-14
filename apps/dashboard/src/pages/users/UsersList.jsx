@@ -12,11 +12,7 @@ import EmptyState from '../../components/common/EmptyState';
 
 export default function UsersList() {
     const navigate = useNavigate();
-    const {
-        reauthModal,
-        handleReauthClose,
-        handleReauthSuccess,
-    } = useReauth();
+    const { reauthModal, handleReauthClose, handleReauthSuccess } = useReauth();
 
     const {
         data: users,
@@ -38,9 +34,7 @@ export default function UsersList() {
     const mfaFilter = filters.mfaEnabled === undefined ? '' : String(filters.mfaEnabled);
     const roleFilter = filters.roleId || '';
 
-    const {
-        data: rolesResponse,
-    } = useQuery({
+    const { data: rolesResponse } = useQuery({
         queryKey: ['roles-for-filter'],
         queryFn: () => rbacAPI.getRoles({ limit: 100 }).then((res) => res.data),
     });
@@ -48,16 +42,16 @@ export default function UsersList() {
     const roles = rolesResponse?.data || [];
 
     const handleStatusFilterChange = (e) => {
-        setFilters(prev => ({ ...prev, status: e.target.value }));
+        setFilters((prev) => ({ ...prev, status: e.target.value }));
     };
 
     const handleMfaFilterChange = (e) => {
         const val = e.target.value;
-        setFilters(prev => ({ ...prev, mfaEnabled: val === '' ? undefined : val === 'true' }));
+        setFilters((prev) => ({ ...prev, mfaEnabled: val === '' ? undefined : val === 'true' }));
     };
 
     const handleRoleFilterChange = (e) => {
-        setFilters(prev => ({ ...prev, roleId: e.target.value }));
+        setFilters((prev) => ({ ...prev, roleId: e.target.value }));
     };
 
     const renderUsersContent = () => {
@@ -66,7 +60,11 @@ export default function UsersList() {
         }
 
         if (isError) {
-            return <div className="py-16 text-center text-sm text-red-500">Failed to load users. Please refresh.</div>;
+            return (
+                <div className="py-16 text-center text-sm text-red-500">
+                    Failed to load users. Please refresh.
+                </div>
+            );
         }
 
         if (users.length === 0) {
@@ -85,16 +83,21 @@ export default function UsersList() {
                     {users.map((user) => {
                         const status = getStatusMeta(user.status);
                         const isMfaProtected = user.mfaEnabled;
-                        
+
                         return (
                             <div
                                 key={user.id}
                                 className="group bg-white border border-[#d0d7e8] rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-[#4f46e5]/30 transition-all duration-200 flex flex-col h-full"
                             >
                                 <div className="flex items-start justify-between mb-4">
-                                    <div 
+                                    <div
                                         className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-sm"
-                                        style={{ backgroundColor: getAvatarColor(user.firstName, user.lastName) }}
+                                        style={{
+                                            backgroundColor: getAvatarColor(
+                                                user.firstName,
+                                                user.lastName,
+                                            ),
+                                        }}
                                     >
                                         {getInitials(user.firstName, user.lastName)}
                                     </div>
@@ -124,9 +127,11 @@ export default function UsersList() {
                                         <Mail size={12} className="shrink-0" />
                                         <p className="text-[12px] truncate">{user.email}</p>
                                     </div>
-                                    
+
                                     <div className="mt-3 flex flex-wrap gap-2">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${status.className}`}>
+                                        <span
+                                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${status.className}`}
+                                        >
                                             {status.label}
                                         </span>
                                         {user.primaryRole && (
@@ -140,8 +145,12 @@ export default function UsersList() {
 
                                 <div className="pt-4 border-t border-[#f1f5f9] flex items-center justify-between">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">Security</span>
-                                        <span className={`text-[12px] font-semibold ${isMfaProtected ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                        <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">
+                                            Security
+                                        </span>
+                                        <span
+                                            className={`text-[12px] font-semibold ${isMfaProtected ? 'text-emerald-600' : 'text-slate-400'}`}
+                                        >
                                             {isMfaProtected ? 'MFA Protected' : 'MFA Off'}
                                         </span>
                                     </div>
@@ -159,7 +168,11 @@ export default function UsersList() {
 
                 <div className="mt-8 flex items-center justify-between">
                     <p className="text-sm text-[#64748b]">
-                        Showing page <span className="font-semibold text-[#0f1623]">{pagination.page}</span> of <span className="font-semibold text-[#0f1623]">{pagination.totalPages}</span>
+                        Showing page{' '}
+                        <span className="font-semibold text-[#0f1623]">{pagination.page}</span> of{' '}
+                        <span className="font-semibold text-[#0f1623]">
+                            {pagination.totalPages}
+                        </span>
                     </p>
 
                     <div className="flex items-center gap-2">
@@ -202,15 +215,19 @@ export default function UsersList() {
                         onClick={() => navigate('/dashboard/users/new')}
                         className="flex items-center justify-center gap-2 rounded-xl bg-[#4f46e5] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#3730a3]"
                     >
-                        <UserPlus size={16} />
-                        + New User
+                        <UserPlus size={16} />+ New User
                     </button>
                 </div>
 
                 <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-[#d0d7e8] bg-white px-5 py-4 shadow-sm lg:flex-nowrap">
                     <div className="relative flex-1 min-w-[240px]">
-                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7a87a8]" />
-                        <label htmlFor="user-search" className="sr-only">Search users</label>
+                        <Search
+                            size={16}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7a87a8]"
+                        />
+                        <label htmlFor="user-search" className="sr-only">
+                            Search users
+                        </label>
                         <input
                             id="user-search"
                             type="text"
@@ -222,7 +239,9 @@ export default function UsersList() {
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="status-filter" className="sr-only">Filter by status</label>
+                        <label htmlFor="status-filter" className="sr-only">
+                            Filter by status
+                        </label>
                         <select
                             id="status-filter"
                             value={statusFilter}
@@ -234,11 +253,16 @@ export default function UsersList() {
                             <option value="LOCKED">Locked</option>
                             <option value="INACTIVE">Inactive</option>
                         </select>
-                        <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a87a8]" />
+                        <ChevronDown
+                            size={14}
+                            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a87a8]"
+                        />
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="mfa-filter" className="sr-only">Filter by MFA status</label>
+                        <label htmlFor="mfa-filter" className="sr-only">
+                            Filter by MFA status
+                        </label>
                         <select
                             id="mfa-filter"
                             value={mfaFilter}
@@ -249,11 +273,16 @@ export default function UsersList() {
                             <option value="true">MFA: On</option>
                             <option value="false">MFA: Off</option>
                         </select>
-                        <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a87a8]" />
+                        <ChevronDown
+                            size={14}
+                            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a87a8]"
+                        />
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="role-filter" className="sr-only">Filter by role</label>
+                        <label htmlFor="role-filter" className="sr-only">
+                            Filter by role
+                        </label>
                         <select
                             id="role-filter"
                             value={roleFilter}
@@ -262,10 +291,15 @@ export default function UsersList() {
                         >
                             <option value="">All Roles</option>
                             {roles.map((role) => (
-                                <option key={role.id} value={role.id}>{role.name}</option>
+                                <option key={role.id} value={role.id}>
+                                    {role.name}
+                                </option>
                             ))}
                         </select>
-                        <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a87a8]" />
+                        <ChevronDown
+                            size={14}
+                            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a87a8]"
+                        />
                     </div>
                 </div>
 

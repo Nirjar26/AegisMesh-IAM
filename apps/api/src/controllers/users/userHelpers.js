@@ -35,7 +35,11 @@ async function validateUserUpdate(id, status, user, email) {
                 where: { userRoles: { some: { role: { name: 'SuperAdmin' } } }, status: 'ACTIVE' },
             });
             if (activeSuperAdmins <= 1) {
-                return { valid: false, code: 'USER_003', message: 'Cannot lock the last SuperAdmin' };
+                return {
+                    valid: false,
+                    code: 'USER_003',
+                    message: 'Cannot lock the last SuperAdmin',
+                };
             }
         }
     }

@@ -8,15 +8,15 @@ Quick steps:
 1. Edit the MetalLB IP range in `scripts/install/install-ingress-stack.sh` to match your VPC / LAN.
 2. Run:
 
-   ```bash
-   bash scripts/install/install-ingress-stack.sh
-   ```
+    ```bash
+    bash scripts/install/install-ingress-stack.sh
+    ```
 
 3. Check the ingress-nginx service external IP:
 
-   ```bash
-   kubectl -n ingress-nginx get svc ingress-nginx-controller
-   ```
+    ```bash
+    kubectl -n ingress-nginx get svc ingress-nginx-controller
+    ```
 
 4. Create DNS A records in Cloudflare pointing your hostnames to the MetalLB IP.
 
@@ -30,20 +30,20 @@ Using cert-manager with Cloudflare (DNS01) – recommended for wildcard certs:
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: letsencrypt-cloudflare
+    name: letsencrypt-cloudflare
 spec:
-  acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
-    email: admin@example.com
-    privateKeySecretRef:
-      name: acme-account-key
-    solvers:
-      - dns01:
-          cloudflare:
-            email: ""
-            apiTokenSecretRef:
-              name: cloudflare-api-token
-              key: api-token
+    acme:
+        server: https://acme-v02.api.letsencrypt.org/directory
+        email: admin@example.com
+        privateKeySecretRef:
+            name: acme-account-key
+        solvers:
+            - dns01:
+                  cloudflare:
+                      email: ''
+                      apiTokenSecretRef:
+                          name: cloudflare-api-token
+                          key: api-token
 ```
 
 See cert-manager docs for full Cloudflare setup.

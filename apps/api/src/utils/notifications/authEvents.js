@@ -1,11 +1,7 @@
 const prisma = require('../../config/database');
 
 function asObject(value) {
-    return value &&
-        typeof value === 'object' &&
-        !Array.isArray(value)
-        ? value
-        : {};
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 }
 
 function formatActorName(actor) {
@@ -110,9 +106,7 @@ async function buildNewLoginNotification(entry) {
         return null;
     }
 
-    const location = entry.ipAddress
-        ? ` from ${entry.ipAddress}`
-        : '';
+    const location = entry.ipAddress ? ` from ${entry.ipAddress}` : '';
 
     return {
         targetUserId: entry.userId,
@@ -120,9 +114,7 @@ async function buildNewLoginNotification(entry) {
         type: 'security',
         severity: 'warning',
         title: 'New device sign-in',
-        message: `We noticed a sign-in on ${parseDeviceLabel(
-            entry.userAgent
-        )}${location}.`,
+        message: `We noticed a sign-in on ${parseDeviceLabel(entry.userAgent)}${location}.`,
         link: '/dashboard/security?tab=history',
     };
 }
@@ -132,10 +124,7 @@ function buildPasswordChangedMessage(otherSessionsRevoked) {
         return 'Your password was updated successfully.';
     }
 
-    const sessionLabel =
-        otherSessionsRevoked === 1
-            ? 'session'
-            : 'sessions';
+    const sessionLabel = otherSessionsRevoked === 1 ? 'session' : 'sessions';
 
     return `Your password was updated and ${otherSessionsRevoked} other ${sessionLabel} were signed out.`;
 }
@@ -147,9 +136,7 @@ function buildPasswordChangedNotification(entry) {
 
     const metadata = asObject(entry.metadata);
 
-    const otherSessionsRevoked = Number(
-        metadata.otherSessionsRevoked || 0
-    );
+    const otherSessionsRevoked = Number(metadata.otherSessionsRevoked || 0);
 
     return {
         targetUserId: entry.userId,
@@ -157,9 +144,7 @@ function buildPasswordChangedNotification(entry) {
         type: 'security',
         severity: 'info',
         title: 'Password changed',
-        message: buildPasswordChangedMessage(
-            otherSessionsRevoked
-        ),
+        message: buildPasswordChangedMessage(otherSessionsRevoked),
         link: '/dashboard/security?tab=password',
     };
 }
@@ -175,8 +160,7 @@ function buildMfaDisabledNotification(entry) {
         type: 'security',
         severity: 'critical',
         title: 'Two-factor authentication disabled',
-        message:
-            'Multi-factor authentication was disabled for your account.',
+        message: 'Multi-factor authentication was disabled for your account.',
         link: '/dashboard/security?tab=mfa',
     };
 }
@@ -192,8 +176,7 @@ function buildAccountLockedNotification(entry) {
         type: 'security',
         severity: 'critical',
         title: 'Account locked',
-        message:
-            'Your account was locked after repeated failed sign-in attempts.',
+        message: 'Your account was locked after repeated failed sign-in attempts.',
         link: '/dashboard/security?tab=history',
     };
 }
@@ -201,8 +184,7 @@ function buildAccountLockedNotification(entry) {
 function buildUserStatusChangedNotification(entry) {
     const metadata = asObject(entry.metadata);
 
-    const newStatus =
-        metadata.newStatus || metadata.to || null;
+    const newStatus = metadata.newStatus || metadata.to || null;
 
     const targetUserId = entry.resourceId || null;
 
@@ -216,9 +198,7 @@ function buildUserStatusChangedNotification(entry) {
         type: 'security',
         severity: 'critical',
         title: 'Account locked',
-        message: `${formatActorName(
-            entry.user
-        )} locked your account.`,
+        message: `${formatActorName(entry.user)} locked your account.`,
         link: '/dashboard/security?tab=history',
     };
 }
@@ -236,9 +216,7 @@ function buildUserCreatedNotification(entry) {
         type: 'account',
         severity: 'info',
         title: 'Account created',
-        message: `${formatActorName(
-            entry.user
-        )} created your IAM account.`,
+        message: `${formatActorName(entry.user)} created your IAM account.`,
         link: '/settings/profile',
     };
 }

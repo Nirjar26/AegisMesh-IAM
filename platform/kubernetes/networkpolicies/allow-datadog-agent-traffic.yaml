@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-datadog-agent-traffic
-  namespace: aegismesh
+  namespace: Bastion
 spec:
   podSelector:
     matchLabels:
@@ -45,7 +45,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-egress-to-datadog-agent
-  namespace: aegismesh
+  namespace: Bastion
 spec:
   podSelector:
     matchLabels:
@@ -69,7 +69,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-egress-to-datadog-agent-se
-  namespace: aegismesh
+  namespace: Bastion
 spec:
   podSelector:
     matchLabels:

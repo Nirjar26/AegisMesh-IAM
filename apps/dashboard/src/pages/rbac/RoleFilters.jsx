@@ -5,8 +5,13 @@ export default function RoleFilters({ search, onSearchChange, typeFilter, onType
     return (
         <div className="bg-white border border-[#d0d7e8] rounded-2xl px-5 py-4 mb-4 flex items-center gap-3 shadow-sm flex-wrap lg:flex-nowrap">
             <div className="relative flex-1 min-w-[260px]">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7a87a8]" />
-                <label htmlFor="role-search" className="sr-only">Search roles</label>
+                <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7a87a8]"
+                />
+                <label htmlFor="role-search" className="sr-only">
+                    Search roles
+                </label>
                 <input
                     id="role-search"
                     type="text"
@@ -18,7 +23,9 @@ export default function RoleFilters({ search, onSearchChange, typeFilter, onType
             </div>
 
             <div className="relative">
-                <label htmlFor="type-filter" className="sr-only">Filter by type</label>
+                <label htmlFor="type-filter" className="sr-only">
+                    Filter by type
+                </label>
                 <select
                     id="type-filter"
                     value={typeFilter}
@@ -29,7 +36,10 @@ export default function RoleFilters({ search, onSearchChange, typeFilter, onType
                     <option value="SYSTEM">System</option>
                     <option value="CUSTOM">Custom</option>
                 </select>
-                <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a87a8] pointer-events-none" />
+                <ChevronDown
+                    size={14}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a87a8] pointer-events-none"
+                />
             </div>
         </div>
     );

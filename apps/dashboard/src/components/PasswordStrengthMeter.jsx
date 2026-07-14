@@ -54,19 +54,34 @@ export default function PasswordStrengthMeter({ password = '' }) {
                     { key: 'hasSpecial', label: 'Special char (@$!%*?&)' },
                 ].map(({ key, label }) => (
                     <div key={key} className="flex items-center gap-1.5">
-                        <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all duration-300 ${checks[key]
-                                ? 'bg-green-500/20 text-green-400'
-                                : 'bg-aws-input text-aws-text-dim/40'
-                            }`}>
+                        <div
+                            className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all duration-300 ${
+                                checks[key]
+                                    ? 'bg-green-500/20 text-green-400'
+                                    : 'bg-aws-input text-aws-text-dim/40'
+                            }`}
+                        >
                             {checks[key] ? (
-                                <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                <svg
+                                    className="w-2.5 h-2.5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth={3}
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M5 13l4 4L19 7"
+                                    />
                                 </svg>
                             ) : (
                                 <div className="w-1 h-1 rounded-full bg-current"></div>
                             )}
                         </div>
-                        <span className={`text-[11px] transition-colors ${checks[key] ? 'text-green-400' : 'text-aws-text-dim/60'}`}>
+                        <span
+                            className={`text-[11px] transition-colors ${checks[key] ? 'text-green-400' : 'text-aws-text-dim/60'}`}
+                        >
                             {label}
                         </span>
                     </div>
@@ -79,5 +94,3 @@ export default function PasswordStrengthMeter({ password = '' }) {
 PasswordStrengthMeter.propTypes = {
     password: PropTypes.string,
 };
-
-

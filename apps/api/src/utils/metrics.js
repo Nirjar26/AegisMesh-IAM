@@ -4,73 +4,73 @@ const register = new client.Registry();
 
 client.collectDefaultMetrics({
     register,
-    prefix: 'aegismesh_',
+    prefix: 'bastion_',
 });
 
 const httpRequestDuration = new client.Histogram({
-    name: 'aegismesh_http_request_duration_seconds',
+    name: 'bastion_http_request_duration_seconds',
     help: 'HTTP request duration in seconds',
     labelNames: ['method', 'route', 'status_code'],
     buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5],
 });
 
 const httpRequestTotal = new client.Counter({
-    name: 'aegismesh_http_requests_total',
+    name: 'bastion_http_requests_total',
     help: 'Total HTTP requests',
     labelNames: ['method', 'route', 'status_code'],
 });
 
 const authEventsTotal = new client.Counter({
-    name: 'aegismesh_auth_events_total',
+    name: 'bastion_auth_events_total',
     help: 'Authentication and session lifecycle events',
     labelNames: ['action', 'result', 'method'],
 });
 
 const securityEventsTotal = new client.Counter({
-    name: 'aegismesh_security_events_total',
+    name: 'bastion_security_events_total',
     help: 'Security-sensitive events emitted by the IAM platform',
     labelNames: ['action', 'result', 'severity'],
 });
 
 const mfaEventsTotal = new client.Counter({
-    name: 'aegismesh_mfa_events_total',
+    name: 'bastion_mfa_events_total',
     help: 'MFA enrollment and challenge events',
     labelNames: ['action', 'result'],
 });
 
 const permissionEventsTotal = new client.Counter({
-    name: 'aegismesh_permission_events_total',
+    name: 'bastion_permission_events_total',
     help: 'Authorization checks and permission denials',
     labelNames: ['action', 'result'],
 });
 
 const sessionEventsTotal = new client.Counter({
-    name: 'aegismesh_session_events_total',
+    name: 'bastion_session_events_total',
     help: 'Session refresh and revocation events',
     labelNames: ['action', 'result'],
 });
 
 const apiKeyEventsTotal = new client.Counter({
-    name: 'aegismesh_api_key_events_total',
+    name: 'bastion_api_key_events_total',
     help: 'API key lifecycle and usage events',
     labelNames: ['action', 'result'],
 });
 
 const auditLogWritesTotal = new client.Counter({
-    name: 'aegismesh_audit_log_writes_total',
+    name: 'bastion_audit_log_writes_total',
     help: 'Audit log write attempts by result and category',
     labelNames: ['result', 'category'],
 });
 
 const databaseQueryDuration = new client.Histogram({
-    name: 'aegismesh_database_query_duration_seconds',
+    name: 'bastion_database_query_duration_seconds',
     help: 'Prisma database query duration in seconds',
     labelNames: ['model', 'operation'],
     buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5],
 });
 
 const activeSessions = new client.Gauge({
-    name: 'aegismesh_active_sessions',
+    name: 'bastion_active_sessions',
     help: 'Current number of non-expired sessions',
     async collect() {
         try {
@@ -101,7 +101,9 @@ register.registerMetric(auditLogWritesTotal);
 register.registerMetric(databaseQueryDuration);
 register.registerMetric(activeSessions);
 
-const RESET_KEY_PREFIX = [80, 65, 83, 83, 87, 79, 82, 68].map((code) => String.fromCodePoint(code)).join('');
+const RESET_KEY_PREFIX = [80, 65, 83, 83, 87, 79, 82, 68]
+    .map((code) => String.fromCodePoint(code))
+    .join('');
 
 const ACTION_ALIASES = {
     REGISTER: 'register',
@@ -246,10 +248,13 @@ function recordApiKeyEvent(action, result = 'SUCCESS') {
 }
 
 function observeDatabaseQuery(model, operation, durationSeconds) {
-    databaseQueryDuration.observe({
-        model: model || 'raw',
-        operation: operation || 'unknown',
-    }, durationSeconds);
+    databaseQueryDuration.observe(
+        {
+            model: model || 'raw',
+            operation: operation || 'unknown',
+        },
+        durationSeconds,
+    );
 }
 
 function normalizeRoute(req) {

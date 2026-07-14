@@ -55,20 +55,21 @@ Core design rules:
 
 ## Tech Stack
 
-| Layer | Technologies |
-|---|---|
-| Frontend | React 19, Vite, Tailwind CSS |
-| Backend | Node.js, Express |
-| Security Engine | Python, FastAPI, Scikit-learn, MLflow |
-| Database | PostgreSQL 17, Prisma |
-| Auth | JWT, Passport, TOTP MFA, OAuth 2.0 |
-| DevOps | Docker, Kubernetes, Kustomize, Helm, ArgoCD, GitHub Actions |
-| Infrastructure | Terraform, AWS ECR, EC2, SealedSecrets, Falco, CrowdSec |
-| Observability | Datadog APM, Prometheus, Grafana, Loki |
+| Layer           | Technologies                                                |
+| --------------- | ----------------------------------------------------------- |
+| Frontend        | React 19, Vite, Tailwind CSS                                |
+| Backend         | Node.js, Express                                            |
+| Security Engine | Python, FastAPI, Scikit-learn, MLflow                       |
+| Database        | PostgreSQL 17, Prisma                                       |
+| Auth            | JWT, Passport, TOTP MFA, OAuth 2.0                          |
+| DevOps          | Docker, Kubernetes, Kustomize, Helm, ArgoCD, GitHub Actions |
+| Infrastructure  | Terraform, AWS ECR, EC2, SealedSecrets, Falco, CrowdSec     |
+| Observability   | Datadog APM, Prometheus, Grafana, Loki                      |
 
 ---
 
 ## System Architecture Diagram
+
 <div align="center">
 <img
   src="./diagrams/system_architecture.png"
@@ -76,8 +77,8 @@ Core design rules:
 />
 </div>
 
-
 ## CI/CD & MLOps Architecture
+
 <div align="center">
 <img
   src="./diagrams/ci_cd.png"
@@ -90,30 +91,37 @@ Core design rules:
 ## Pipeline Walkthrough
 
 ### Dev Workflow & feature branch
-- Edit backend (Node), frontend (React), or security-engine (FastAPI) code. 
+
+- Edit backend (Node), frontend (React), or security-engine (FastAPI) code.
 - Test locally with `docker-compose up --build` or against a local k8s namespace. Push to a feature branch, open a PR into `main`.
 
 ### CI — triggers on push/PR touching `apps/api/`, `apps/dashboard/`, or `apps/security-engine/`
+
 - **Backend:** `npm install --no-audit` → ESLint → `npm test` (Jest)
 - **Frontend:** install → syntax check → `vite build`
 - **Docker validation:** builds all three Dockerfiles on the runner to catch broken builds before merge
 - **On merge to `main` only:** authenticates to ECR, builds hardened prod images (non-root UID, read-only filesystem), tags with commit SHA + `v1`, pushes to ECR
 
 ### CD / GitOps — triggers on push to `main` or a green CI run
+
 - Resolves the new image SHA and patches it into the Kustomize overlays (`patch-backend-image.yaml`, `patch-frontend-image.yaml`)
 - Commits to a `bot/overlay-update-*` branch, opens a PR, auto-merges
 - ArgoCD watches `main` and reconciles the live cluster to match
 
 ### Cluster rollout
+
 Init containers run in strict order before the app is reachable:
+
 1. `wait-for-db` — blocks until Postgres accepts connections
 2. `prisma-migrate` — runs `npx prisma migrate deploy` using the new image
 3. Backend, frontend, and security-engine pods go live
 
 ### Smoke tests (self-hosted runner, local cluster)
+
 Checks rollout status, spins up a `curl` pod, hits `frontend:80/` to confirm real traffic, not just `Running`
 
 ### MLOps loop
+
 - **Inference:** every login attempt triggers a non-blocking POST from backend to `security-engine:8000/analyze` with event context. FastAPI runs it through a scikit-learn pipeline (impute → scale → encode) into an Isolation Forest. Risk score > 0.7 forces step-up auth.
 - **Retraining:** a CronJob hits `/train` daily at midnight, pulls up to 10k recent logs from Postgres, retrains the Isolation Forest, logs the run to MLflow, and hot-swaps `isolation_forest.joblib` in memory — no restart required.
 
@@ -123,7 +131,6 @@ Checks rollout status, spins up a `curl` pod, hits `frontend:80/` to confirm rea
 - Every deploy is a Git commit tied to an immutable image tag — fully auditable and revertable.
 - SealedSecrets keep credentials encrypted in the repo. The in-cluster controller handles decryption.
 - Kubelet credential-provider handles ECR auth. `imagePullSecrets` are legacy only.
-
 
 ---
 
@@ -198,14 +205,14 @@ Edit `.env` with your values before starting.
 docker-compose up --build
 ```
 
-| Service | URL |
-|---|---|
-| Frontend | http://localhost:3000 |
-| Backend API | http://localhost:5000 |
+| Service         | URL                   |
+| --------------- | --------------------- |
+| Frontend        | http://localhost:3000 |
+| Backend API     | http://localhost:5000 |
 | Security Engine | http://localhost:8000 |
-| Grafana | http://localhost:3010 |
-| MLflow | http://localhost:5001 |
-| Prometheus | http://localhost:9090 |
+| Grafana         | http://localhost:3010 |
+| MLflow          | http://localhost:5001 |
+| Prometheus      | http://localhost:9090 |
 
 Full setup guide: [`docker_setup`](docs/docker.md)
 
@@ -248,29 +255,34 @@ python src/main.py # runs on :8000
 ## Documentation
 
 **Setup**
+
 - [Docker Setup](docs/docker.md)
 - [Local Development](#option-2--local-development)
 
 **Deployment**
+
 - [CI/CD Pipeline](docs/guides/runbook-ci-cd.md)
 - [GitHub Runner](docs/github-runner.md)
 
 **Kubernetes**
+
 - [K8s Overview](platform/kubernetes/README.md)
 - [Ingress & TLS](docs/devops/ingress-and-tls.md)
 - [HPA](docs/devops/hpa-metrics-server.md)
 
 **Security**
+
 - [SealedSecrets](docs/devops/sealedsecrets-sops.md)
 - [Falco](docs/devops/falco.md)
 - [Kyverno](docs/devops/kyverno-networkpolicy.md)
 
 **Reliability**
+
 - [Argo Rollouts](docs/devops/argo-rollouts.md)
 - [Backups (Velero)](docs/devops/backups-velero-minio.md)
 
 **Observability**
+
 - [Loki Stack](docs/devops/observability-loki-tempo.md)
 
 → [Full documentation index](docs/README.md)
-

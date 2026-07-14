@@ -11,7 +11,8 @@ function readTextField(formData, fieldName, fallback = '') {
 
 export default function UserCreate() {
     const navigate = useNavigate();
-    const inputClass = 'w-full border border-[#d0d7e8] rounded-xl px-3 py-2.5 text-sm text-[#0f1623] focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] outline-none';
+    const inputClass =
+        'w-full border border-[#d0d7e8] rounded-xl px-3 py-2.5 text-sm text-[#0f1623] focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] outline-none';
 
     const { data: roles = [], isLoading: rolesLoading } = useQuery({
         queryKey: ['roles', 'for-user-create'],
@@ -26,7 +27,10 @@ export default function UserCreate() {
             navigate(createdUserId ? `/dashboard/users/${createdUserId}` : '/dashboard/users');
         },
         onError: (error) => {
-            const message = error?.response?.data?.error?.message || error?.response?.data?.error || 'Failed to create user';
+            const message =
+                error?.response?.data?.error?.message ||
+                error?.response?.data?.error ||
+                'Failed to create user';
             toast.error(message);
         },
     });
@@ -59,7 +63,10 @@ export default function UserCreate() {
         rolesContent = (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {roles.map((role) => (
-                    <div key={role.id} className="flex items-start gap-2 border border-[#e3e8f4] rounded-lg px-3 py-2">
+                    <div
+                        key={role.id}
+                        className="flex items-start gap-2 border border-[#e3e8f4] rounded-lg px-3 py-2"
+                    >
                         <input
                             id={`role-${role.id}`}
                             type="checkbox"
@@ -68,8 +75,12 @@ export default function UserCreate() {
                             className="mt-1"
                         />
                         <label htmlFor={`role-${role.id}`} className="cursor-pointer">
-                            <span className="block text-sm font-medium text-[#0f1623]">{role.name}</span>
-                            <span className="block text-xs text-[#7a87a8]">{role.description || 'No description'}</span>
+                            <span className="block text-sm font-medium text-[#0f1623]">
+                                {role.name}
+                            </span>
+                            <span className="block text-xs text-[#7a87a8]">
+                                {role.description || 'No description'}
+                            </span>
                         </label>
                     </div>
                 ))}
@@ -87,29 +98,59 @@ export default function UserCreate() {
                 <div className="mt-4 bg-white border border-[#d0d7e8] rounded-2xl shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-[#f0f2f8]">
                         <h1 className="text-[20px] font-semibold text-[#0f1623]">Create User</h1>
-                        <p className="text-[13px] text-[#7a87a8] mt-1">Add a new user and assign initial access roles.</p>
+                        <p className="text-[13px] text-[#7a87a8] mt-1">
+                            Add a new user and assign initial access roles.
+                        </p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="p-6 space-y-5">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Field label="First Name" htmlFor="user-first-name">
-                                <input id="user-first-name" name="firstName" required className={inputClass} />
+                                <input
+                                    id="user-first-name"
+                                    name="firstName"
+                                    required
+                                    className={inputClass}
+                                />
                             </Field>
                             <Field label="Last Name" htmlFor="user-last-name">
-                                <input id="user-last-name" name="lastName" required className={inputClass} />
+                                <input
+                                    id="user-last-name"
+                                    name="lastName"
+                                    required
+                                    className={inputClass}
+                                />
                             </Field>
                         </div>
 
                         <Field label="Email" htmlFor="user-email">
-                            <input id="user-email" name="email" type="email" required className={inputClass} />
+                            <input
+                                id="user-email"
+                                name="email"
+                                type="email"
+                                required
+                                className={inputClass}
+                            />
                         </Field>
 
                         <Field label="Temporary Password" htmlFor="user-password">
-                            <input id="user-password" name="password" type="password" required minLength={8} className={inputClass} />
+                            <input
+                                id="user-password"
+                                name="password"
+                                type="password"
+                                required
+                                minLength={8}
+                                className={inputClass}
+                            />
                         </Field>
 
                         <Field label="Status" htmlFor="user-status">
-                            <select id="user-status" name="status" defaultValue="ACTIVE" className={inputClass}>
+                            <select
+                                id="user-status"
+                                name="status"
+                                defaultValue="ACTIVE"
+                                className={inputClass}
+                            >
                                 <option value="ACTIVE">Active</option>
                                 <option value="INACTIVE">Inactive</option>
                                 <option value="LOCKED">Locked</option>
@@ -122,8 +163,15 @@ export default function UserCreate() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <input id="send-welcome-email" type="checkbox" name="sendWelcomeEmail" />
-                            <label htmlFor="send-welcome-email" className="text-sm text-[#3a4560] cursor-pointer">
+                            <input
+                                id="send-welcome-email"
+                                type="checkbox"
+                                name="sendWelcomeEmail"
+                            />
+                            <label
+                                htmlFor="send-welcome-email"
+                                className="text-sm text-[#3a4560] cursor-pointer"
+                            >
                                 Send welcome email
                             </label>
                         </div>
@@ -154,7 +202,9 @@ export default function UserCreate() {
 function Field({ label, htmlFor, children }) {
     return (
         <div>
-            <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-[#3a4560]">{label}</label>
+            <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-[#3a4560]">
+                {label}
+            </label>
             {children}
         </div>
     );

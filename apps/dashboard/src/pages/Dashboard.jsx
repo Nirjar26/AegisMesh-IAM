@@ -27,7 +27,11 @@ import UsersList from './users/UsersList';
 import RolesList from './rbac/RolesList';
 import PoliciesList from './rbac/PoliciesList';
 import GroupsList from './rbac/GroupsList';
-import { formatDate, formatRelativeTime, toTitleCase as toTitleCaseAction } from '../utils/formatters';
+import {
+    formatDate,
+    formatRelativeTime,
+    toTitleCase as toTitleCaseAction,
+} from '../utils/formatters';
 import { logger } from '../utils/logger';
 
 function NavItem({
@@ -57,10 +61,11 @@ function NavItem({
             <button
                 onClick={handleClick}
                 title={label}
-                className={`w-10 h-10 mx-auto rounded-xl flex items-center justify-center transition-all duration-150 ${isActive
-                    ? 'bg-[#4f46e5]/25 text-[#c7d2fe]'
-                    : 'text-[#93a4c3] hover:text-[#e2e8f0] hover:bg-[#1f2937]'
-                    }`}
+                className={`w-10 h-10 mx-auto rounded-xl flex items-center justify-center transition-all duration-150 ${
+                    isActive
+                        ? 'bg-[#4f46e5]/25 text-[#c7d2fe]'
+                        : 'text-[#93a4c3] hover:text-[#e2e8f0] hover:bg-[#1f2937]'
+                }`}
             >
                 {iconElement}
             </button>
@@ -70,10 +75,11 @@ function NavItem({
     return (
         <button
             onClick={handleClick}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl text-xs cursor-pointer transition-all duration-150 border ${isActive
-                ? 'bg-[#4f46e5]/25 text-[#c7d2fe] border-[#6366f1]/50 font-semibold'
-                : 'text-[#b6c2d9] hover:text-[#f8fafc] hover:bg-[#1f2937] border-transparent font-medium'
-                }`}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl text-xs cursor-pointer transition-all duration-150 border ${
+                isActive
+                    ? 'bg-[#4f46e5]/25 text-[#c7d2fe] border-[#6366f1]/50 font-semibold'
+                    : 'text-[#b6c2d9] hover:text-[#f8fafc] hover:bg-[#1f2937] border-transparent font-medium'
+            }`}
         >
             {iconElement}
             <span>{label}</span>
@@ -98,7 +104,9 @@ function SectionToggle({ label, expanded, active, onToggle }) {
             onClick={onToggle}
             className="w-full flex items-center justify-between px-4 py-2 cursor-pointer select-none group"
         >
-            <span className={`text-[9px] font-semibold tracking-widest uppercase transition-colors ${active ? 'text-[#a5b4fc]' : 'text-[#7b8ba8] group-hover:text-[#cbd5e1]'}`}>
+            <span
+                className={`text-[9px] font-semibold tracking-widest uppercase transition-colors ${active ? 'text-[#a5b4fc]' : 'text-[#7b8ba8] group-hover:text-[#cbd5e1]'}`}
+            >
                 {label}
             </span>
             <ChevronDown
@@ -299,7 +307,10 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
 
     const totalUsers = usersSummary.total ?? users.length;
     const activeSessions = sessions.length;
-    const totalPolicyAssignments = roles.reduce((sum, role) => sum + (role._count?.rolePolicies || 0), 0);
+    const totalPolicyAssignments = roles.reduce(
+        (sum, role) => sum + (role._count?.rolePolicies || 0),
+        0,
+    );
 
     const countWeeklyActions = (matchers) => {
         return weeklyLogs.filter((log) => {
@@ -313,9 +324,18 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
 
     const metricDeltas = {
         users: countWeeklyActions(['REGISTER', 'USER_CREATED']),
-        sessions: countWeeklyActions([(action) => action.includes('LOGIN') && !action.includes('FAILED')]),
-        policyAssignments: countWeeklyActions([(action) => action.includes('POLICY') && action.includes('ATTACH')]),
-        alerts: countWeeklyActions(['PERMISSION_DENIED', 'ACCOUNT_LOCKED', 'RATE_LIMIT_EXCEEDED', 'LOGIN_FAILED']),
+        sessions: countWeeklyActions([
+            (action) => action.includes('LOGIN') && !action.includes('FAILED'),
+        ]),
+        policyAssignments: countWeeklyActions([
+            (action) => action.includes('POLICY') && action.includes('ATTACH'),
+        ]),
+        alerts: countWeeklyActions([
+            'PERMISSION_DENIED',
+            'ACCOUNT_LOCKED',
+            'RATE_LIMIT_EXCEEDED',
+            'LOGIN_FAILED',
+        ]),
     };
 
     const mfaEnabledCount = users.filter((u) => u.mfaEnabled).length;
@@ -326,18 +346,23 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
         return new Date(u.lastLoginAt).getTime() < thirtyDaysAgoMs;
     }).length;
 
-    const unverifiedUsersCount = usersSummary.unverified ?? users.filter((u) => !u.emailVerified).length;
+    const unverifiedUsersCount =
+        usersSummary.unverified ?? users.filter((u) => !u.emailVerified).length;
 
     const overprivilegedRolesCount = roles.filter((role) =>
         (role.rolePolicies || []).some(({ policy }) => {
             const actions = policy?.actions || [];
             const resources = policy?.resources || [];
 
-            const wildcardAction = actions.some((a) => typeof a === 'string' && (a === '*' || a.includes('*')));
-            const wildcardResource = resources.some((r) => typeof r === 'string' && (r === '*' || r.includes('*')));
+            const wildcardAction = actions.some(
+                (a) => typeof a === 'string' && (a === '*' || a.includes('*')),
+            );
+            const wildcardResource = resources.some(
+                (r) => typeof r === 'string' && (r === '*' || r.includes('*')),
+            );
 
             return wildcardAction || wildcardResource;
-        })
+        }),
     ).length;
 
     const latestPolicyTimestamp = policies.reduce((latest, policy) => {
@@ -346,7 +371,9 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
         return latest;
     }, 0);
 
-    const criticalAlertsCount = alerts.filter((alert) => ['CRITICAL', 'HIGH'].includes(alert.severity)).length;
+    const criticalAlertsCount = alerts.filter((alert) =>
+        ['CRITICAL', 'HIGH'].includes(alert.severity),
+    ).length;
 
     const systemHealth = getSystemHealth(criticalAlertsCount, totalAlerts);
 
@@ -465,7 +492,8 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
             value: totalAlerts,
             delta: metricDeltas.alerts,
             icon: AlertTriangle,
-            iconClass: totalAlerts > 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600',
+            iconClass:
+                totalAlerts > 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600',
         },
     ];
 
@@ -512,18 +540,21 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
     return (
         <div className="animate-in space-y-6">
             <SectionHeader
-                title="AegisMesh Console"
+                title="Bastion Console"
                 description="IAM command center with live health, security posture, and access activity."
             />
 
             <div className="w-full bg-white border border-[#d0d7e8] rounded-2xl px-6 py-4 shadow-sm flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-2">
                     <span className={`w-2.5 h-2.5 rounded-full ${systemHealth.dotClass}`}></span>
-                    <span className={`text-sm font-semibold ${systemHealth.textClass}`}>{systemHealth.label}</span>
+                    <span className={`text-sm font-semibold ${systemHealth.textClass}`}>
+                        {systemHealth.label}
+                    </span>
                 </div>
                 <div className="flex flex-wrap gap-2 text-xs text-[#3a4560] xl:justify-end">
                     <div className="min-w-[160px] flex-1 rounded-xl border border-[#edf0f7] bg-[#f8f9fd] px-3 py-2 sm:flex-none">
-                        Last policy eval: {latestPolicyTimestamp ? formatRelativeTime(latestPolicyTimestamp) : 'N/A'}
+                        Last policy eval:{' '}
+                        {latestPolicyTimestamp ? formatRelativeTime(latestPolicyTimestamp) : 'N/A'}
                     </div>
                     <div className="min-w-[160px] flex-1 rounded-xl border border-[#edf0f7] bg-[#f8f9fd] px-3 py-2 sm:flex-none">
                         Active sessions: {activeSessions}
@@ -544,14 +575,21 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
                     const Icon = card.icon;
 
                     return (
-                        <div key={card.title} className="bg-white border border-[#d0d7e8] rounded-2xl px-5 py-4 shadow-sm">
+                        <div
+                            key={card.title}
+                            className="bg-white border border-[#d0d7e8] rounded-2xl px-5 py-4 shadow-sm"
+                        >
                             <div className="flex items-center justify-between mb-3">
-                                <p className="text-xs font-semibold tracking-wide uppercase text-[#7a87a8]">{card.title}</p>
+                                <p className="text-xs font-semibold tracking-wide uppercase text-[#7a87a8]">
+                                    {card.title}
+                                </p>
                                 <div className={`rounded-xl p-2 ${card.iconClass}`}>
                                     <Icon size={16} />
                                 </div>
                             </div>
-                            <p className="text-3xl font-semibold text-[#0f1623] leading-none">{card.value}</p>
+                            <p className="text-3xl font-semibold text-[#0f1623] leading-none">
+                                {card.value}
+                            </p>
                             <p className="text-xs text-[#7a87a8] mt-2">+{card.delta} this week</p>
                         </div>
                     );
@@ -561,9 +599,12 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
             <div className="bg-white border border-[#d0d7e8] rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                     <div>
-                        <h2 className="text-[16px] font-semibold text-[#0f1623]">Security Posture</h2>
+                        <h2 className="text-[16px] font-semibold text-[#0f1623]">
+                            Security Posture
+                        </h2>
                         <p className="text-xs text-[#7a87a8] mt-1">
-                            Live checks for MFA adoption, inactive identities, privilege risks, and email trust.
+                            Live checks for MFA adoption, inactive identities, privilege risks, and
+                            email trust.
                         </p>
                     </div>
                     <ShieldCheck size={18} className="text-[#4f46e5]" />
@@ -575,19 +616,28 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
                         const Icon = check.icon;
 
                         return (
-                            <div key={check.label} className="border border-[#e5eaf3] rounded-xl p-3 bg-[#f8f9fd]">
+                            <div
+                                key={check.label}
+                                className="border border-[#e5eaf3] rounded-xl p-3 bg-[#f8f9fd]"
+                            >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <div className="p-1.5 rounded-lg bg-white border border-[#e3e7f1] text-[#4f46e5]">
                                             <Icon size={14} />
                                         </div>
-                                        <p className="text-xs font-semibold text-[#3a4560]">{check.label}</p>
+                                        <p className="text-xs font-semibold text-[#3a4560]">
+                                            {check.label}
+                                        </p>
                                     </div>
-                                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${chip.className}`}>
+                                    <span
+                                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${chip.className}`}
+                                    >
                                         {chip.label}
                                     </span>
                                 </div>
-                                <p className="text-sm font-semibold text-[#0f1623] mt-2">{check.value}</p>
+                                <p className="text-sm font-semibold text-[#0f1623] mt-2">
+                                    {check.value}
+                                </p>
                             </div>
                         );
                     })}
@@ -597,27 +647,40 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <div className="bg-white border border-[#d0d7e8] rounded-2xl p-5 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-[16px] font-semibold text-[#0f1623]">Recent Activity</h2>
+                        <h2 className="text-[16px] font-semibold text-[#0f1623]">
+                            Recent Activity
+                        </h2>
                     </div>
 
                     <div className="space-y-3">
                         {(() => {
                             if (recentLogsQuery.isLoading) {
-                                return <p className="text-sm text-[#7a87a8]">Loading activity...</p>;
+                                return (
+                                    <p className="text-sm text-[#7a87a8]">Loading activity...</p>
+                                );
                             }
 
                             if (recentLogs.length === 0) {
-                                return <p className="text-sm text-[#7a87a8]">No recent activity found.</p>;
+                                return (
+                                    <p className="text-sm text-[#7a87a8]">
+                                        No recent activity found.
+                                    </p>
+                                );
                             }
 
                             return recentLogs.map((log) => {
                                 const dotClass = getRecentLogDotClass(log.result);
 
                                 return (
-                                    <div key={log.id} className="flex items-center justify-between gap-3">
+                                    <div
+                                        key={log.id}
+                                        className="flex items-center justify-between gap-3"
+                                    >
                                         <div className="min-w-0">
                                             <div className="flex items-center gap-2 min-w-0">
-                                                <span className={`w-2 h-2 rounded-full shrink-0 ${dotClass}`}></span>
+                                                <span
+                                                    className={`w-2 h-2 rounded-full shrink-0 ${dotClass}`}
+                                                ></span>
                                                 <p className="text-sm font-medium text-[#0f1623] truncate">
                                                     {toTitleCaseAction(log.action)}
                                                 </p>
@@ -626,7 +689,9 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
                                                 {log.user?.email || 'System'}
                                             </p>
                                         </div>
-                                        <p className="text-xs text-[#7a87a8] shrink-0">{formatRelativeTime(log.createdAt)}</p>
+                                        <p className="text-xs text-[#7a87a8] shrink-0">
+                                            {formatRelativeTime(log.createdAt)}
+                                        </p>
                                     </div>
                                 );
                             });
@@ -644,7 +709,9 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
                 </div>
 
                 <div className="bg-white border border-[#d0d7e8] rounded-2xl p-5 shadow-sm">
-                    <h2 className="text-[16px] font-semibold text-[#0f1623] mb-4">Access Control Summary</h2>
+                    <h2 className="text-[16px] font-semibold text-[#0f1623] mb-4">
+                        Access Control Summary
+                    </h2>
 
                     <div className="space-y-2">
                         {accessSummaryRows.map((item) => {
@@ -659,7 +726,9 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
                                         <div className="bg-[#4f46e5]/10 rounded-lg p-2 text-[#4f46e5]">
                                             <Icon size={14} />
                                         </div>
-                                        <p className="text-sm font-medium text-[#0f1623]">{item.label}</p>
+                                        <p className="text-sm font-medium text-[#0f1623]">
+                                            {item.label}
+                                        </p>
                                     </div>
 
                                     <div className="flex items-center gap-3">
@@ -681,22 +750,42 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
                     </div>
 
                     <div className="mt-5">
-                        <p className="text-xs font-semibold tracking-wide uppercase text-[#7a87a8] mb-2">Role Distribution</p>
+                        <p className="text-xs font-semibold tracking-wide uppercase text-[#7a87a8] mb-2">
+                            Role Distribution
+                        </p>
                         <div className="h-2 rounded-full bg-[#e6eaf4] overflow-hidden flex">
-                            <div className="bg-[#4f46e5]" style={{ width: `${roleDistribution.superAdminPct}%` }}></div>
-                            <div className="bg-[#0284c7]" style={{ width: `${roleDistribution.readOnlyPct}%` }}></div>
-                            <div className="bg-[#94a3b8]" style={{ width: `${roleDistribution.customPct}%` }}></div>
+                            <div
+                                className="bg-[#4f46e5]"
+                                style={{ width: `${roleDistribution.superAdminPct}%` }}
+                            ></div>
+                            <div
+                                className="bg-[#0284c7]"
+                                style={{ width: `${roleDistribution.readOnlyPct}%` }}
+                            ></div>
+                            <div
+                                className="bg-[#94a3b8]"
+                                style={{ width: `${roleDistribution.customPct}%` }}
+                            ></div>
                         </div>
 
                         <div className="grid grid-cols-3 gap-2 mt-3 text-[11px] text-[#7a87a8]">
                             <div>
-                                <span className="font-semibold text-[#0f1623]">{roleDistribution.superAdmin}</span> SuperAdmin
+                                <span className="font-semibold text-[#0f1623]">
+                                    {roleDistribution.superAdmin}
+                                </span>{' '}
+                                SuperAdmin
                             </div>
                             <div>
-                                <span className="font-semibold text-[#0f1623]">{roleDistribution.readOnly}</span> ReadOnly
+                                <span className="font-semibold text-[#0f1623]">
+                                    {roleDistribution.readOnly}
+                                </span>{' '}
+                                ReadOnly
                             </div>
                             <div>
-                                <span className="font-semibold text-[#0f1623]">{roleDistribution.custom}</span> Custom
+                                <span className="font-semibold text-[#0f1623]">
+                                    {roleDistribution.custom}
+                                </span>{' '}
+                                Custom
                             </div>
                         </div>
                     </div>
@@ -705,7 +794,9 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
                 <div className="bg-white border border-[#d0d7e8] rounded-2xl p-5 shadow-sm">
-                    <h2 className="text-[16px] font-semibold text-[#0f1623] mb-4">Current User Profile</h2>
+                    <h2 className="text-[16px] font-semibold text-[#0f1623] mb-4">
+                        Current User Profile
+                    </h2>
 
                     <div className="flex items-start gap-3">
                         <div className="w-11 h-11 rounded-full bg-[#4f46e5] text-white font-bold flex items-center justify-center text-sm">
@@ -713,7 +804,9 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
                         </div>
 
                         <div className="min-w-0">
-                            <p className="text-sm font-semibold text-[#0f1623] truncate">{fullName}</p>
+                            <p className="text-sm font-semibold text-[#0f1623] truncate">
+                                {fullName}
+                            </p>
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
                                 <span className="inline-flex items-center rounded-full bg-[#4f46e5]/10 px-2 py-0.5 text-xs font-semibold text-[#4f46e5]">
                                     {roleBadge}
@@ -736,18 +829,24 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
                     <div className="mt-4 space-y-2 text-sm">
                         <div className="flex items-center justify-between">
                             <span className="text-[#7a87a8]">Email</span>
-                            <span className="text-[#3a4560] truncate max-w-[65%] text-right">{user?.email || 'N/A'}</span>
+                            <span className="text-[#3a4560] truncate max-w-[65%] text-right">
+                                {user?.email || 'N/A'}
+                            </span>
                         </div>
                         <div className="flex items-center justify-between">
                             <span className="text-[#7a87a8]">MFA</span>
-                            <span className={`font-medium ${user?.mfaEnabled ? 'text-emerald-600' : 'text-red-600'}`}>
+                            <span
+                                className={`font-medium ${user?.mfaEnabled ? 'text-emerald-600' : 'text-red-600'}`}
+                            >
                                 {user?.mfaEnabled ? 'Enabled' : 'Disabled'}
                             </span>
                         </div>
                         {!user?.mfaEnabled && (
                             <button
                                 type="button"
-                                onClick={() => navigate('/dashboard/security', { state: { activeTab: 'mfa' } })}
+                                onClick={() =>
+                                    navigate('/dashboard/security', { state: { activeTab: 'mfa' } })
+                                }
                                 className="text-xs text-[#4f46e5] hover:text-[#3730a3] font-medium inline-flex items-center gap-1"
                             >
                                 Enable Now
@@ -756,24 +855,36 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
                         )}
                         <div className="flex items-center justify-between">
                             <span className="text-[#7a87a8]">Last login</span>
-                            <span className="text-[#3a4560] text-right">{formatDate(sessions[0]?.createdAt)}</span>
+                            <span className="text-[#3a4560] text-right">
+                                {formatDate(sessions[0]?.createdAt)}
+                            </span>
                         </div>
                         <div className="flex items-center justify-between">
                             <span className="text-[#7a87a8]">Account created</span>
-                            <span className="text-[#3a4560] text-right">{formatDate(user?.createdAt)}</span>
+                            <span className="text-[#3a4560] text-right">
+                                {formatDate(user?.createdAt)}
+                            </span>
                         </div>
                     </div>
                 </div>
 
                 <div className="bg-white border border-[#d0d7e8] rounded-2xl p-5 shadow-sm">
-                    <h2 className="text-[16px] font-semibold text-[#0f1623] mb-4">Top Active Users (This Week)</h2>
+                    <h2 className="text-[16px] font-semibold text-[#0f1623] mb-4">
+                        Top Active Users (This Week)
+                    </h2>
                     {(() => {
                         if (weeklyLogsQuery.isLoading) {
-                            return <p className="text-sm text-[#7a87a8]">Loading active users...</p>;
+                            return (
+                                <p className="text-sm text-[#7a87a8]">Loading active users...</p>
+                            );
                         }
 
                         if (topActiveUsers.length === 0) {
-                            return <p className="text-sm text-[#7a87a8]">No user activity in the selected window.</p>;
+                            return (
+                                <p className="text-sm text-[#7a87a8]">
+                                    No user activity in the selected window.
+                                </p>
+                            );
                         }
 
                         return (
@@ -787,14 +898,21 @@ function OverviewSection({ user, roleBadge, fullName, initials, sessions, onSele
                                         .toUpperCase();
 
                                     return (
-                                        <div key={activeUser.id} className="flex items-center justify-between gap-3">
+                                        <div
+                                            key={activeUser.id}
+                                            className="flex items-center justify-between gap-3"
+                                        >
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <div className="w-8 h-8 rounded-full bg-[#4f46e5]/10 text-[#4f46e5] text-[11px] font-semibold flex items-center justify-center">
                                                     {initialsText}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-sm font-medium text-[#0f1623] truncate">{activeUser.name}</p>
-                                                    <p className="text-xs text-[#7a87a8] truncate">{activeUser.email}</p>
+                                                    <p className="text-sm font-medium text-[#0f1623] truncate">
+                                                        {activeUser.name}
+                                                    </p>
+                                                    <p className="text-xs text-[#7a87a8] truncate">
+                                                        {activeUser.email}
+                                                    </p>
                                                 </div>
                                             </div>
 
@@ -908,11 +1026,14 @@ function SecuritySection({ user, sessions }) {
                         </div>
                         <button
                             type="button"
-                            onClick={() => navigate('/dashboard/security', { state: { activeTab: 'mfa' } })}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${user?.mfaEnabled
-                                ? 'bg-aws-navy-light text-aws-text border border-aws-border hover:border-aws-orange/30'
-                                : 'btn-accent-glow'
-                                }`}
+                            onClick={() =>
+                                navigate('/dashboard/security', { state: { activeTab: 'mfa' } })
+                            }
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                user?.mfaEnabled
+                                    ? 'bg-aws-navy-light text-aws-text border border-aws-border hover:border-aws-orange/30'
+                                    : 'btn-accent-glow'
+                            }`}
                         >
                             {user?.mfaEnabled ? 'Manage' : 'Enable'}
                         </button>
@@ -926,14 +1047,19 @@ function SecuritySection({ user, sessions }) {
                                 Password
                             </h3>
                             <p className="text-sm text-aws-text-dim mt-1">
-                                Last changed: {user?.passwordChangedAt
+                                Last changed:{' '}
+                                {user?.passwordChangedAt
                                     ? new Date(user.passwordChangedAt).toLocaleDateString()
                                     : 'Never'}
                             </p>
                         </div>
                         <button
                             type="button"
-                            onClick={() => navigate('/dashboard/security', { state: { activeTab: 'password' } })}
+                            onClick={() =>
+                                navigate('/dashboard/security', {
+                                    state: { activeTab: 'password' },
+                                })
+                            }
                             className="px-4 py-2 rounded-lg text-sm font-medium bg-aws-navy-light text-aws-text border border-aws-border hover:border-aws-orange/30 transition-all"
                         >
                             Change
@@ -1076,7 +1202,7 @@ export default function Dashboard() {
     }, [user]);
 
     const fullName = useMemo(() => {
-        return `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'AegisMesh User';
+        return `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Bastion User';
     }, [user]);
 
     const roleBadge = useMemo(() => {
@@ -1084,13 +1210,37 @@ export default function Dashboard() {
         if (typeof user?.role === 'string') return user.role;
         if (user?.primaryRole?.name) return user.primaryRole.name;
         if (Array.isArray(user?.roles) && user.roles.length > 0) {
-            return user.roles[0]?.name || 'AegisMesh User';
+            return user.roles[0]?.name || 'Bastion User';
         }
-        return 'AegisMesh User';
+        return 'Bastion User';
     }, [user]);
 
-    const renderSectionContent = () => ({
-        overview: (
+    const renderSectionContent = () =>
+        ({
+            overview: (
+                <OverviewSection
+                    user={user}
+                    roleBadge={roleBadge}
+                    fullName={fullName}
+                    initials={initials}
+                    sessions={sessions}
+                    onSelectSection={setActiveSection}
+                />
+            ),
+            sessions: (
+                <SessionsSection
+                    sessions={sessions}
+                    sessionsLoading={sessionsLoading}
+                    revokingSession={revokingSession}
+                    onRevoke={handleRevokeSession}
+                />
+            ),
+            security: <SecuritySection user={user} sessions={sessions} />,
+            users: <UsersSection />,
+            roles: <RolesSection />,
+            policies: <PoliciesSection />,
+            groups: <GroupsSection />,
+        })[activeSection] || (
             <OverviewSection
                 user={user}
                 roleBadge={roleBadge}
@@ -1099,30 +1249,7 @@ export default function Dashboard() {
                 sessions={sessions}
                 onSelectSection={setActiveSection}
             />
-        ),
-        sessions: (
-            <SessionsSection
-                sessions={sessions}
-                sessionsLoading={sessionsLoading}
-                revokingSession={revokingSession}
-                onRevoke={handleRevokeSession}
-            />
-        ),
-        security: <SecuritySection user={user} sessions={sessions} />,
-        users: <UsersSection />,
-        roles: <RolesSection />,
-        policies: <PoliciesSection />,
-        groups: <GroupsSection />,
-    })[activeSection] || (
-        <OverviewSection
-            user={user}
-            roleBadge={roleBadge}
-            fullName={fullName}
-            initials={initials}
-            sessions={sessions}
-            onSelectSection={setActiveSection}
-        />
-    );
+        );
 
     return <div>{renderSectionContent()}</div>;
 }

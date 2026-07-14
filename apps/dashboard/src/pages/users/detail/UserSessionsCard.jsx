@@ -2,7 +2,14 @@ import PropTypes from 'prop-types';
 import { ShieldCheck, ShieldX } from 'lucide-react';
 import SessionCard from '../../../components/users/SessionCard';
 
-export default function UserSessionsCard({ user, sessions, sessionsLoading, onRevokeAll, onRevoke, revokingId }) {
+export default function UserSessionsCard({
+    user,
+    sessions,
+    sessionsLoading,
+    onRevokeAll,
+    onRevoke,
+    revokingId,
+}) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in-up">
             <div className="space-y-6">
@@ -19,10 +26,14 @@ export default function UserSessionsCard({ user, sessions, sessionsLoading, onRe
                             </div>
                         )}
                         <div>
-                            <h4 className={`text-lg font-medium ${user.mfaEnabled ? 'text-green-400' : 'text-[#7a87a8]'}`}>
+                            <h4
+                                className={`text-lg font-medium ${user.mfaEnabled ? 'text-green-400' : 'text-[#7a87a8]'}`}
+                            >
                                 {user.mfaEnabled ? 'Verified & Enabled' : 'MFA Not Configured'}
                             </h4>
-                            <p className="text-sm text-[#7a87a8] mt-1">Multi-factor authentication adds an extra layer of security.</p>
+                            <p className="text-sm text-[#7a87a8] mt-1">
+                                Multi-factor authentication adds an extra layer of security.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -30,7 +41,7 @@ export default function UserSessionsCard({ user, sessions, sessionsLoading, onRe
             <div>
                 <div className="flex items-center justify-between mb-4 border-b border-[#d0d7e8] pb-2">
                     <h3 className="text-lg font-bold text-[#0f1623]">Active Sessions</h3>
-                    {(sessions.length > 0) && (
+                    {sessions.length > 0 && (
                         <button
                             onClick={onRevokeAll}
                             className="text-xs font-semibold uppercase text-red-400 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded transition-colors"
@@ -41,9 +52,12 @@ export default function UserSessionsCard({ user, sessions, sessionsLoading, onRe
                 </div>
                 <div className="space-y-3">
                     {sessionsLoading && (
-                        <p className="text-[#7a87a8] text-sm text-center py-4">Loading sessions...</p>
+                        <p className="text-[#7a87a8] text-sm text-center py-4">
+                            Loading sessions...
+                        </p>
                     )}
-                    {!sessionsLoading && sessions.length > 0 && (
+                    {!sessionsLoading &&
+                        sessions.length > 0 &&
                         sessions.map((session) => (
                             <SessionCard
                                 key={session.id}
@@ -52,8 +66,7 @@ export default function UserSessionsCard({ user, sessions, sessionsLoading, onRe
                                 onRevoke={onRevoke}
                                 isRevoking={revokingId === session.id}
                             />
-                        ))
-                    )}
+                        ))}
                     {!sessionsLoading && sessions.length === 0 && (
                         <div className="bg-[#ffffff] border border-[#d0d7e8] rounded-xl p-8 text-center">
                             <p className="text-[#7a87a8]">User has no active sessions.</p>

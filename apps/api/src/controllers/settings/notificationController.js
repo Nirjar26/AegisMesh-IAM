@@ -1,11 +1,7 @@
 const prisma = require('../../config/database');
 const { createAuditLog } = require('../../utils/auditLog');
-const {
-    mergeNotificationPreferences,
-} = require('../../services/organizationSettings.service');
-const {
-    withMergedPrefs,
-} = require('./helpers');
+const { mergeNotificationPreferences } = require('../../services/organizationSettings.service');
+const { withMergedPrefs } = require('./helpers');
 
 exports.getNotifications = async (req, res, next) => {
     try {

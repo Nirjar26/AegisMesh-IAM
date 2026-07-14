@@ -60,7 +60,7 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="AegisMesh Security Engine", lifespan=lifespan)
+app = FastAPI(title="Bastion Security Engine", lifespan=lifespan)
 
 # Metrics
 RISK_SCORE = Histogram(

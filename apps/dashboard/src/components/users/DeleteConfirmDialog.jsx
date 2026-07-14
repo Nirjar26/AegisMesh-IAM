@@ -6,11 +6,7 @@ function classNames(...values) {
     return values.filter(Boolean).join(' ');
 }
 
-export default function DeleteConfirmDialog({
-    user,
-    onConfirm,
-    onCancel,
-}) {
+export default function DeleteConfirmDialog({ user, onConfirm, onCancel }) {
     const [confirmText, setConfirmText] = useState('');
 
     const confirmValue = useMemo(() => {
@@ -24,10 +20,7 @@ export default function DeleteConfirmDialog({
     }
 
     return (
-        <dialog
-            open
-            className="fixed inset-0 z-50 bg-transparent p-4"
-        >
+        <dialog open className="fixed inset-0 z-50 bg-transparent p-4">
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
 
             <div className="fixed inset-0 flex items-center justify-center">
@@ -50,13 +43,8 @@ export default function DeleteConfirmDialog({
 
                     <div className="p-6">
                         <p className="mb-4 text-[#3a4560]">
-                            This action is permanent and
-                            cannot be undone. All data
-                            associated with{' '}
-                            <strong>
-                                {user.email}
-                            </strong>{' '}
-                            will be permanently removed.
+                            This action is permanent and cannot be undone. All data associated with{' '}
+                            <strong>{user.email}</strong> will be permanently removed.
                         </p>
 
                         <div className="rounded-lg border border-[#d0d7e8] bg-[#ffffff] p-4">
@@ -64,11 +52,8 @@ export default function DeleteConfirmDialog({
                                 htmlFor="delete-confirm-input"
                                 className="mb-2 block text-sm font-medium text-[#7a87a8]"
                             >
-                                Type{' '}
-                                <strong className="text-[#3a4560]">
-                                    {confirmValue}
-                                </strong>{' '}
-                                to confirm
+                                Type <strong className="text-[#3a4560]">{confirmValue}</strong> to
+                                confirm
                             </label>
 
                             <input
@@ -76,9 +61,7 @@ export default function DeleteConfirmDialog({
                                 type="text"
                                 value={confirmText}
                                 onChange={(event) => {
-                                    setConfirmText(
-                                        event.target.value
-                                    );
+                                    setConfirmText(event.target.value);
                                 }}
                                 placeholder={confirmValue}
                                 className={classNames(
@@ -86,7 +69,7 @@ export default function DeleteConfirmDialog({
                                     'focus:outline-none focus:ring-1',
                                     isDisabled
                                         ? 'border-[#b8c2d8] bg-[#f4f6fb] text-[#0f1623] focus:border-red-500 focus:ring-red-500'
-                                        : 'border-emerald-400 bg-[#f4f6fb] text-[#0f1623] focus:border-emerald-500 focus:ring-emerald-500'
+                                        : 'border-emerald-400 bg-[#f4f6fb] text-[#0f1623] focus:border-emerald-500 focus:ring-emerald-500',
                                 )}
                             />
                         </div>

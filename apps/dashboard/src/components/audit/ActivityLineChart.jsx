@@ -1,5 +1,13 @@
 import PropTypes from 'prop-types';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+    Area,
+    AreaChart,
+    CartesianGrid,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from 'recharts';
 
 function ActivityLineChart({ data = [], type = 'hourly' }) {
     const formatted = data.map((entry) => ({
@@ -7,7 +15,10 @@ function ActivityLineChart({ data = [], type = 'hourly' }) {
         label:
             type === 'hourly'
                 ? `${String(entry.hour).padStart(2, '0')}:00`
-                : new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                : new Date(entry.date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                  }),
     }));
 
     return (
@@ -17,21 +28,32 @@ function ActivityLineChart({ data = [], type = 'hourly' }) {
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                     <XAxis
                         dataKey="label"
-                        tick={{ fontSize: 11, fill: '#64748B' }}
+                        tick={{ fontSize: 11, fill: 'var(--ds-color-text-muted)' }}
                         axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
                         tickLine={false}
                     />
-                    <YAxis tick={{ fontSize: 11, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                    <YAxis
+                        tick={{ fontSize: 11, fill: 'var(--ds-color-text-muted)' }}
+                        axisLine={false}
+                        tickLine={false}
+                    />
                     <Tooltip
                         contentStyle={{
-                            background: '#1E293B',
+                            background: 'var(--ds-color-text-primary)',
                             border: '1px solid rgba(255,255,255,0.1)',
                             borderRadius: '8px',
                             fontSize: '12px',
-                            color: '#F1F5F9',
+                            color: 'var(--ds-color-white)',
                         }}
                     />
-                    <Area type="monotone" dataKey="count" stroke="#3B82F6" strokeWidth={2} fill="#3B82F6" fillOpacity={0.2} />
+                    <Area
+                        type="monotone"
+                        dataKey="count"
+                        stroke="var(--ds-color-info)"
+                        strokeWidth={2}
+                        fill="var(--ds-color-info)"
+                        fillOpacity={0.2}
+                    />
                 </AreaChart>
             </ResponsiveContainer>
         </div>
@@ -44,5 +66,3 @@ ActivityLineChart.propTypes = {
 };
 
 export default ActivityLineChart;
-
-

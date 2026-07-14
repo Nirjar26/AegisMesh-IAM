@@ -67,7 +67,7 @@ export default function LiveAuditFeed({ onRowClick, refetchAuditLogs }) {
             setConnState('error');
 
             if (attemptRef.current < MAX_ATTEMPTS) {
-                const delay = Math.min(1000 * (2 ** attemptRef.current), 30000);
+                const delay = Math.min(1000 * 2 ** attemptRef.current, 30000);
                 setConnState('reconnecting');
                 reconnectRef.current = setTimeout(() => {
                     const nextAttempt = attemptRef.current + 1;
@@ -106,47 +106,80 @@ export default function LiveAuditFeed({ onRowClick, refetchAuditLogs }) {
     }, [connect, isLive, stopConnection]);
 
     const statusConfig = {
-        connecting: { dotColor: '#fbbf24', text: 'Connecting...', textColor: '#92400e', pulse: true },
-        connected: { dotColor: '#34d399', text: 'Live', textColor: '#065f46', pulse: true },
-        reconnecting: { dotColor: '#fbbf24', text: 'Reconnecting...', textColor: '#92400e', pulse: true },
-        error: { dotColor: '#f87171', text: 'Disconnected', textColor: '#7f1d1d', pulse: false },
+        connecting: {
+            dotColor: 'var(--ds-color-warning)',
+            text: 'Connecting...',
+            textColor: 'var(--ds-color-text-primary)',
+            pulse: true,
+        },
+        connected: { dotColor: 'var(--ds-color-success)', text: 'Live', textColor: 'var(--ds-color-text-primary)', pulse: true },
+        reconnecting: {
+            dotColor: 'var(--ds-color-warning)',
+            text: 'Reconnecting...',
+            textColor: 'var(--ds-color-text-primary)',
+            pulse: true,
+        },
+        error: { dotColor: 'var(--ds-color-danger)', text: 'Disconnected', textColor: 'var(--ds-color-text-primary)', pulse: false },
     };
 
     const status = statusConfig[connState] || statusConfig.error;
     const inPollingMode = connState === 'error' && attemptCount >= MAX_ATTEMPTS;
 
     return (
-        <div style={{
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: '12px',
-            overflow: 'hidden',
-        }}>
-            <div style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)',
-            }}>
+        <div
+            style={{
+                background: 'rgba(255,255,255,0.02)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: '12px',
+                overflow: 'hidden',
+            }}
+        >
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '12px 16px',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                }}
+            >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{
-                        width: '8px', height: '8px', borderRadius: '50%',
-                        background: isLive ? '#10B981' : '#64748B',
-                        animation: isLive && status.pulse ? 'pulse 2s infinite' : 'none',
-                        boxShadow: isLive && connState === 'connected' ? '0 0 8px #10B981' : 'none',
-                    }} />
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#F1F5F9' }}>
+                    <span
+                        style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: isLive ? 'var(--ds-color-success)' : 'var(--ds-color-text-muted)',
+                            animation: isLive && status.pulse ? 'pulse 2s infinite' : 'none',
+                            boxShadow:
+                                isLive && connState === 'connected' ? '0 0 8px var(--ds-color-success)' : 'none',
+                        }}
+                    />
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ds-color-white)' }}>
                         Live Feed {isLive ? 'ON' : 'OFF'}
                     </span>
-                    <span style={{ fontSize: '11px', color: '#64748B' }}>({logs.length} events)</span>
+                    <span style={{ fontSize: '11px', color: 'var(--ds-color-text-muted)' }}>
+                        ({logs.length} events)
+                    </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     {isLive ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <span
-                                style={{ width: 8, height: 8, borderRadius: '50%', background: status.dotColor }}
+                                style={{
+                                    width: 8,
+                                    height: 8,
+                                    borderRadius: '50%',
+                                    background: status.dotColor,
+                                }}
                             />
-                            <span style={{ fontSize: '11px', color: status.textColor }}>{status.text}</span>
+                            <span style={{ fontSize: '11px', color: status.textColor }}>
+                                {status.text}
+                            </span>
                             {inPollingMode ? (
-                                <span style={{ fontSize: '11px', color: '#6366f1' }}>Polling mode</span>
+                                <span style={{ fontSize: '11px', color: 'var(--ds-color-accent)' }}>
+                                    Polling mode
+                                </span>
                             ) : null}
                             {connState === 'error' ? (
                                 <button
@@ -159,7 +192,7 @@ export default function LiveAuditFeed({ onRowClick, refetchAuditLogs }) {
                                     style={{
                                         border: 'none',
                                         background: 'transparent',
-                                        color: '#6366f1',
+                                        color: 'var(--ds-color-accent)',
                                         fontSize: '11px',
                                         cursor: 'pointer',
                                         padding: 0,
@@ -180,12 +213,18 @@ export default function LiveAuditFeed({ onRowClick, refetchAuditLogs }) {
                             setIsLive(!isLive);
                         }}
                         style={{
-                            padding: '6px 14px', fontSize: '12px', fontWeight: 600, borderRadius: '6px',
-                            border: 'none', cursor: 'pointer',
-                            background: isLive ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)',
-                            color: isLive ? '#EF4444' : '#10B981',
+                            padding: '6px 14px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            borderRadius: '6px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            background: isLive ? 'rgb(var(--ds-rgb-danger) / 0.15)' : 'rgb(var(--ds-rgb-success) / 0.15)',
+                            color: isLive ? 'var(--ds-color-danger)' : 'var(--ds-color-success)',
                         }}
-                    >{isLive ? 'Stop' : 'Start Live Feed'}</button>
+                    >
+                        {isLive ? 'Stop' : 'Start Live Feed'}
+                    </button>
                 </div>
             </div>
 
@@ -205,5 +244,3 @@ LiveAuditFeed.propTypes = {
     onRowClick: PropTypes.func,
     refetchAuditLogs: PropTypes.func,
 };
-
-

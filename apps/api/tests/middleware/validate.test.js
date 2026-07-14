@@ -37,7 +37,10 @@ function makeRes() {
 // Body validation
 // ---------------------------------------------------------------------------
 describe('validate – body', () => {
-    const schema = buildSchema({ name: Joi.string().required(), age: Joi.number().integer().min(0) });
+    const schema = buildSchema({
+        name: Joi.string().required(),
+        age: Joi.number().integer().min(0),
+    });
 
     it('calls next when body is valid', () => {
         const req = makeReq({ body: { name: 'Alice', age: 30 } });
@@ -170,7 +173,7 @@ describe('validate – combined schema', () => {
     const schema = buildSchema(
         { title: Joi.string().required() },
         { id: Joi.string().uuid().required() },
-        { verbose: Joi.boolean().default(false) }
+        { verbose: Joi.boolean().default(false) },
     );
 
     it('calls next when all sections are valid', () => {
@@ -188,7 +191,7 @@ describe('validate – combined schema', () => {
 
     it('accumulates errors from multiple sections', () => {
         const req = makeReq({
-            body: {},            // missing title
+            body: {}, // missing title
             params: { id: 'bad' }, // invalid uuid
             query: {},
         });

@@ -42,7 +42,9 @@ export function useEntityList({
         mutationFn: createFn,
         onSuccess: () => {
             queryClient.invalidateQueries([entityKey]);
-            toast.success(`${entityKey.charAt(0).toUpperCase() + entityKey.slice(1, -1)} created successfully`);
+            toast.success(
+                `${entityKey.charAt(0).toUpperCase() + entityKey.slice(1, -1)} created successfully`,
+            );
         },
         onError: (err) => {
             toast.error(err.response?.data?.error || `Failed to create ${entityKey.slice(0, -1)}`);

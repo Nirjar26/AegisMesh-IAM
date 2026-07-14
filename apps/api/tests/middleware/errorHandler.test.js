@@ -57,7 +57,10 @@ describe('errorHandler', () => {
     });
 
     it('handles Prisma P2002 (unique constraint) with 409', () => {
-        const err = Object.assign(new Error('Unique'), { code: 'P2002', meta: { target: ['email'] } });
+        const err = Object.assign(new Error('Unique'), {
+            code: 'P2002',
+            meta: { target: ['email'] },
+        });
         const res = mockRes();
 
         errorHandler(err, mockReq(), res, next);
@@ -80,7 +83,9 @@ describe('errorHandler', () => {
     });
 
     it('handles Prisma P1000 database connection or authentication error with 503', () => {
-        const err = Object.assign(new Error('Authentication failed against database server'), { code: 'P1000' });
+        const err = Object.assign(new Error('Authentication failed against database server'), {
+            code: 'P1000',
+        });
         const res = mockRes();
 
         errorHandler(err, mockReq(), res, next);
@@ -92,7 +97,9 @@ describe('errorHandler', () => {
     });
 
     it('handles database credential errors in error message with 503', () => {
-        const err = new Error('Invalid prisma.organizationSettings.findFirst() invocation... database credentials...');
+        const err = new Error(
+            'Invalid prisma.organizationSettings.findFirst() invocation... database credentials...',
+        );
         const res = mockRes();
 
         errorHandler(err, mockReq(), res, next);

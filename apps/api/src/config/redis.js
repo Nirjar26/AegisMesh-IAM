@@ -42,7 +42,7 @@ if (process.env.NODE_ENV === 'test') {
             if (times > MAX_RETRY_COUNT) return null;
             const delay = Math.min(times * RETRY_BASE_MS, RETRY_MAX_MS);
             return delay;
-        }
+        },
     });
 
     redis.on('connect', () => {

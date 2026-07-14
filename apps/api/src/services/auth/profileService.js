@@ -38,7 +38,7 @@ async function getProfile(userId) {
     }
 
     const roleNames = (user.userRoles || []).map((ur) => ur.role?.name).filter(Boolean);
-    const role = roleNames.includes('SuperAdmin') ? 'SuperAdmin' : (roleNames[0] || null);
+    const role = roleNames.includes('SuperAdmin') ? 'SuperAdmin' : roleNames[0] || null;
 
     const { ...safeUser } = user;
     const hasPassword = Boolean(safeUser.passwordHash);

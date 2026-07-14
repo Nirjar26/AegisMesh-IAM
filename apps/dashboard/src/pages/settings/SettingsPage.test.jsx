@@ -7,7 +7,7 @@ const { mockUser, mockUpdateUser, mockUseAuth } = vi.hoisted(() => {
     const mockUser = {
         firstName: 'Admin',
         lastName: 'User',
-        email: 'admin@aegismesh.io',
+        email: 'admin@bastion.dev',
         role: 'SuperAdmin',
     };
 
@@ -75,7 +75,7 @@ function renderSettingsPage() {
             <MemoryRouter>
                 <SettingsPage />
             </MemoryRouter>
-        </QueryClientProvider>
+        </QueryClientProvider>,
     );
 }
 
@@ -176,7 +176,7 @@ describe('SettingsPage', () => {
                 <MemoryRouter>
                     <SettingsPage initialTabOverride="api-keys" />
                 </MemoryRouter>
-            </QueryClientProvider>
+            </QueryClientProvider>,
         );
 
         expect(screen.getByTestId('api-keys-tab')).toBeInTheDocument();

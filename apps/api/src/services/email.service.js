@@ -4,8 +4,8 @@ const logger = require('../utils/logger');
 let transporter = null;
 
 function buildFrontendUrl(pathname, token) {
-  const frontendOrigin = new URL(process.env.FRONTEND_URL || 'http://localhost:3000').origin; // NOSONAR
-  return `${frontendOrigin}${pathname}?token=${encodeURIComponent(token)}`;
+    const frontendOrigin = new URL(process.env.FRONTEND_URL || 'http://localhost:3000').origin; // NOSONAR
+    return `${frontendOrigin}${pathname}?token=${encodeURIComponent(token)}`;
 }
 
 function buildEmailTemplate(title, body, buttonUrl, buttonText, expiryText) {
@@ -62,7 +62,15 @@ async function initializeTransporter() {
     return transporter;
 }
 
-async function sendEmail({ to, subject, templateTitle, templateBody, buttonUrl, buttonText, expiryText }) {
+async function sendEmail({
+    to,
+    subject,
+    templateTitle,
+    templateBody,
+    buttonUrl,
+    buttonText,
+    expiryText,
+}) {
     const t = await initializeTransporter();
     const info = await t.sendMail({
         from: '"IAM Auth System" <noreply@iam-auth.com>',
@@ -82,10 +90,12 @@ function sendVerificationEmail(email, token) {
         to: email,
         subject: 'Verify your email address',
         templateTitle: 'Verify Your Email',
-        templateBody: 'Click the button below to verify your email address and activate your account:',
+        templateBody:
+            'Click the button below to verify your email address and activate your account:',
         buttonUrl: buildFrontendUrl('/verify-email', token),
         buttonText: 'Verify Email',
-        expiryText: 'If you didn\'t create an account, you can safely ignore this email. This link expires in 24 hours.',
+        expiryText:
+            "If you didn't create an account, you can safely ignore this email. This link expires in 24 hours.",
     });
 }
 
@@ -94,10 +104,12 @@ function sendPasswordResetEmail(email, token) {
         to: email,
         subject: 'Reset your password',
         templateTitle: 'Reset Your Password',
-        templateBody: 'You requested a password reset. Click the button below to set a new password:',
+        templateBody:
+            'You requested a password reset. Click the button below to set a new password:',
         buttonUrl: buildFrontendUrl('/reset-password', token),
         buttonText: 'Reset Password',
-        expiryText: 'If you didn\'t request a password reset, you can safely ignore this email. This link expires in 1 hour.',
+        expiryText:
+            "If you didn't request a password reset, you can safely ignore this email. This link expires in 1 hour.",
     });
 }
 

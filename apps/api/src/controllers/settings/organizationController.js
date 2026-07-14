@@ -30,32 +30,11 @@ exports.updateOrganization = async (req, res, next) => {
         const data = {};
         const errors = [];
 
-        assignNumberField(
-            payload,
-            data,
-            errors,
-            'minPasswordLength',
-            6,
-            32
-        );
+        assignNumberField(payload, data, errors, 'minPasswordLength', 6, 32);
 
-        assignNumberField(
-            payload,
-            data,
-            errors,
-            'maxFailedAttempts',
-            1,
-            20
-        );
+        assignNumberField(payload, data, errors, 'maxFailedAttempts', 1, 20);
 
-        assignNumberField(
-            payload,
-            data,
-            errors,
-            'sessionTimeoutMinutes',
-            15,
-            10080
-        );
+        assignNumberField(payload, data, errors, 'sessionTimeoutMinutes', 15, 10080);
 
         handlePasswordExpiryDays(payload, data, errors);
 
@@ -69,15 +48,10 @@ exports.updateOrganization = async (req, res, next) => {
                 'requireMfaForAll',
                 'allowOAuthLogin',
             ],
-            Boolean
+            Boolean,
         );
 
-        assignFields(
-            payload,
-            data,
-            ['orgName', 'plan', 'region'],
-            String
-        );
+        assignFields(payload, data, ['orgName', 'plan', 'region'], String);
 
         handleIpAllowlist(payload, data, errors);
 
@@ -149,7 +123,10 @@ exports.exportOrganizationData = async (req, res, next) => {
             prisma.role.findMany({ include: { rolePolicies: true, userRoles: true } }),
             prisma.policy.findMany(),
             prisma.group.findMany({ include: { groupRoles: true, userGroups: true } }),
-            prisma.auditLog.findMany({ where: { createdAt: { gte: ninetyDaysAgo } }, orderBy: { createdAt: 'desc' } }),
+            prisma.auditLog.findMany({
+                where: { createdAt: { gte: ninetyDaysAgo } },
+                orderBy: { createdAt: 'desc' },
+            }),
         ]);
 
         await createAuditLog({
@@ -179,7 +156,10 @@ exports.exportOrganizationData = async (req, res, next) => {
         };
 
         res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Disposition', `attachment; filename="iam-export-${Date.now()}.json"`);
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="iam-export-${Date.now()}.json"`,
+        );
         res.status(200).send(JSON.stringify(payload, null, 2));
     } catch (error) {
         next(error);

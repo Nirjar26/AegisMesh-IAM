@@ -10,5 +10,7 @@ export const logger = {
     warn: (...args) => shouldLog('warn') && console.warn(...args),
     info: (...args) => shouldLog('info') && console.info(...args),
     debug: (...args) => shouldLog('debug') && console.debug(...args),
-    setLevel: (level) => { currentLevel = level; },
+    setLevel: (level) => {
+        currentLevel = level;
+    },
 };

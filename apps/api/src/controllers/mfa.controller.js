@@ -49,7 +49,7 @@ async function verifySetup(req, res, next) {
 
         const backupCodes = mfaService.generateBackupCodes();
         const hashedBackupCodes = await Promise.all(
-            backupCodes.map((code) => bcrypt.hash(code, 8))
+            backupCodes.map((code) => bcrypt.hash(code, 8)),
         );
 
         await prisma.user.update({
@@ -88,7 +88,10 @@ async function disableMFA(req, res, next) {
         if (!user.passwordHash) {
             return res.status(400).json({
                 success: false,
-                error: { code: 'MFA_OAUTH', message: 'Password required. OAuth users must set a password first.' },
+                error: {
+                    code: 'MFA_OAUTH',
+                    message: 'Password required. OAuth users must set a password first.',
+                },
             });
         }
 

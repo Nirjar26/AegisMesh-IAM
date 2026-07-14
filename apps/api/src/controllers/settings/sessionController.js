@@ -1,9 +1,7 @@
 const prisma = require('../../config/database');
 const tokenService = require('../../services/token.service');
 const { createAuditLog } = require('../../utils/auditLog');
-const {
-    serializeSession,
-} = require('./helpers');
+const { serializeSession } = require('./helpers');
 
 exports.getSessions = async (req, res, next) => {
     try {
@@ -35,7 +33,12 @@ exports.revokeSession = async (req, res, next) => {
 
         const session = await prisma.session.findUnique({ where: { id: sessionId } });
         if (!session || session.userId !== req.user.id) {
-            return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Session not found' } });
+            return res
+                .status(404)
+                .json({
+                    success: false,
+                    error: { code: 'NOT_FOUND', message: 'Session not found' },
+                });
         }
 
         await tokenService.revokeSession(sessionId, { actorUserId: req.user.id, req });
@@ -58,7 +61,10 @@ exports.revokeSession = async (req, res, next) => {
 
 exports.revokeAllOtherSessions = async (req, res, next) => {
     try {
-        const revoked = await tokenService.revokeAllOtherSessions(req.user.id, req.user.sessionId || null);
+        const revoked = await tokenService.revokeAllOtherSessions(
+            req.user.id,
+            req.user.sessionId || null,
+        );
 
         await createAuditLog({
             req,

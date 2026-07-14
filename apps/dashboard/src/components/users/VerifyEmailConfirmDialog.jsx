@@ -22,15 +22,22 @@ export default function VerifyEmailConfirmDialog({ user, onConfirm, onCancel }) 
                     </p>
                     <div className="bg-blue-500/10 border border-[#4f46e5]/20 rounded-lg p-3 my-4">
                         <p className="text-sm text-[#4f46e5]">
-                            This action overrides the verification link process. Only do this if you have manually confirmed the user's identity.
+                            This action overrides the verification link process. Only do this if you
+                            have manually confirmed the user's identity.
                         </p>
                     </div>
                 </div>
                 <div className="flex flex-col-reverse gap-3 border-t border-[#d0d7e8] bg-[#f4f6fb] p-4 sm:flex-row sm:justify-end">
-                    <button onClick={onCancel} className="px-4 py-2 rounded-lg text-sm font-medium text-[#3a4560] hover:text-[#0f1623] bg-[#dde2f0] hover:bg-[#d0d7e8] transition-colors">
+                    <button
+                        onClick={onCancel}
+                        className="px-4 py-2 rounded-lg text-sm font-medium text-[#3a4560] hover:text-[#0f1623] bg-[#dde2f0] hover:bg-[#d0d7e8] transition-colors"
+                    >
                         Cancel
                     </button>
-                    <button onClick={onConfirm} className="px-4 py-2 rounded-lg text-sm font-medium text-[#0f1623] bg-[#4f46e5] hover:bg-[#3730a3] transition-colors">
+                    <button
+                        onClick={onConfirm}
+                        className="px-4 py-2 rounded-lg text-sm font-medium text-[#0f1623] bg-[#4f46e5] hover:bg-[#3730a3] transition-colors"
+                    >
                         Verify Email
                     </button>
                 </div>
@@ -46,5 +53,3 @@ VerifyEmailConfirmDialog.propTypes = {
     onConfirm: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,
 };
-
-

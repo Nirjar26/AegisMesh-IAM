@@ -7,7 +7,8 @@ const logger = require('./logger');
 const { audit } = require('./auditLog');
 
 const RETENTION_DAYS = Number.parseInt(process.env.AUDIT_LOG_RETENTION_DAYS, 10) || 90;
-const SECURITY_RETENTION_DAYS = Number.parseInt(process.env.AUDIT_SECURITY_LOG_RETENTION_DAYS, 10) || 365;
+const SECURITY_RETENTION_DAYS =
+    Number.parseInt(process.env.AUDIT_SECURITY_LOG_RETENTION_DAYS, 10) || 365;
 
 const ARCHIVE_BATCH = 5000;
 
@@ -63,7 +64,7 @@ async function runCleanup() {
         await archiveExpiredLogs(securityCutoff, { category: 'SECURITY' });
 
         const securityDeleted = await prisma.auditLog.deleteMany({
-            where: { category: 'SECURITY', createdAt: { lt: securityCutoff } }
+            where: { category: 'SECURITY', createdAt: { lt: securityCutoff } },
         });
 
         // All other logs: standard retention
@@ -73,7 +74,7 @@ async function runCleanup() {
         await archiveExpiredLogs(generalCutoff, { category: { not: 'SECURITY' } });
 
         const generalDeleted = await prisma.auditLog.deleteMany({
-            where: { category: { not: 'SECURITY' }, createdAt: { lt: generalCutoff } }
+            where: { category: { not: 'SECURITY' }, createdAt: { lt: generalCutoff } },
         });
 
         // 2. Revoked token cleanup
@@ -89,7 +90,7 @@ async function runCleanup() {
             totalDeleted,
             totalKept,
             securityCutoff,
-            generalCutoff
+            generalCutoff,
         });
 
         // Log the cleanup itself
@@ -104,8 +105,8 @@ async function runCleanup() {
                 totalDeleted,
                 totalKept,
                 retentionDays: RETENTION_DAYS,
-                securityRetentionDays: SECURITY_RETENTION_DAYS
-            }
+                securityRetentionDays: SECURITY_RETENTION_DAYS,
+            },
         });
 
         return { totalDeleted, totalKept };
@@ -122,7 +123,9 @@ function scheduleCleanup() {
         await runCleanup();
     });
 
-    logger.info(`Audit log cleanup scheduled: daily at 2 AM (retain ${RETENTION_DAYS}d general, ${SECURITY_RETENTION_DAYS}d security)`);
+    logger.info(
+        `Audit log cleanup scheduled: daily at 2 AM (retain ${RETENTION_DAYS}d general, ${SECURITY_RETENTION_DAYS}d security)`,
+    );
 }
 
 module.exports = { scheduleCleanup, runCleanup };

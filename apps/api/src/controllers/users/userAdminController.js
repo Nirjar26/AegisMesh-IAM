@@ -8,30 +8,61 @@ exports.updateUserStatus = async (req, res, next) => {
 
         const validStatuses = ['ACTIVE', 'INACTIVE', 'LOCKED'];
         if (!validStatuses.includes(status)) {
-            return res.status(400).json({ success: false, error: { code: 'USER_007', message: 'Invalid status value' } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: { code: 'USER_007', message: 'Invalid status value' },
+                });
         }
 
         if (req.user.id === id) {
-            return res.status(400).json({ success: false, error: { code: 'USER_008', message: 'Cannot change your own status' } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: { code: 'USER_008', message: 'Cannot change your own status' },
+                });
         }
 
-        const user = await prisma.user.findUnique({ where: { id }, include: { userRoles: { include: { role: true } } } });
+        const user = await prisma.user.findUnique({
+            where: { id },
+            include: { userRoles: { include: { role: true } } },
+        });
         if (!user) {
-            return res.status(404).json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
+            return res
+                .status(404)
+                .json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
         }
 
         const isTargetSuperAdmin = user.userRoles.some((ur) => ur.role.name === 'SuperAdmin');
         if (isTargetSuperAdmin && req.user.role !== 'SuperAdmin') {
-            return res.status(403).json({ success: false, error: { code: 'RBAC_001', message: 'Only SuperAdmins can modify SuperAdmin accounts' } });
+            return res
+                .status(403)
+                .json({
+                    success: false,
+                    error: {
+                        code: 'RBAC_001',
+                        message: 'Only SuperAdmins can modify SuperAdmin accounts',
+                    },
+                });
         }
 
         if (status === 'LOCKED') {
             if (isTargetSuperAdmin) {
                 const superAdmins = await prisma.user.count({
-                    where: { userRoles: { some: { role: { name: 'SuperAdmin' } } }, status: 'ACTIVE' },
+                    where: {
+                        userRoles: { some: { role: { name: 'SuperAdmin' } } },
+                        status: 'ACTIVE',
+                    },
                 });
                 if (superAdmins <= 1) {
-                    return res.status(400).json({ success: false, error: { code: 'USER_003', message: 'Cannot lock the last SuperAdmin' } });
+                    return res
+                        .status(400)
+                        .json({
+                            success: false,
+                            error: { code: 'USER_003', message: 'Cannot lock the last SuperAdmin' },
+                        });
                 }
             }
         }
@@ -54,7 +85,11 @@ exports.updateUserStatus = async (req, res, next) => {
 
         await auditUser.statusChanged(req, id, user.email, user.status, status);
 
-        const safeUser = Object.fromEntries(Object.entries(updatedUser).filter(([k]) => !['passwordHash', 'mfaSecret', 'mfaBackupCodes'].includes(k)));
+        const safeUser = Object.fromEntries(
+            Object.entries(updatedUser).filter(
+                ([k]) => !['passwordHash', 'mfaSecret', 'mfaBackupCodes'].includes(k),
+            ),
+        );
         res.json({ success: true, data: safeUser });
     } catch (error) {
         next(error);
@@ -67,21 +102,34 @@ exports.verifyUserEmail = async (req, res, next) => {
 
         const user = await prisma.user.findUnique({ where: { id } });
         if (!user) {
-            return res.status(404).json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
+            return res
+                .status(404)
+                .json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
         }
 
         if (user.emailVerified) {
-            return res.status(400).json({ success: false, error: { code: 'USER_005', message: 'Email already verified' } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: { code: 'USER_005', message: 'Email already verified' },
+                });
         }
 
         const updatedUser = await prisma.user.update({
             where: { id },
-            data: { emailVerified: true, emailVerifyToken: null, status: user.status === 'INACTIVE' ? 'ACTIVE' : user.status },
+            data: {
+                emailVerified: true,
+                emailVerifyToken: null,
+                status: user.status === 'INACTIVE' ? 'ACTIVE' : user.status,
+            },
         });
 
         await auditUser.emailVerified(req, id, user.email);
 
-        const safeUser = Object.fromEntries(Object.entries(updatedUser).filter(([k]) => k !== 'passwordHash'));
+        const safeUser = Object.fromEntries(
+            Object.entries(updatedUser).filter(([k]) => k !== 'passwordHash'),
+        );
         res.json({ success: true, data: safeUser });
     } catch (error) {
         next(error);
@@ -93,12 +141,22 @@ exports.deleteUser = async (req, res, next) => {
         const { id } = req.params;
 
         if (req.user.id === id) {
-            return res.status(400).json({ success: false, error: { code: 'USER_002', message: 'Cannot delete your own account' } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: { code: 'USER_002', message: 'Cannot delete your own account' },
+                });
         }
 
-        const user = await prisma.user.findUnique({ where: { id }, include: { userRoles: { include: { role: true } } } });
+        const user = await prisma.user.findUnique({
+            where: { id },
+            include: { userRoles: { include: { role: true } } },
+        });
         if (!user) {
-            return res.status(404).json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
+            return res
+                .status(404)
+                .json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
         }
 
         const isTargetSuperAdmin = user.userRoles.some((ur) => ur.role.name === 'SuperAdmin');
@@ -107,7 +165,12 @@ exports.deleteUser = async (req, res, next) => {
                 where: { userRoles: { some: { role: { name: 'SuperAdmin' } } } },
             });
             if (superAdmins <= 1) {
-                return res.status(400).json({ success: false, error: { code: 'USER_004', message: 'Cannot delete the last SuperAdmin' } });
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+                        error: { code: 'USER_004', message: 'Cannot delete the last SuperAdmin' },
+                    });
             }
         }
 

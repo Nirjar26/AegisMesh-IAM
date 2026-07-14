@@ -44,8 +44,8 @@ describe('MultiSelectSearch', () => {
         renderMultiSelect({ selectedIds: [1, 2], onChange });
 
         const closeButtons = screen.getAllByRole('button', { name: 'x' });
-        const aliceClose = closeButtons.find(
-            (btn) => btn.closest('span')?.textContent?.includes('Alice Johnson')
+        const aliceClose = closeButtons.find((btn) =>
+            btn.closest('span')?.textContent?.includes('Alice Johnson'),
         );
 
         if (aliceClose) {
@@ -124,12 +124,14 @@ describe('MultiSelectSearch', () => {
         const input = screen.getByPlaceholderText('Search users...');
         await user.click(input);
 
-        const dropdownButtons = screen.getAllByRole('button').filter(
-            (btn) => btn.closest('[class*="max-h-40"]')
-        );
+        const dropdownButtons = screen
+            .getAllByRole('button')
+            .filter((btn) => btn.closest('[class*="max-h-40"]'));
 
         expect(dropdownButtons).toHaveLength(3);
-        expect(dropdownButtons.some((btn) => btn.textContent?.includes('Alice Johnson'))).toBe(false);
+        expect(dropdownButtons.some((btn) => btn.textContent?.includes('Alice Johnson'))).toBe(
+            false,
+        );
         expect(dropdownButtons.some((btn) => btn.textContent?.includes('Bob Smith'))).toBe(true);
     });
 

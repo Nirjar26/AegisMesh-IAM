@@ -91,7 +91,9 @@ function removeFromInbox(data, notificationId) {
         return {
             ...current,
             items,
-            unreadCount: removedUnread ? Math.max(0, (current.unreadCount || 0) - 1) : current.unreadCount || 0,
+            unreadCount: removedUnread
+                ? Math.max(0, (current.unreadCount || 0) - 1)
+                : current.unreadCount || 0,
         };
     });
 }
@@ -119,14 +121,20 @@ export default function NotificationBell() {
 
     const inboxQuery = useQuery({
         queryKey: INBOX_QUERY_KEY,
-        queryFn: () => notificationsAPI.getAll({ page: 1, limit: 25 }).then((res) => res.data?.data || { items: [], unreadCount: 0, pagination: {} }),
+        queryFn: () =>
+            notificationsAPI
+                .getAll({ page: 1, limit: 25 })
+                .then((res) => res.data?.data || { items: [], unreadCount: 0, pagination: {} }),
         staleTime: 15 * 1000,
         refetchInterval: isOpen ? 15 * 1000 : 30 * 1000,
     });
 
     const countQuery = useQuery({
         queryKey: COUNT_QUERY_KEY,
-        queryFn: () => notificationsAPI.getAll({ unreadOnly: true, limit: 1 }).then((res) => res.data?.data?.unreadCount || 0),
+        queryFn: () =>
+            notificationsAPI
+                .getAll({ unreadOnly: true, limit: 1 })
+                .then((res) => res.data?.data?.unreadCount || 0),
         staleTime: 15 * 1000,
         refetchInterval: 30 * 1000,
     });
@@ -158,7 +166,12 @@ export default function NotificationBell() {
     }, [isOpen]);
 
     useEffect(() => {
-        if (!accessToken || sseDisabled || typeof globalThis === 'undefined' || typeof EventSource === 'undefined') {
+        if (
+            !accessToken ||
+            sseDisabled ||
+            typeof globalThis === 'undefined' ||
+            typeof EventSource === 'undefined'
+        ) {
             return undefined;
         }
 
@@ -190,7 +203,9 @@ export default function NotificationBell() {
         onMutate: async (notificationId) => {
             await queryClient.cancelQueries({ queryKey: INBOX_QUERY_KEY });
             const previous = queryClient.getQueryData(INBOX_QUERY_KEY);
-            queryClient.setQueryData(INBOX_QUERY_KEY, (current) => markReadInInbox(current, notificationId));
+            queryClient.setQueryData(INBOX_QUERY_KEY, (current) =>
+                markReadInInbox(current, notificationId),
+            );
             return { previous };
         },
         onError: (_error, _notificationId, context) => {
@@ -210,7 +225,9 @@ export default function NotificationBell() {
         onMutate: async (notificationId) => {
             await queryClient.cancelQueries({ queryKey: INBOX_QUERY_KEY });
             const previous = queryClient.getQueryData(INBOX_QUERY_KEY);
-            queryClient.setQueryData(INBOX_QUERY_KEY, (current) => removeFromInbox(current, notificationId));
+            queryClient.setQueryData(INBOX_QUERY_KEY, (current) =>
+                removeFromInbox(current, notificationId),
+            );
             return { previous };
         },
         onError: (_error, _notificationId, context) => {

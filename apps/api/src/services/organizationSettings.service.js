@@ -29,14 +29,7 @@ const DEFAULT_NOTIFICATION_PREFERENCES = {
     auditExportInApp: true,
 };
 
-const ALLOWED_LANGUAGES = [
-    'en',
-    'es',
-    'fr',
-    'de',
-    'ja',
-    'zh',
-];
+const ALLOWED_LANGUAGES = ['en', 'es', 'fr', 'de', 'ja', 'zh'];
 
 /* -------------------------------------------------------------------------- */
 /* Organization Settings */
@@ -66,8 +59,7 @@ function buildDefaultOrganizationSettings() {
 }
 
 async function ensureOrganizationSettings() {
-    let settings =
-        await prisma.organizationSettings.findFirst();
+    let settings = await prisma.organizationSettings.findFirst();
 
     if (settings) {
         return settings;
@@ -80,7 +72,7 @@ async function ensureOrganizationSettings() {
 
 async function getOrganizationSettings() {
     const cacheKey = 'org:settings';
-    
+
     // 1. Try Redis first
     if (redis.status === 'ready') {
         try {
@@ -140,69 +132,36 @@ function passwordPolicyErrors(password, settings) {
     return errors;
 }
 
-function validatePasswordLength(
-    password,
-    settings,
-    errors
-) {
+function validatePasswordLength(password, settings, errors) {
     if (password.length >= settings.minPasswordLength) {
         return;
     }
 
-    errors.push(
-        `Password must be at least ${settings.minPasswordLength} characters`
-    );
+    errors.push(`Password must be at least ${settings.minPasswordLength} characters`);
 }
 
-function validateUppercase(
-    password,
-    settings,
-    errors
-) {
-    if (
-        !settings.requireUppercase ||
-        /[A-Z]/.test(password)
-    ) {
+function validateUppercase(password, settings, errors) {
+    if (!settings.requireUppercase || /[A-Z]/.test(password)) {
         return;
     }
 
-    errors.push(
-        'Password must contain at least one uppercase letter'
-    );
+    errors.push('Password must contain at least one uppercase letter');
 }
 
-function validateNumber(
-    password,
-    settings,
-    errors
-) {
-    if (
-        !settings.requireNumber ||
-        /\d/.test(password)
-    ) {
+function validateNumber(password, settings, errors) {
+    if (!settings.requireNumber || /\d/.test(password)) {
         return;
     }
 
-    errors.push(
-        'Password must contain at least one number'
-    );
+    errors.push('Password must contain at least one number');
 }
 
-function validateSymbol(
-    password,
-    settings,
-    errors
-) {
-    if (
-        !settings.requireSymbol ||
-        /[^A-Za-z\d\s]/.test(password)
-    ) {
+function validateSymbol(password, settings, errors) {
+    if (!settings.requireSymbol || /[^A-Za-z\d\s]/.test(password)) {
         return;
     }
 
-    errors.push(
-        'Password must contain at least one special character'
-    );
+    errors.push('Password must contain at least one special character');
 }
 
 async function validatePasswordAgainstPolicy(password) {
@@ -273,10 +232,7 @@ function isValidCidr(value) {
     return prefixNumber >= 0 && prefixNumber <= 128;
 }
 
-function matchesAllowlist(
-    ipAddress,
-    allowlist = []
-) {
+function matchesAllowlist(ipAddress, allowlist = []) {
     if (!Array.isArray(allowlist) || allowlist.length === 0) {
         return true;
     }
@@ -289,20 +245,10 @@ function matchesAllowlist(
         return false;
     }
 
-    return allowlist.some((entry) =>
-        matchesAllowlistRule(
-            normalizedIp,
-            ipType,
-            entry
-        )
-    );
+    return allowlist.some((entry) => matchesAllowlistRule(normalizedIp, ipType, entry));
 }
 
-function matchesAllowlistRule(
-    normalizedIp,
-    ipType,
-    entry
-) {
+function matchesAllowlistRule(normalizedIp, ipType, entry) {
     const rule = String(entry || '').trim();
 
     if (!rule) {
@@ -311,25 +257,14 @@ function matchesAllowlistRule(
 
     const normalizedRule = normalizeIp(rule);
 
-    if (
-        net.isIP(normalizedRule) &&
-        normalizedRule === normalizedIp
-    ) {
+    if (net.isIP(normalizedRule) && normalizedRule === normalizedIp) {
         return true;
     }
 
-    return matchesCidrRule(
-        normalizedIp,
-        ipType,
-        rule
-    );
+    return matchesCidrRule(normalizedIp, ipType, rule);
 }
 
-function matchesCidrRule(
-    normalizedIp,
-    ipType,
-    rule
-) {
+function matchesCidrRule(normalizedIp, ipType, rule) {
     const [base, prefix] = rule.split('/');
 
     if (!base || prefix === undefined) {
@@ -340,27 +275,16 @@ function matchesCidrRule(
 
     const baseType = net.isIP(normalizedBase);
 
-    if (
-        !baseType ||
-        baseType !== ipType ||
-        Number.isNaN(Number(prefix))
-    ) {
+    if (!baseType || baseType !== ipType || Number.isNaN(Number(prefix))) {
         return false;
     }
 
     try {
         const blockList = new net.BlockList();
 
-        blockList.addSubnet(
-            normalizedBase,
-            Number(prefix),
-            ipType === 4 ? 'ipv4' : 'ipv6'
-        );
+        blockList.addSubnet(normalizedBase, Number(prefix), ipType === 4 ? 'ipv4' : 'ipv6');
 
-        return blockList.check(
-            normalizedIp,
-            ipType === 4 ? 'ipv4' : 'ipv6'
-        );
+        return blockList.check(normalizedIp, ipType === 4 ? 'ipv4' : 'ipv6');
     } catch {
         return false;
     }
@@ -382,9 +306,7 @@ function isValidTimezone(timezone) {
     }
 }
 
-function mergeNotificationPreferences(
-    currentPrefs
-) {
+function mergeNotificationPreferences(currentPrefs) {
     return {
         ...DEFAULT_NOTIFICATION_PREFERENCES,
         ...currentPrefs,

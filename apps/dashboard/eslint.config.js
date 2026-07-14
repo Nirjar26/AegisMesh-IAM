@@ -1,29 +1,41 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from "eslint-plugin-storybook";
+
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{js,jsx}'],
-    extends: [
-      js.configs.recommended,
-      reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
-    ],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        ecmaFeatures: { jsx: true },
-        sourceType: 'module',
-      },
-    },
-    rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+export default defineConfig([globalIgnores(['dist', 'storybook-static']), {
+  files: ['**/*.{js,jsx,ts,tsx}'],
+  extends: [
+    js.configs.recommended,
+    ...tseslint.configs.recommended,
+    reactHooks.configs.flat.recommended,
+    reactRefresh.configs.vite,
+  ],
+  languageOptions: {
+    ecmaVersion: 2020,
+    globals: globals.browser,
+    parserOptions: {
+      ecmaVersion: 'latest',
+      ecmaFeatures: { jsx: true },
+      sourceType: 'module',
     },
   },
-])
+  rules: {
+    'no-unused-vars': 'off',
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'Literal[value=/^#[0-9a-f]{6}/i]',
+        message: 'Use a CSS variable (var(--ds-*)) instead of a hardcoded color.',
+      },
+    ],
+    'react/prop-types': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+    '@typescript-eslint/no-explicit-any': 'warn',
+  },
+}, ...storybook.configs["flat/recommended"]])

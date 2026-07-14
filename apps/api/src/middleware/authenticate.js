@@ -23,28 +23,21 @@ async function extractToken(req) {
     if (req.cookies?.accessToken) {
         const rawCookieToken = req.cookies.accessToken;
 
-        return (
-            decryptText(rawCookieToken) ||
-            rawCookieToken
-        );
+        return decryptText(rawCookieToken) || rawCookieToken;
     }
 
     return null;
 }
 
 async function authenticateApiRequest(req, token) {
-    const apiUser = await authenticateApiKeyToken(
-        req,
-        token
-    );
+    const apiUser = await authenticateApiKeyToken(req, token);
 
     if (apiUser?.scopeError) {
         return {
             error: {
                 status: 403,
                 code: 'RBAC_001',
-                message:
-                    'API key scope does not allow this operation',
+                message: 'API key scope does not allow this operation',
             },
         };
     }
@@ -64,7 +57,9 @@ async function authenticateApiRequest(req, token) {
 
 async function redisGet(key) {
     if (redis.status !== 'ready') return null;
-    try { return await redis.get(key); } catch (err) {
+    try {
+        return await redis.get(key);
+    } catch (err) {
         logger.error('Redis error getting key', { key, error: err.message });
         return null;
     }
@@ -72,7 +67,9 @@ async function redisGet(key) {
 
 async function redisSetex(key, ttl, value) {
     if (redis.status !== 'ready') return;
-    try { await redis.setex(key, ttl, value); } catch (err) {
+    try {
+        await redis.setex(key, ttl, value);
+    } catch (err) {
         logger.error('Redis error setting key', { key, error: err.message });
     }
 }
@@ -167,8 +164,7 @@ async function validateAndRefreshSession(sessionId, userId) {
 }
 
 async function authenticateJwtRequest(req, token) {
-    const payload =
-        tokenService.verifyAccessToken(token);
+    const payload = tokenService.verifyAccessToken(token);
 
     if (!payload) {
         throw createError('AUTH_006');
@@ -195,8 +191,7 @@ async function authenticateJwtRequest(req, token) {
         throw createError('AUTH_008');
     }
 
-    const sessionId =
-        payload.sessionId || null;
+    const sessionId = payload.sessionId || null;
 
     if (sessionId) {
         await validateAndRefreshSession(sessionId, user.id);
@@ -225,9 +220,11 @@ async function authenticateJwtRequest(req, token) {
             ip: req.ip,
             userAgent: req.headers['user-agent'],
             action: 'AUTHENTICATION_VERIFY',
-            path: req.path
+            path: req.path,
         }).finally(() => clearTimeout(fallbackTimer)),
-        new Promise(resolve => { fallbackTimer = setTimeout(() => resolve({ risk_score: 0.1, is_anomaly: false }), 100); })
+        new Promise((resolve) => {
+            fallbackTimer = setTimeout(() => resolve({ risk_score: 0.1, is_anomaly: false }), 100);
+        }),
     ]);
 
     if (riskAssessment.is_anomaly) {
@@ -235,10 +232,7 @@ async function authenticateJwtRequest(req, token) {
         authUser.riskScore = riskAssessment.risk_score;
     }
 
-    await enforceOrgPolicyForRequest(
-        req,
-        authUser
-    );
+    await enforceOrgPolicyForRequest(req, authUser);
 
     return { user: authUser };
 }
@@ -272,14 +266,8 @@ async function authenticate(req, res, next) {
         }
 
         const result = token.startsWith('iam_')
-            ? await authenticateApiRequest(
-                  req,
-                  token
-              )
-            : await authenticateJwtRequest(
-                  req,
-                  token
-              );
+            ? await authenticateApiRequest(req, token)
+            : await authenticateJwtRequest(req, token);
 
         if (result?.error) {
             return res.status(result.error.status).json({
@@ -300,8 +288,8 @@ async function authenticate(req, res, next) {
                 error: {
                     code: 'AUTH_012',
                     message: 'Security anomaly detected. Re-authentication required.',
-                    riskScore: req.user.riskScore
-                }
+                    riskScore: req.user.riskScore,
+                },
             });
         }
 
@@ -311,4 +299,3 @@ async function authenticate(req, res, next) {
     }
 }
 module.exports = { authenticate };
-

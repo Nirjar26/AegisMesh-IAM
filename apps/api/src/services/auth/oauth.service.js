@@ -4,7 +4,8 @@ async function handleOAuthLogin(provider, profile, accessToken) {
     const providerId = profile.id;
     const email = profile.emails?.[0]?.value || `${provider}_${providerId}@oauth.local`;
     const firstName = profile.name?.givenName || profile.displayName?.split(' ')[0] || provider;
-    const lastName = profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || 'User';
+    const lastName =
+        profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || 'User';
 
     let oauthAccount = await prisma.oAuthAccount.findUnique({
         where: {

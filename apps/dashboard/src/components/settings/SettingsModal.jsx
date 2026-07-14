@@ -2,20 +2,11 @@ import PropTypes from 'prop-types';
 import { Eye, EyeOff } from 'lucide-react';
 import { classNames } from './settingsUtils';
 
-export function Field({
-    id,
-    label,
-    error,
-    children,
-    required = false,
-}) {
+export function Field({ id, label, error, children, required = false }) {
     return (
         <div className="space-y-1.5">
             {label ? (
-                <label
-                    htmlFor={id}
-                    className="text-sm font-medium text-[#0f1623]"
-                >
+                <label htmlFor={id} className="text-sm font-medium text-[#0f1623]">
                     {label}
                     {required ? ' *' : ''}
                 </label>
@@ -23,11 +14,7 @@ export function Field({
 
             {children}
 
-            {error ? (
-                <p className="text-xs text-[#dc2626]">
-                    {error}
-                </p>
-            ) : null}
+            {error ? <p className="text-xs text-[#dc2626]">{error}</p> : null}
         </div>
     );
 }
@@ -40,19 +27,11 @@ Field.propTypes = {
     children: PropTypes.node.isRequired,
 };
 
-export function Toggle({
-    id,
-    checked,
-    onChange,
-    label,
-}) {
+export function Toggle({ id, checked, onChange, label }) {
     return (
         <div className="flex items-center justify-between gap-3">
             {label ? (
-                <label
-                    htmlFor={id}
-                    className="text-sm text-[#0f1623]"
-                >
+                <label htmlFor={id} className="text-sm text-[#0f1623]">
                     {label}
                 </label>
             ) : null}
@@ -74,17 +53,13 @@ export function Toggle({
                     onClick={onChange}
                     className={classNames(
                         'relative inline-flex h-6 w-11 rounded-full transition-colors duration-200',
-                        checked
-                            ? 'bg-[#4f46e5]'
-                            : 'bg-[#d0d7e8]'
+                        checked ? 'bg-[#4f46e5]' : 'bg-[#d0d7e8]',
                     )}
                 >
                     <span
                         className={classNames(
                             'inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-200 mt-0.5',
-                            checked
-                                ? 'translate-x-5'
-                                : 'translate-x-0.5'
+                            checked ? 'translate-x-5' : 'translate-x-0.5',
                         )}
                     />
                 </button>
@@ -111,12 +86,7 @@ export function PasswordField({
     required = false,
 }) {
     return (
-        <Field
-            id={id}
-            label={label}
-            error={error}
-            required={required}
-        >
+        <Field id={id} label={label} error={error} required={required}>
             <div className="relative">
                 <input
                     id={id}
@@ -128,27 +98,17 @@ export function PasswordField({
                     className={classNames(
                         'w-full rounded-xl border px-4 py-2.5 text-sm',
                         'focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/25',
-                        error
-                            ? 'border-[#dc2626]'
-                            : 'border-[#d0d7e8]'
+                        error ? 'border-[#dc2626]' : 'border-[#d0d7e8]',
                     )}
                 />
 
                 <button
                     type="button"
                     onClick={onToggle}
-                    aria-label={
-                        visible
-                            ? 'Hide password'
-                            : 'Show password'
-                    }
+                    aria-label={visible ? 'Hide password' : 'Show password'}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a87a8] hover:text-[#0f1623]"
                 >
-                    {visible ? (
-                        <EyeOff size={16} />
-                    ) : (
-                        <Eye size={16} />
-                    )}
+                    {visible ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
             </div>
         </Field>
@@ -166,17 +126,9 @@ PasswordField.propTypes = {
     required: PropTypes.bool,
 };
 
-export function Modal({
-    title,
-    icon: Icon,
-    children,
-    onClose,
-}) {
+export function Modal({ title, icon: Icon, children, onClose }) {
     return (
-        <dialog
-            open
-            className="fixed inset-0 z-[70] bg-transparent"
-        >
+        <dialog open className="fixed inset-0 z-[70] bg-transparent">
             <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
 
             <div className="fixed inset-0 flex items-center justify-center p-4">
@@ -189,9 +141,7 @@ export function Modal({
                                 </div>
                             ) : null}
 
-                            <h2 className="text-sm font-semibold text-[#0f1623]">
-                                {title}
-                            </h2>
+                            <h2 className="text-sm font-semibold text-[#0f1623]">{title}</h2>
                         </div>
 
                         <button
@@ -203,15 +153,12 @@ export function Modal({
                         </button>
                     </div>
 
-                    <div className="p-6">
-                        {children}
-                    </div>
+                    <div className="p-6">{children}</div>
                 </div>
             </div>
         </dialog>
     );
 }
-
 
 Modal.propTypes = {
     title: PropTypes.string.isRequired,

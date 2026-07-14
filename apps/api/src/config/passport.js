@@ -31,8 +31,8 @@ function initializePassport() {
                     } catch (error) {
                         done(error, null);
                     }
-                }
-            )
+                },
+            ),
         );
         logger.info('Google OAuth strategy initialized');
     } else {
@@ -55,8 +55,8 @@ function initializePassport() {
                     } catch (error) {
                         done(error, null);
                     }
-                }
-            )
+                },
+            ),
         );
         logger.info('GitHub OAuth strategy initialized');
     } else {

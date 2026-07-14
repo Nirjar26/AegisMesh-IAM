@@ -34,7 +34,7 @@ describe('useAuth', () => {
 
     it('throws when used outside AuthProvider', () => {
         expect(() => renderHook(() => useAuth())).toThrow(
-            'useAuth must be used within an AuthProvider'
+            'useAuth must be used within an AuthProvider',
         );
     });
 
@@ -83,7 +83,10 @@ describe('useAuth', () => {
             await result.current.login({ email: 'test@example.com', password: 'password123' });
         });
 
-        expect(authAPI.login).toHaveBeenCalledWith({ email: 'test@example.com', password: 'password123' });
+        expect(authAPI.login).toHaveBeenCalledWith({
+            email: 'test@example.com',
+            password: 'password123',
+        });
         expect(result.current.user).toEqual(mockUser);
         expect(result.current.isAuthenticated).toBe(true);
     });

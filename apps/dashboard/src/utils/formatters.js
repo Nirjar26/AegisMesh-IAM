@@ -5,20 +5,20 @@ import {
     toTitleCase,
     daysSince,
     formatRelative,
-} from '@aegismesh/shared/formatters';
+} from '@bastion/types/formatters';
 
 export { formatDate, formatRelativeTime, getInitials, toTitleCase, daysSince, formatRelative }; // NOSONAR
 
 export function getAvatarColor(firstName = '', lastName = '') {
     const colors = [
-        '#4f46e5',
-        '#0284c7',
-        '#16a34a',
-        '#e11d48',
-        '#ca8a04',
-        '#9333ea',
-        '#2563eb',
-        '#0891b2',
+        'var(--ds-color-accent)',
+        'var(--ds-color-info)',
+        'var(--ds-color-success)',
+        'var(--ds-color-danger)',
+        'var(--ds-color-warning)',
+        'var(--ds-color-accent-soft)',
+        'var(--ds-color-info)',
+        'var(--ds-color-info)',
     ];
 
     const name = `${firstName}${lastName}`;

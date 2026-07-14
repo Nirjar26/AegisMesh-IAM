@@ -76,7 +76,7 @@ export default function TopBar({ onMenuClick, onOpenSettings, onSignOut }) {
                             A
                         </div>
                         <span className="hidden truncate text-sm font-bold tracking-tight text-white/90 sm:block md:text-base">
-                            AegisMesh Intelligence
+                            Bastion Intelligence
                         </span>
                     </div>
                 )}

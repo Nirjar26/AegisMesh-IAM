@@ -4,7 +4,7 @@ param(
 
   [string]$AwsProfile = 'default',
   [string]$BackupDir = './backups',
-  [string]$PgNamespace = 'aegismesh',
+  [string]$PgNamespace = 'Bastion',
   [string]$PgDeployment = 'postgres',
   [string]$PgUser = 'postgres',
   [switch]$DockerVolumes,
@@ -63,7 +63,7 @@ if (-not $SkipRepo) {
 
   $repoItems = @(
     'apps','docs','packages','platform','scripts',
-    'README.md','CI_CD_RUNBOOK.md','Docker_Setup.md','LICENSE','CODE_OF_CONDUCT.md','AegisMesh-IAM-Fix-Logic-Guide.md',
+    'README.md','CI_CD_RUNBOOK.md','Docker_Setup.md','LICENSE','CODE_OF_CONDUCT.md','Bastion-IAM-Fix-Logic-Guide.md',
     'docker-compose.yml','docker-compose.dev.yml'
   )
   $existing = @()
@@ -121,7 +121,7 @@ if (-not $SkipSnapshots) {
   $snapshotLines = @()
   foreach ($vol in ($volumes -split '\s+')) {
     if ([string]::IsNullOrWhiteSpace($vol)) { continue }
-    $snap = aws ec2 create-snapshot --volume-id $vol --description "AegisMesh pre-delete backup $InstanceId $Timestamp" --query SnapshotId --output text --profile $AwsProfile
+    $snap = aws ec2 create-snapshot --volume-id $vol --description "Bastion pre-delete backup $InstanceId $Timestamp" --query SnapshotId --output text --profile $AwsProfile
     $snapshotLines += "$vol -> $snap"
   }
   Save-TextFile -Name 'ebs-snapshots.txt' -Lines $snapshotLines

@@ -1,15 +1,23 @@
 import PropTypes from 'prop-types';
 import { CATEGORY_CONFIG, RESULT_CONFIG } from './auditConfig';
 
-const cellStyle = { padding: '10px 12px', color: '#CBD5E1' };
+const cellStyle = { padding: '10px 12px', color: 'var(--ds-color-text-secondary)' };
 
 function AuditLogTable({ logs = [], onRowClick, loading }) {
     if (loading) {
-        return <div style={{ padding: '40px', textAlign: 'center', color: '#94A3B8' }}>Loading audit logs...</div>;
+        return (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--ds-color-text-muted)' }}>
+                Loading audit logs...
+            </div>
+        );
     }
 
     if (!logs.length) {
-        return <div style={{ padding: '40px', textAlign: 'center', color: '#64748B' }}>No audit logs found</div>;
+        return (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--ds-color-text-muted)' }}>
+                No audit logs found
+            </div>
+        );
     }
 
     return (
@@ -17,13 +25,21 @@ function AuditLogTable({ logs = [], onRowClick, loading }) {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                 <thead>
                     <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                        {['Timestamp', 'User', 'Action', 'Category', 'Resource', 'Result', 'IP Address'].map((heading) => (
+                        {[
+                            'Timestamp',
+                            'User',
+                            'Action',
+                            'Category',
+                            'Resource',
+                            'Result',
+                            'IP Address',
+                        ].map((heading) => (
                             <th
                                 key={heading}
                                 style={{
                                     padding: '10px 12px',
                                     textAlign: 'left',
-                                    color: '#94A3B8',
+                                    color: 'var(--ds-color-text-muted)',
                                     fontWeight: 600,
                                     fontSize: '11px',
                                     textTransform: 'uppercase',
@@ -39,14 +55,14 @@ function AuditLogTable({ logs = [], onRowClick, loading }) {
                     {logs.map((log) => {
                         const cat = CATEGORY_CONFIG[log.category] || {
                             label: log.category,
-                            color: '#6B7280',
+                            color: 'var(--ds-color-text-muted)',
                             icon: '📄',
                         };
 
                         const res = RESULT_CONFIG[log.result] || {
                             label: log.result,
-                            color: '#6B7280',
-                            bg: 'rgba(107,114,128,0.15)',
+                            color: 'var(--ds-color-text-muted)',
+                            bg: 'rgb(var(--ds-rgb-text-muted) / 0.15)',
                         };
 
                         return (
@@ -65,9 +81,15 @@ function AuditLogTable({ logs = [], onRowClick, loading }) {
                                     event.currentTarget.style.background = 'transparent';
                                 }}
                             >
-                                <td style={cellStyle}>{new Date(log.createdAt).toLocaleString()}</td>
-                                <td style={cellStyle}>{log.user?.email || log.userId?.substring(0, 8) || '—'}</td>
-                                <td style={{ ...cellStyle, fontWeight: 600, color: '#F1F5F9' }}>{log.action}</td>
+                                <td style={cellStyle}>
+                                    {new Date(log.createdAt).toLocaleString()}
+                                </td>
+                                <td style={cellStyle}>
+                                    {log.user?.email || log.userId?.substring(0, 8) || '—'}
+                                </td>
+                                <td style={{ ...cellStyle, fontWeight: 600, color: 'var(--ds-color-white)' }}>
+                                    {log.action}
+                                </td>
                                 <td style={cellStyle}>
                                     <span
                                         style={{
@@ -87,7 +109,7 @@ function AuditLogTable({ logs = [], onRowClick, loading }) {
                                 <td
                                     style={{
                                         ...cellStyle,
-                                        color: '#94A3B8',
+                                        color: 'var(--ds-color-text-muted)',
                                         maxWidth: '200px',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
@@ -113,7 +135,7 @@ function AuditLogTable({ logs = [], onRowClick, loading }) {
                                 <td
                                     style={{
                                         ...cellStyle,
-                                        color: '#64748B',
+                                        color: 'var(--ds-color-text-muted)',
                                         fontFamily: 'monospace',
                                         fontSize: '11px',
                                     }}
@@ -130,21 +152,21 @@ function AuditLogTable({ logs = [], onRowClick, loading }) {
 }
 
 AuditLogTable.propTypes = {
-    logs: PropTypes.arrayOf(PropTypes.shape({
-        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-        createdAt: PropTypes.string,
-        user: PropTypes.shape({ email: PropTypes.string }),
-        userId: PropTypes.string,
-        action: PropTypes.string,
-        category: PropTypes.string,
-        resource: PropTypes.string,
-        result: PropTypes.string,
-        ipAddress: PropTypes.string,
-    })),
+    logs: PropTypes.arrayOf(
+        PropTypes.shape({
+            id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+            createdAt: PropTypes.string,
+            user: PropTypes.shape({ email: PropTypes.string }),
+            userId: PropTypes.string,
+            action: PropTypes.string,
+            category: PropTypes.string,
+            resource: PropTypes.string,
+            result: PropTypes.string,
+            ipAddress: PropTypes.string,
+        }),
+    ),
     onRowClick: PropTypes.func,
     loading: PropTypes.bool,
 };
 
 export default AuditLogTable;
-
-

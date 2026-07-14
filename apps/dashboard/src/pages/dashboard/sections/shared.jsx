@@ -4,7 +4,16 @@ import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 
-export function NavItem({ icon: Icon, label, value, href, activeSection, onSelect, collapsed, forceActive = false }) {
+export function NavItem({
+    icon: Icon,
+    label,
+    value,
+    href,
+    activeSection,
+    onSelect,
+    collapsed,
+    forceActive = false,
+}) {
     const navigate = useNavigate();
     const isActive = forceActive || activeSection === value;
     const iconElement = createElement(Icon, { size: collapsed ? 18 : 17 });
@@ -50,11 +59,19 @@ NavItem.propTypes = {
 
 export function SectionToggle({ label, expanded, active, onToggle }) {
     return (
-        <button onClick={onToggle} className="w-full flex items-center justify-between px-4 py-2 cursor-pointer select-none group">
-            <span className={`text-[9px] font-semibold tracking-widest uppercase transition-colors ${active ? 'text-[#a5b4fc]' : 'text-[#7b8ba8] group-hover:text-[#cbd5e1]'}`}>
+        <button
+            onClick={onToggle}
+            className="w-full flex items-center justify-between px-4 py-2 cursor-pointer select-none group"
+        >
+            <span
+                className={`text-[9px] font-semibold tracking-widest uppercase transition-colors ${active ? 'text-[#a5b4fc]' : 'text-[#7b8ba8] group-hover:text-[#cbd5e1]'}`}
+            >
                 {label}
             </span>
-            <ChevronDown size={14} className={`text-[#64748b] transition-transform duration-150 ${expanded ? 'rotate-180' : ''}`} />
+            <ChevronDown
+                size={14}
+                className={`text-[#64748b] transition-transform duration-150 ${expanded ? 'rotate-180' : ''}`}
+            />
         </button>
     );
 }
@@ -81,9 +98,23 @@ SectionHeader.propTypes = {
 };
 
 export function getSystemHealth(criticalAlertsCount, totalAlerts) {
-    if (criticalAlertsCount > 0) return { label: 'Critical Security Events Detected', dotClass: 'bg-red-500', textClass: 'text-red-600' };
-    if (totalAlerts > 0) return { label: 'Monitoring Warnings', dotClass: 'bg-amber-500', textClass: 'text-amber-600' };
-    return { label: 'All Systems Operational', dotClass: 'bg-emerald-500', textClass: 'text-emerald-600' };
+    if (criticalAlertsCount > 0)
+        return {
+            label: 'Critical Security Events Detected',
+            dotClass: 'bg-red-500',
+            textClass: 'text-red-600',
+        };
+    if (totalAlerts > 0)
+        return {
+            label: 'Monitoring Warnings',
+            dotClass: 'bg-amber-500',
+            textClass: 'text-amber-600',
+        };
+    return {
+        label: 'All Systems Operational',
+        dotClass: 'bg-emerald-500',
+        textClass: 'text-emerald-600',
+    };
 }
 
 export function getRecentLogDotClass(result = '') {
@@ -94,23 +125,45 @@ export function getRecentLogDotClass(result = '') {
 }
 
 export function computeRoleDistribution(users = []) {
-    let superAdmin = 0, readOnly = 0, custom = 0;
+    let superAdmin = 0,
+        readOnly = 0,
+        custom = 0;
     users.forEach((u) => {
         const roleNames = (u.roles || []).map((role) => (role.name || '').toLowerCase());
-        if (roleNames.some((n) => n.includes('superadmin') || n.includes('super admin'))) { superAdmin += 1; return; }
-        if (roleNames.some((n) => n.includes('readonly') || n.includes('read only'))) { readOnly += 1; return; }
+        if (roleNames.some((n) => n.includes('superadmin') || n.includes('super admin'))) {
+            superAdmin += 1;
+            return;
+        }
+        if (roleNames.some((n) => n.includes('readonly') || n.includes('read only'))) {
+            readOnly += 1;
+            return;
+        }
         custom += 1;
     });
     const total = superAdmin + readOnly + custom || 1;
-    return { superAdmin, readOnly, custom, superAdminPct: Math.round((superAdmin / total) * 100), readOnlyPct: Math.round((readOnly / total) * 100), customPct: Math.round((custom / total) * 100) };
+    return {
+        superAdmin,
+        readOnly,
+        custom,
+        superAdminPct: Math.round((superAdmin / total) * 100),
+        readOnlyPct: Math.round((readOnly / total) * 100),
+        customPct: Math.round((custom / total) * 100),
+    };
 }
 
 export function buildCsv(columns, rows) {
-    return [columns, ...rows].map((line) => line.map((item) => `"${String(item).replaceAll('"', '""')}"`).join(',')).join('\n');
+    return [columns, ...rows]
+        .map((line) => line.map((item) => `"${String(item).replaceAll('"', '""')}"`).join(','))
+        .join('\n');
 }
 
 export function getStatusChip(status) {
-    if (status === 'critical') return { label: 'Critical', className: 'bg-red-50 text-red-600 border border-red-200' };
-    if (status === 'warning') return { label: 'Warning', className: 'bg-amber-50 text-amber-600 border border-amber-200' };
+    if (status === 'critical')
+        return { label: 'Critical', className: 'bg-red-50 text-red-600 border border-red-200' };
+    if (status === 'warning')
+        return {
+            label: 'Warning',
+            className: 'bg-amber-50 text-amber-600 border border-amber-200',
+        };
     return { label: 'Good', className: 'bg-emerald-50 text-emerald-600 border border-emerald-200' };
 }

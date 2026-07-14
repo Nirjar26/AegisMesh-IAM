@@ -45,7 +45,7 @@ spec:
         fsGroup: 1000
       containers:
       - name: mlflow
-        image: aegismesh-mlflow:latest
+        image: Bastion-mlflow:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5000
@@ -71,15 +71,15 @@ spec:
         - name: DB_USER
           valueFrom:
             secretKeyRef:
-              name: aegismesh-secrets
+              name: Bastion-secrets
               key: DB_USER
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: aegismesh-secrets
+              name: Bastion-secrets
               key: DB_PASSWORD
         - name: MLFLOW_BACKEND_STORE_URI
-          value: postgresql://$(DB_USER):$(DB_PASSWORD)@postgres.aegismesh.svc.cluster.local:5432/mlflow_db
+          value: postgresql://$(DB_USER):$(DB_PASSWORD)@postgres.Bastion.svc.cluster.local:5432/mlflow_db
         - name: MLFLOW_DEFAULT_ARTIFACT_ROOT
           value: /mlflow-artifacts
         volumeMounts:
@@ -114,16 +114,16 @@ data:
       scrape_interval: 15s
       evaluation_interval: 15s
     scrape_configs:
-      - job_name: aegismesh-backend
+      - job_name: Bastion-backend
         metrics_path: /metrics
         static_configs:
           - targets:
-              - backend.aegismesh.svc.cluster.local:5000
-      - job_name: aegismesh-security-engine
+              - backend.Bastion.svc.cluster.local:5000
+      - job_name: Bastion-security-engine
         metrics_path: /metrics
         static_configs:
           - targets:
-              - security-engine.aegismesh.svc.cluster.local:8000
+              - security-engine.Bastion.svc.cluster.local:8000
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -254,17 +254,17 @@ spec:
         - name: DB_USER
           valueFrom:
             secretKeyRef:
-              name: aegismesh-secrets
+              name: Bastion-secrets
               key: DB_USER
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: aegismesh-secrets
+              name: Bastion-secrets
               key: DB_PASSWORD
         - name: DB_NAME
           valueFrom:
             secretKeyRef:
-              name: aegismesh-secrets
+              name: Bastion-secrets
               key: DB_NAME
         volumeMounts:
         - name: datasources
@@ -282,7 +282,7 @@ spec:
           name: grafana-dashboards-provider
       - name: dashboards
         configMap:
-          name: grafana-dashboard-aegismesh
+          name: grafana-dashboard-Bastion
 ---
 apiVersion: v1
 kind: Service
@@ -313,11 +313,11 @@ data:
         url: http://prometheus.monitoring.svc.cluster.local:9090
         isDefault: true
         editable: true
-      - name: AegisMesh PostgreSQL
-        uid: aegismesh-postgres
+      - name: Bastion PostgreSQL
+        uid: Bastion-postgres
         type: postgres
         access: proxy
-        url: postgres.aegismesh.svc.cluster.local:5432
+        url: postgres.Bastion.svc.cluster.local:5432
         user: ${DB_USER}
         database: ${DB_NAME}
         secureJsonData:
@@ -337,7 +337,7 @@ data:
   dashboards.yaml: |
     apiVersion: 1
     providers:
-      - name: 'AegisMesh Dashboards'
+      - name: 'Bastion Dashboards'
         orgId: 1
         folder: ''
         type: file
@@ -350,10 +350,10 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: grafana-dashboard-aegismesh
+  name: grafana-dashboard-Bastion
   namespace: monitoring
 data:
-  aegismesh-overview.json: |
+  Bastion-overview.json: |
     {
       "annotations": {
         "list": [
@@ -402,7 +402,7 @@ data:
           "gridPos": { "h": 5, "w": 6, "x": 0, "y": 1 },
           "id": 1,
           "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "reduceOptions": { "calcs": ["lastNotNull"] } },
-          "targets": [{ "expr": "sum(rate(aegismesh_http_requests_total[5m]))", "legendFormat": "Global Load", "refId": "A" }],
+          "targets": [{ "expr": "sum(rate(Bastion_http_requests_total[5m]))", "legendFormat": "Global Load", "refId": "A" }],
           "title": "Backend Request Rate",
           "type": "stat"
         },
@@ -418,7 +418,7 @@ data:
           "gridPos": { "h": 5, "w": 6, "x": 6, "y": 1 },
           "id": 2,
           "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "reduceOptions": { "calcs": ["lastNotNull"] } },
-          "targets": [{ "expr": "sum(rate(aegismesh_http_requests_total{status_code=~\"5..\"}[5m]))", "legendFormat": "Errors", "refId": "A" }],
+          "targets": [{ "expr": "sum(rate(Bastion_http_requests_total{status_code=~\"5..\"}[5m]))", "legendFormat": "Errors", "refId": "A" }],
           "title": "Backend Error Rate",
           "type": "stat"
         },
@@ -427,7 +427,7 @@ data:
           "gridPos": { "h": 5, "w": 6, "x": 12, "y": 1 },
           "id": 8,
           "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "reduceOptions": { "calcs": ["lastNotNull"] } },
-          "targets": [{ "expr": "aegismesh_active_sessions", "legendFormat": "Sessions", "refId": "A" }],
+          "targets": [{ "expr": "Bastion_active_sessions", "legendFormat": "Sessions", "refId": "A" }],
           "title": "Active Sessions",
           "type": "stat"
         },
@@ -442,7 +442,7 @@ data:
           "gridPos": { "h": 5, "w": 6, "x": 18, "y": 1 },
           "id": 9,
           "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "reduceOptions": { "calcs": ["lastNotNull"] } },
-          "targets": [{ "expr": "sum(increase(aegismesh_audit_log_writes_total{result=\"failure\"}[1h]))", "legendFormat": "Failures", "refId": "A" }],
+          "targets": [{ "expr": "sum(increase(Bastion_audit_log_writes_total{result=\"failure\"}[1h]))", "legendFormat": "Failures", "refId": "A" }],
           "title": "Audit Write Failures",
           "type": "stat"
         },
@@ -461,8 +461,8 @@ data:
           "id": 3,
           "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi" } },
           "targets": [
-            { "expr": "histogram_quantile(0.95, sum(rate(aegismesh_http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95 Latency", "refId": "A" },
-            { "expr": "histogram_quantile(0.50, sum(rate(aegismesh_http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p50 Latency", "refId": "B" }
+            { "expr": "histogram_quantile(0.95, sum(rate(Bastion_http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95 Latency", "refId": "A" },
+            { "expr": "histogram_quantile(0.50, sum(rate(Bastion_http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p50 Latency", "refId": "B" }
           ],
           "title": "API Latency Profiles",
           "type": "timeseries"
@@ -474,8 +474,8 @@ data:
           "id": 5,
           "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi" } },
           "targets": [
-            { "expr": "aegismesh_nodejs_heap_size_used_bytes", "legendFormat": "Heap Used", "refId": "A" },
-            { "expr": "aegismesh_nodejs_heap_size_total_bytes", "legendFormat": "Heap Total", "refId": "B" }
+            { "expr": "Bastion_nodejs_heap_size_used_bytes", "legendFormat": "Heap Used", "refId": "A" },
+            { "expr": "Bastion_nodejs_heap_size_total_bytes", "legendFormat": "Heap Total", "refId": "B" }
           ],
           "title": "Node.js Memory Utilization",
           "type": "timeseries"
@@ -489,13 +489,13 @@ data:
           "type": "row"
         },
         {
-          "datasource": { "type": "postgres", "uid": "aegismesh-postgres" },
+          "datasource": { "type": "postgres", "uid": "Bastion-postgres" },
           "fieldConfig": { "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 50 } } },
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
           "id": 6,
           "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
           "targets": [{
-            "datasource": { "type": "postgres", "uid": "aegismesh-postgres" },
+            "datasource": { "type": "postgres", "uid": "Bastion-postgres" },
             "format": "time_series",
             "rawSql": "SELECT $__timeGroup(\"createdAt\", '1h') AS time, COUNT(*) AS audit_events FROM \"AuditLog\" WHERE $__timeFilter(\"createdAt\") GROUP BY time ORDER BY time;",
             "refId": "A"
@@ -504,12 +504,12 @@ data:
           "type": "timeseries"
         },
         {
-          "datasource": { "type": "postgres", "uid": "aegismesh-postgres" },
+          "datasource": { "type": "postgres", "uid": "Bastion-postgres" },
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
           "id": 7,
           "options": { "cellHeight": "sm", "showHeader": true },
           "targets": [{
-            "datasource": { "type": "postgres", "uid": "aegismesh-postgres" },
+            "datasource": { "type": "postgres", "uid": "Bastion-postgres" },
             "format": "table",
             "rawSql": "SELECT action, result, category, COUNT(*) AS count FROM \"AuditLog\" WHERE $__timeFilter(\"createdAt\") GROUP BY action, result, category ORDER BY count DESC LIMIT 20;",
             "refId": "A"
@@ -522,7 +522,7 @@ data:
           "gridPos": { "h": 8, "w": 8, "x": 0, "y": 24 },
           "id": 10,
           "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
-          "targets": [{ "expr": "sum by (action, result) (rate(aegismesh_auth_events_total[5m]))", "legendFormat": "{{action}} ({{result}})", "refId": "A" }],
+          "targets": [{ "expr": "sum by (action, result) (rate(Bastion_auth_events_total[5m]))", "legendFormat": "{{action}} ({{result}})", "refId": "A" }],
           "title": "Auth Lifecycle",
           "type": "timeseries"
         },
@@ -531,7 +531,7 @@ data:
           "gridPos": { "h": 8, "w": 8, "x": 8, "y": 24 },
           "id": 11,
           "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
-          "targets": [{ "expr": "sum by (action, severity) (rate(aegismesh_security_events_total[5m]))", "legendFormat": "{{action}} [{{severity}}]", "refId": "A" }],
+          "targets": [{ "expr": "sum by (action, severity) (rate(Bastion_security_events_total[5m]))", "legendFormat": "{{action}} [{{severity}}]", "refId": "A" }],
           "title": "Security Triggers",
           "type": "timeseries"
         },
@@ -540,7 +540,7 @@ data:
           "gridPos": { "h": 8, "w": 8, "x": 16, "y": 24 },
           "id": 12,
           "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
-          "targets": [{ "expr": "sum by (action, result) (rate(aegismesh_permission_events_total[5m]))", "legendFormat": "{{action}} ({{result}})", "refId": "A" }],
+          "targets": [{ "expr": "sum by (action, result) (rate(Bastion_permission_events_total[5m]))", "legendFormat": "{{action}} ({{result}})", "refId": "A" }],
           "title": "Access Denials",
           "type": "timeseries"
         },
@@ -609,9 +609,9 @@ data:
       "preload": false,
       "refresh": "15s",
       "schemaVersion": 40,
-      "tags": ["aegismesh", "iam", "mlops"],
+      "tags": ["Bastion", "iam", "mlops"],
       "time": { "from": "now-1h", "to": "now" },
       "timezone": "browser",
-      "title": "AegisMesh Global Intelligence",
-      "uid": "aegismesh-overview"
+      "title": "Bastion Global Intelligence",
+      "uid": "Bastion-overview"
     }

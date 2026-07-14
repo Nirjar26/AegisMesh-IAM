@@ -36,7 +36,9 @@ exports.bulkUpdateStatus = async (req, res, next) => {
                 },
             });
 
-            const targetSuperAdminIds = [...new Set(superAdminAssignments.map((assignment) => assignment.userId))];
+            const targetSuperAdminIds = [
+                ...new Set(superAdminAssignments.map((assignment) => assignment.userId)),
+            ];
             const totalSuperAdmins = await prisma.userRole.count({
                 where: {
                     role: { name: 'SuperAdmin' },
@@ -54,10 +56,12 @@ exports.bulkUpdateStatus = async (req, res, next) => {
         if (safeIds.length > 0) {
             const updateData = {
                 status,
-                ...(status === 'ACTIVE' ? {
-                    failedLoginCount: 0,
-                    lockedUntil: null,
-                } : {}),
+                ...(status === 'ACTIVE'
+                    ? {
+                          failedLoginCount: 0,
+                          lockedUntil: null,
+                      }
+                    : {}),
             };
 
             try {
@@ -305,7 +309,9 @@ exports.bulkDelete = async (req, res, next) => {
                 select: { userId: true },
             });
 
-            const targetSuperAdminIds = [...new Set(superAdminAssignments.map((assignment) => assignment.userId))];
+            const targetSuperAdminIds = [
+                ...new Set(superAdminAssignments.map((assignment) => assignment.userId)),
+            ];
             const totalSuperAdmins = await prisma.userRole.count({
                 where: {
                     role: { name: 'SuperAdmin' },
@@ -315,7 +321,10 @@ exports.bulkDelete = async (req, res, next) => {
             if (targetSuperAdminIds.length > 0 && targetSuperAdminIds.length >= totalSuperAdmins) {
                 safeIds = safeIds.filter((id) => !targetSuperAdminIds.includes(id));
                 targetSuperAdminIds.forEach((userId) => {
-                    results.skipped.push({ userId, reason: 'Cannot delete last SuperAdmin account' });
+                    results.skipped.push({
+                        userId,
+                        reason: 'Cannot delete last SuperAdmin account',
+                    });
                 });
             }
         }
@@ -425,22 +434,36 @@ exports.bulkExport = async (req, res, next) => {
         }
 
         const headers = [
-            'ID', 'Email', 'First Name', 'Last Name', 'Status', 'MFA', 'Email Verified', 'Roles', 'Groups', 'Created', 'Last Login',
+            'ID',
+            'Email',
+            'First Name',
+            'Last Name',
+            'Status',
+            'MFA',
+            'Email Verified',
+            'Roles',
+            'Groups',
+            'Created',
+            'Last Login',
         ];
 
-        const rows = exportData.map((user) => [
-            user.id,
-            user.email,
-            user.firstName,
-            user.lastName,
-            user.status,
-            user.mfaEnabled,
-            user.emailVerified,
-            user.roles,
-            user.groups,
-            user.createdAt,
-            user.lastLogin,
-        ].map((value) => toCsvCell(value)).join(','));
+        const rows = exportData.map((user) =>
+            [
+                user.id,
+                user.email,
+                user.firstName,
+                user.lastName,
+                user.status,
+                user.mfaEnabled,
+                user.emailVerified,
+                user.roles,
+                user.groups,
+                user.createdAt,
+                user.lastLogin,
+            ]
+                .map((value) => toCsvCell(value))
+                .join(','),
+        );
 
         const csv = [headers.join(','), ...rows].join('\n');
 

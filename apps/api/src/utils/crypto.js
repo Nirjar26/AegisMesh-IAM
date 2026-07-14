@@ -2,12 +2,19 @@ const crypto = require('node:crypto');
 const logger = require('./logger');
 
 const ALGO = 'aes-256-gcm';
-const LEGACY_SALT = 'aegismesh-mfa-key-v1';
+const LEGACY_SALT = 'bastion-mfa-key-v1';
 
-const COOKIE_ENCRYPTION_KEY = process.env.COOKIE_ENCRYPTION_KEY || process.env.MFA_SECRET_ENCRYPTION_KEY;
+const COOKIE_ENCRYPTION_KEY =
+    process.env.COOKIE_ENCRYPTION_KEY || process.env.MFA_SECRET_ENCRYPTION_KEY;
 
-if (process.env.NODE_ENV === 'production' && process.env.COOKIE_ENCRYPTION_KEY && process.env.COOKIE_ENCRYPTION_KEY === process.env.MFA_SECRET_ENCRYPTION_KEY) {
-    console.warn('[crypto] COOKIE_ENCRYPTION_KEY and MFA_SECRET_ENCRYPTION_KEY are identical. Use separate keys in production.');
+if (
+    process.env.NODE_ENV === 'production' &&
+    process.env.COOKIE_ENCRYPTION_KEY &&
+    process.env.COOKIE_ENCRYPTION_KEY === process.env.MFA_SECRET_ENCRYPTION_KEY
+) {
+    console.warn(
+        '[crypto] COOKIE_ENCRYPTION_KEY and MFA_SECRET_ENCRYPTION_KEY are identical. Use separate keys in production.',
+    );
 }
 
 let mfaFallbackKey;
@@ -55,11 +62,7 @@ function decryptText(payload) {
         const tagHex = parts.length === 4 ? parts[2] : parts[1];
         const encryptedHex = parts.length === 4 ? parts[3] : parts[2];
 
-        const decipher = crypto.createDecipheriv(
-            ALGO,
-            buildKey(salt),
-            Buffer.from(ivHex, 'hex')
-        );
+        const decipher = crypto.createDecipheriv(ALGO, buildKey(salt), Buffer.from(ivHex, 'hex'));
         decipher.setAuthTag(Buffer.from(tagHex, 'hex'));
 
         const decrypted = Buffer.concat([

@@ -8,10 +8,7 @@ const {
     ALLOWED_LANGUAGES,
     isValidTimezone,
 } = require('../../services/organizationSettings.service');
-const {
-    fieldError,
-    safeUserProfile,
-} = require('./helpers');
+const { fieldError, safeUserProfile } = require('./helpers');
 
 exports.getProfile = async (req, res, next) => {
     try {
@@ -43,7 +40,9 @@ exports.getProfile = async (req, res, next) => {
         });
 
         if (!user) {
-            return res.status(404).json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
+            return res
+                .status(404)
+                .json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
         }
 
         const lastLoginAt = user.sessions?.[0]?.createdAt || null;
@@ -80,7 +79,16 @@ exports.updateProfile = async (req, res, next) => {
         }
 
         if (errors.length > 0) {
-            return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Validation failed', details: errors } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: {
+                        code: 'VALIDATION_ERROR',
+                        message: 'Validation failed',
+                        details: errors,
+                    },
+                });
         }
 
         const updated = await prisma.user.update({
@@ -141,7 +149,12 @@ exports.updateProfile = async (req, res, next) => {
 exports.uploadAvatar = async (req, res, next) => {
     try {
         if (!req.file) {
-            return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Avatar file is required' } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: { code: 'VALIDATION_ERROR', message: 'Avatar file is required' },
+                });
         }
 
         await fs.promises.mkdir(path.join(AVATAR_DIR, req.user.id), { recursive: true });

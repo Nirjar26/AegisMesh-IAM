@@ -10,7 +10,7 @@ export default function SecuritySettings() {
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
         newPassword: '',
-        confirmPassword: ''
+        confirmPassword: '',
     });
     const [passwordLoading, setPasswordLoading] = useState(false);
     const [passwordError, setPasswordError] = useState('');
@@ -98,41 +98,68 @@ export default function SecuritySettings() {
 
                 <form onSubmit={handlePasswordChange} className="space-y-4 max-w-xl">
                     <div>
-                        <label htmlFor="current-password" xmlLang="en" className="block text-sm font-medium text-aws-text-dim mb-1">
+                        <label
+                            htmlFor="current-password"
+                            xmlLang="en"
+                            className="block text-sm font-medium text-aws-text-dim mb-1"
+                        >
                             Current Password
                         </label>
                         <input
                             id="current-password"
                             type="password"
                             value={passwordData.currentPassword}
-                            onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                            onChange={(e) =>
+                                setPasswordData({
+                                    ...passwordData,
+                                    currentPassword: e.target.value,
+                                })
+                            }
                             className="w-full bg-aws-navy-light border border-aws-border rounded-lg px-4 py-2 text-[#0f1623] focus:outline-none focus:border-aws-orange transition-colors"
                             required
                         />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor="new-password" xmlLang="en" className="block text-sm font-medium text-aws-text-dim mb-1">
+                            <label
+                                htmlFor="new-password"
+                                xmlLang="en"
+                                className="block text-sm font-medium text-aws-text-dim mb-1"
+                            >
                                 New Password
                             </label>
                             <input
                                 id="new-password"
                                 type="password"
                                 value={passwordData.newPassword}
-                                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                                onChange={(e) =>
+                                    setPasswordData({
+                                        ...passwordData,
+                                        newPassword: e.target.value,
+                                    })
+                                }
                                 className="w-full bg-aws-navy-light border border-aws-border rounded-lg px-4 py-2 text-[#0f1623] focus:outline-none focus:border-aws-orange transition-colors"
                                 required
                             />
                         </div>
                         <div>
-                            <label htmlFor="confirm-password" xmlLang="en" className="block text-sm font-medium text-aws-text-dim mb-1">
+                            <label
+                                htmlFor="confirm-password"
+                                xmlLang="en"
+                                className="block text-sm font-medium text-aws-text-dim mb-1"
+                            >
                                 Confirm New Password
                             </label>
                             <input
                                 id="confirm-password"
                                 type="password"
                                 value={passwordData.confirmPassword}
-                                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                                onChange={(e) =>
+                                    setPasswordData({
+                                        ...passwordData,
+                                        confirmPassword: e.target.value,
+                                    })
+                                }
                                 className="w-full bg-aws-navy-light border border-aws-border rounded-lg px-4 py-2 text-[#0f1623] focus:outline-none focus:border-aws-orange transition-colors"
                                 required
                             />
@@ -162,11 +189,16 @@ export default function SecuritySettings() {
                         </p>
                     </div>
                     <div>
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${user?.mfaEnabled
-                                ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                                : 'bg-aws-navy-light text-aws-text-dim border border-aws-border'
-                            }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${user?.mfaEnabled ? 'bg-green-400' : 'bg-aws-text-dim'}`}></span>
+                        <span
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                                user?.mfaEnabled
+                                    ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                                    : 'bg-aws-navy-light text-aws-text-dim border border-aws-border'
+                            }`}
+                        >
+                            <span
+                                className={`w-1.5 h-1.5 rounded-full ${user?.mfaEnabled ? 'bg-green-400' : 'bg-aws-text-dim'}`}
+                            ></span>
                             {user?.mfaEnabled ? 'Enabled' : 'Disabled'}
                         </span>
                     </div>
@@ -178,7 +210,9 @@ export default function SecuritySettings() {
                         {showDisableForm ? (
                             // Disable Form
                             <div className="p-6 bg-aws-navy-light border border-aws-border rounded-xl animate-fade-in-up">
-                                <h3 className="font-semibold text-[#0f1623] mb-4">Confirm Disable MFA</h3>
+                                <h3 className="font-semibold text-[#0f1623] mb-4">
+                                    Confirm Disable MFA
+                                </h3>
                                 {disableError && (
                                     <div className="mb-4 p-3 rounded-lg bg-aws-red/10 border border-aws-red/20">
                                         <p className="text-sm text-aws-red">{disableError}</p>
@@ -186,7 +220,13 @@ export default function SecuritySettings() {
                                 )}
                                 <form onSubmit={handleDisableMFA} className="space-y-4 max-w-sm">
                                     <div>
-                                        <label htmlFor="disable-password" xmlLang="en" className="block text-sm text-aws-text-dim mb-1">Password</label>
+                                        <label
+                                            htmlFor="disable-password"
+                                            xmlLang="en"
+                                            className="block text-sm text-aws-text-dim mb-1"
+                                        >
+                                            Password
+                                        </label>
                                         <input
                                             id="disable-password"
                                             type="password"
@@ -197,13 +237,21 @@ export default function SecuritySettings() {
                                         />
                                     </div>
                                     <div>
-                                        <label htmlFor="disable-totp" xmlLang="en" className="block text-sm text-aws-text-dim mb-1">TOTP Code</label>
+                                        <label
+                                            htmlFor="disable-totp"
+                                            xmlLang="en"
+                                            className="block text-sm text-aws-text-dim mb-1"
+                                        >
+                                            TOTP Code
+                                        </label>
                                         <input
                                             id="disable-totp"
                                             type="text"
                                             maxLength={6}
                                             value={disableTotp}
-                                            onChange={(e) => setDisableTotp(e.target.value.replace(/\D/g, ''))}
+                                            onChange={(e) =>
+                                                setDisableTotp(e.target.value.replace(/\D/g, ''))
+                                            }
                                             placeholder="000000"
                                             className="w-full bg-aws-dark border border-aws-border rounded-xl px-4 py-2 text-[#0f1623] font-mono text-center tracking-widest focus:outline-none focus:border-aws-red transition-colors"
                                             required
@@ -233,8 +281,12 @@ export default function SecuritySettings() {
                         ) : (
                             <div className="p-4 bg-aws-navy-light rounded-xl border border-aws-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div>
-                                    <h3 className="text-[#0f1623] font-medium">Authenticator App</h3>
-                                    <p className="text-xs text-aws-text-dim mt-1">Your account is currently protected via TOTP</p>
+                                    <h3 className="text-[#0f1623] font-medium">
+                                        Authenticator App
+                                    </h3>
+                                    <p className="text-xs text-aws-text-dim mt-1">
+                                        Your account is currently protected via TOTP
+                                    </p>
                                 </div>
                                 <button
                                     onClick={() => setShowDisableForm(true)}
@@ -252,7 +304,9 @@ export default function SecuritySettings() {
                             <div className="mt-4 border border-aws-border rounded-xl p-1 bg-aws-navy-light">
                                 <div className="bg-aws-dark rounded-lg p-4 sm:p-6">
                                     <div className="flex justify-between items-center border-b border-aws-border pb-4 mb-4">
-                                        <h3 className="font-semibold text-[#0f1623]">Setup Two-Factor Auth</h3>
+                                        <h3 className="font-semibold text-[#0f1623]">
+                                            Setup Two-Factor Auth
+                                        </h3>
                                         <button
                                             onClick={() => setShowMFASetup(false)}
                                             className="text-aws-text-dim hover:text-[#0f1623]"
@@ -272,7 +326,9 @@ export default function SecuritySettings() {
                                     <h3 className="text-[#0f1623] font-medium flex items-center gap-2">
                                         Authenticator App
                                     </h3>
-                                    <p className="text-xs text-aws-text-dim mt-1">Use an app like Google Authenticator or Authy</p>
+                                    <p className="text-xs text-aws-text-dim mt-1">
+                                        Use an app like Google Authenticator or Authy
+                                    </p>
                                 </div>
                                 <button
                                     onClick={() => setShowMFASetup(true)}

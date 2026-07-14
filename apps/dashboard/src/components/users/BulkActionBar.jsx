@@ -25,22 +25,12 @@ function getInitials(user) {
 }
 
 function selectedFromIds(ids, users) {
-    const byId = new Map(
-        users.map((user) => [user.id, user])
-    );
+    const byId = new Map(users.map((user) => [user.id, user]));
 
-    return ids
-        .map((id) => byId.get(id))
-        .filter(Boolean);
+    return ids.map((id) => byId.get(id)).filter(Boolean);
 }
 
-function ActionButton({
-    icon,
-    label,
-    onClick,
-    disabled,
-    className,
-}) {
+function ActionButton({ icon, label, onClick, disabled, className }) {
     const Icon = icon;
 
     return (
@@ -52,7 +42,7 @@ function ActionButton({
                 'flex min-h-11 items-center gap-[5px] rounded-[8px] px-3 py-2 text-[11px] font-medium transition-all duration-150',
                 'disabled:cursor-not-allowed disabled:opacity-60',
                 'sm:min-h-0 sm:py-1.5',
-                className
+                className,
             )}
         >
             <Icon size={12} />
@@ -73,10 +63,7 @@ function StatusIndicator({ status }) {
     if (status === 'loading') {
         return (
             <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                <Loader2
-                    size={16}
-                    className="animate-spin"
-                />
+                <Loader2 size={16} className="animate-spin" />
                 Processing...
             </div>
         );
@@ -110,22 +97,14 @@ function getStatusActionText(status) {
     return 'updated';
 }
 
-export default function BulkActionBar({
-    selectedUsers,
-    users,
-    onSuccess,
-    onClear,
-}) {
+export default function BulkActionBar({ selectedUsers, users, onSuccess, onClear }) {
     const [statusState, setStatusState] = useState('idle');
     const [isLoading, setIsLoading] = useState(false);
 
     const selectedCount = selectedUsers.length;
 
     const selectedUserObjects = useMemo(() => {
-        return selectedFromIds(
-            selectedUsers,
-            users
-        );
+        return selectedFromIds(selectedUsers, users);
     }, [selectedUsers, users]);
 
     useEffect(() => {
@@ -157,20 +136,16 @@ export default function BulkActionBar({
     const handleBulkStatus = async (newStatus) => {
         await runAction(async () => {
             try {
-                const response =
-                    await bulkUsers.updateStatus({
-                        userIds: selectedUsers,
-                        status: newStatus,
-                    });
+                const response = await bulkUsers.updateStatus({
+                    userIds: selectedUsers,
+                    status: newStatus,
+                });
 
-                const responseData =
-                    response.data?.data || {};
+                const responseData = response.data?.data || {};
 
-                const actionText =
-                    getStatusActionText(newStatus);
+                const actionText = getStatusActionText(newStatus);
 
-                let message =
-                    `${responseData.succeeded || 0} users ${actionText}`;
+                let message = `${responseData.succeeded || 0} users ${actionText}`;
 
                 if ((responseData.skipped || 0) > 0) {
                     message += `. ${responseData.skipped} skipped.`;
@@ -182,9 +157,7 @@ export default function BulkActionBar({
             } catch {
                 toast.error('Bulk update failed');
 
-                throw new Error(
-                    'bulk-status-failed'
-                );
+                throw new Error('bulk-status-failed');
             }
         });
     };
@@ -192,29 +165,22 @@ export default function BulkActionBar({
     const handleExport = async () => {
         await runAction(async () => {
             try {
-                const response =
-                    await bulkUsers.export({
-                        userIds: selectedUsers,
-                        format: 'csv',
-                    });
+                const response = await bulkUsers.export({
+                    userIds: selectedUsers,
+                    format: 'csv',
+                });
 
-                const blob = new Blob(
-                    [response.data],
-                    {
-                        type: 'text/csv',
-                    }
-                );
+                const blob = new Blob([response.data], {
+                    type: 'text/csv',
+                });
 
-                const url =
-                    URL.createObjectURL(blob);
+                const url = URL.createObjectURL(blob);
 
-                const anchor =
-                    document.createElement('a');
+                const anchor = document.createElement('a');
 
                 anchor.href = url;
 
-                anchor.download =
-                    `users-export-${new Date().toISOString().split('T')[0]}.csv`;
+                anchor.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
 
                 document.body.appendChild(anchor);
 
@@ -224,23 +190,17 @@ export default function BulkActionBar({
 
                 URL.revokeObjectURL(url);
 
-                toast.success(
-                    `${selectedCount} users exported`
-                );
+                toast.success(`${selectedCount} users exported`);
             } catch {
                 toast.error('Export failed');
 
-                throw new Error(
-                    'bulk-export-failed'
-                );
+                throw new Error('bulk-export-failed');
             }
         });
     };
 
     const handleDelete = async () => {
-        const confirmed = globalThis.confirm(
-            `Delete ${selectedCount} users permanently?`
-        );
+        const confirmed = globalThis.confirm(`Delete ${selectedCount} users permanently?`);
 
         if (!confirmed) {
             return;
@@ -253,33 +213,23 @@ export default function BulkActionBar({
                     confirmPhrase: 'DELETE',
                 });
 
-                toast.success(
-                    `${selectedCount} users deleted`
-                );
+                toast.success(`${selectedCount} users deleted`);
 
                 onSuccess?.();
             } catch {
-                toast.error(
-                    'Failed to delete selected users'
-                );
+                toast.error('Failed to delete selected users');
 
-                throw new Error(
-                    'bulk-delete-failed'
-                );
+                throw new Error('bulk-delete-failed');
             }
         });
     };
 
     const handleRoleAssign = () => {
-        toast(
-            `Role assignment for ${selectedCount} users`
-        );
+        toast(`Role assignment for ${selectedCount} users`);
     };
 
     const handleGroupAssign = () => {
-        toast(
-            `Group assignment for ${selectedCount} users`
-        );
+        toast(`Group assignment for ${selectedCount} users`);
     };
 
     if (selectedCount === 0) {
@@ -289,10 +239,7 @@ export default function BulkActionBar({
     return (
         <div className="fixed bottom-4 left-4 right-4 z-50 flex flex-wrap items-center gap-2 rounded-[14px] border border-[rgba(255,255,255,0.08)] bg-[#0f172a] px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-[12px] sm:left-1/2 sm:right-auto sm:max-w-[96vw] sm:-translate-x-1/2">
             <div className="flex w-full items-center gap-2 sm:w-auto">
-                <CheckSquare
-                    size={14}
-                    className="text-indigo-400"
-                />
+                <CheckSquare size={14} className="text-indigo-400" />
 
                 <span className="text-[12px] font-semibold text-white">
                     {selectedCount} users selected
@@ -312,9 +259,7 @@ export default function BulkActionBar({
                     icon={CheckCircle}
                     label="Activate"
                     onClick={() => {
-                        handleBulkStatus(
-                            'ACTIVE'
-                        );
+                        handleBulkStatus('ACTIVE');
                     }}
                     disabled={isLoading}
                     className="border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
@@ -324,9 +269,7 @@ export default function BulkActionBar({
                     icon={Lock}
                     label="Lock"
                     onClick={() => {
-                        handleBulkStatus(
-                            'LOCKED'
-                        );
+                        handleBulkStatus('LOCKED');
                     }}
                     disabled={isLoading}
                     className="border border-amber-500/20 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"
@@ -366,32 +309,25 @@ export default function BulkActionBar({
             </div>
 
             <div className="flex w-full justify-start sm:w-24 sm:justify-end">
-                <StatusIndicator
-                    status={statusState}
-                />
+                <StatusIndicator status={statusState} />
             </div>
 
             {selectedUserObjects.length > 0 ? (
                 <div className="mt-2 flex w-full flex-wrap gap-2 border-t border-white/10 pt-2">
-                    {selectedUserObjects
-                        .slice(0, 5)
-                        .map((user) => (
-                            <div
-                                key={user.id}
-                                className="flex items-center gap-2 rounded-lg bg-white/5 px-2 py-1"
-                            >
-                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-500/20 text-[10px] font-semibold text-indigo-300">
-                                    {getInitials(
-                                        user
-                                    )}
-                                </div>
-
-                                <span className="max-w-[140px] truncate text-xs text-white/70">
-                                    {user.firstName}{' '}
-                                    {user.lastName}
-                                </span>
+                    {selectedUserObjects.slice(0, 5).map((user) => (
+                        <div
+                            key={user.id}
+                            className="flex items-center gap-2 rounded-lg bg-white/5 px-2 py-1"
+                        >
+                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-500/20 text-[10px] font-semibold text-indigo-300">
+                                {getInitials(user)}
                             </div>
-                        ))}
+
+                            <span className="max-w-[140px] truncate text-xs text-white/70">
+                                {user.firstName} {user.lastName}
+                            </span>
+                        </div>
+                    ))}
                 </div>
             ) : null}
         </div>
@@ -399,16 +335,14 @@ export default function BulkActionBar({
 }
 
 BulkActionBar.propTypes = {
-    selectedUsers: PropTypes.arrayOf(
-        PropTypes.string
-    ).isRequired,
+    selectedUsers: PropTypes.arrayOf(PropTypes.string).isRequired,
 
     users: PropTypes.arrayOf(
         PropTypes.shape({
             id: PropTypes.string,
             firstName: PropTypes.string,
             lastName: PropTypes.string,
-        })
+        }),
     ).isRequired,
 
     onSuccess: PropTypes.func,

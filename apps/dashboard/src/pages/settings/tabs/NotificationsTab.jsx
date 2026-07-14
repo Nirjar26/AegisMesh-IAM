@@ -17,15 +17,27 @@ export default function NotificationsTab() {
 
     const updateMutation = useMutation({
         mutationFn: (payload) => settingsAPI.updateNotifications(payload),
-        onSuccess: async () => { toast.success('Notification preferences saved'); setLocalPrefs({}); await queryClient.invalidateQueries({ queryKey: ['settings-notifications'] }); },
-        onError: (err) => toast.error(err.response?.data?.error?.message || 'Failed to update preferences'),
+        onSuccess: async () => {
+            toast.success('Notification preferences saved');
+            setLocalPrefs({});
+            await queryClient.invalidateQueries({ queryKey: ['settings-notifications'] });
+        },
+        onError: (err) =>
+            toast.error(err.response?.data?.error?.message || 'Failed to update preferences'),
     });
 
     const renderCard = (title, rows) => (
         <CardShell>
             <CardHeader title={title} />
             <div>
-                {rows.map((row) => (<NotificationPrefRow key={row.keyEmail} row={row} mergedPrefs={mergedPrefs} setLocalPrefs={setLocalPrefs} />))}
+                {rows.map((row) => (
+                    <NotificationPrefRow
+                        key={row.keyEmail}
+                        row={row}
+                        mergedPrefs={mergedPrefs}
+                        setLocalPrefs={setLocalPrefs}
+                    />
+                ))}
             </div>
         </CardShell>
     );
@@ -35,7 +47,14 @@ export default function NotificationsTab() {
             {renderCard('Security Notifications', NOTIFICATION_ROWS.security)}
             {renderCard('Activity Notifications', NOTIFICATION_ROWS.activity)}
             <div className="flex justify-end pt-2">
-                <button type="button" onClick={() => updateMutation.mutate(localPrefs)} className="px-4 py-2 rounded-lg text-sm bg-[#4f46e5] text-white hover:bg-[#3730a3]" disabled={!Object.keys(localPrefs).length || updateMutation.isPending}>Save Preferences</button>
+                <button
+                    type="button"
+                    onClick={() => updateMutation.mutate(localPrefs)}
+                    className="px-4 py-2 rounded-lg text-sm bg-[#4f46e5] text-white hover:bg-[#3730a3]"
+                    disabled={!Object.keys(localPrefs).length || updateMutation.isPending}
+                >
+                    Save Preferences
+                </button>
             </div>
         </div>
     );

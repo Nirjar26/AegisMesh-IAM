@@ -1,6 +1,6 @@
 ---
 
-## AegisMesh — The IAM That Ships Itself
+## Bastion — The IAM That Ships Itself
 
 > Self-hosted identity & access platform. GitOps-native. ML-powered threat detection. Production-tested on k3s with full zero-trust posture.
 
@@ -44,14 +44,14 @@ Key design constraint: only ArgoCD touches the cluster. The CD pipeline only wri
 
 #### Kubernetes (k3s)
 
-| Layer | What |
-|-------|------|
-| GitOps | ArgoCD + Argo Rollouts (canary) |
-| Secrets | SealedSecrets (encrypted in Git, decrypted in-cluster) |
-| Networking | MetalLB + ingress-nginx + cert-manager + Let's Encrypt (Cloudflare DNS01) |
-| Policy | Kyverno (admission), 12 NetworkPolicies (zero-trust) |
-| Autoscaling | HPA (CPU > 50%, 1–3 replicas) |
-| Deployments | Init containers for ordered boot: `wait-for-db` → `prisma-migrate` → app |
+| Layer       | What                                                                      |
+| ----------- | ------------------------------------------------------------------------- |
+| GitOps      | ArgoCD + Argo Rollouts (canary)                                           |
+| Secrets     | SealedSecrets (encrypted in Git, decrypted in-cluster)                    |
+| Networking  | MetalLB + ingress-nginx + cert-manager + Let's Encrypt (Cloudflare DNS01) |
+| Policy      | Kyverno (admission), 12 NetworkPolicies (zero-trust)                      |
+| Autoscaling | HPA (CPU > 50%, 1–3 replicas)                                             |
+| Deployments | Init containers for ordered boot: `wait-for-db` → `prisma-migrate` → app  |
 
 #### CI/CD
 
@@ -67,13 +67,13 @@ Key design constraint: only ArgoCD touches the cluster. The CD pipeline only wri
 
 #### Observability Stack
 
-| System | Role |
-|--------|------|
-| Datadog APM | Distributed traces across React → Node → Python + log correlation |
-| Prometheus | App metrics (backend:5000/metrics, security-engine:8000/metrics) |
-| Grafana | Auth rates, latency, error budgets, ML model version + risk score distributions |
-| Loki | Container log aggregation |
-| MLflow | Experiment tracking, model registry, hot-swap pipeline versioning |
+| System      | Role                                                                            |
+| ----------- | ------------------------------------------------------------------------------- |
+| Datadog APM | Distributed traces across React → Node → Python + log correlation               |
+| Prometheus  | App metrics (backend:5000/metrics, security-engine:8000/metrics)                |
+| Grafana     | Auth rates, latency, error budgets, ML model version + risk score distributions |
+| Loki        | Container log aggregation                                                       |
+| MLflow      | Experiment tracking, model registry, hot-swap pipeline versioning               |
 
 #### Runtime Security
 
@@ -109,7 +109,7 @@ Three containers, one monorepo, a single `docker-compose up` gets you running.
 ### The "Out of the Box" Details
 
 - The CD pipeline guards against unexpected file changes (`grep -vE` whitelist on the diff) — it will abort if something besides the two patch files was modified
-- Prisma migrations run from the *new* image as an init container — database schema always matches application code
+- Prisma migrations run from the _new_ image as an init container — database schema always matches application code
 - The security engine has a fail-open contract: if the ML service is unreachable, login defaults to low risk — identity never becomes a SPOF
 - MLflow tracks every model version; Grafana charts which version is live and how risk scores are distributed
 - Kubelet credential provider handles ECR auth natively — `imagePullSecrets` are legacy-only
@@ -119,20 +119,20 @@ Three containers, one monorepo, a single `docker-compose up` gets you running.
 
 ### Technologies
 
-| Domain | Stack |
-|--------|-------|
-| Frontend | React 19, Vite 7, Tailwind CSS 4, TanStack Query, Recharts, Zod |
-| Backend | Node.js 22, Express 5, Prisma 6, PostgreSQL 17, Redis 7 |
-| ML Engine | Python 3.11, FastAPI, scikit-learn, pandas, MLflow |
-| Auth | JWT, Passport (Google + GitHub OAuth), TOTP MFA, step-up reauth |
-| Orchestration | Docker Compose, k3s, Kustomize, ArgoCD, Argo Rollouts, Helm |
-| CI/CD | GitHub Actions, AWS ECR, custom overlay patching |
-| IaC | Terraform (AWS), Kustomize overlays (K8s) |
-| Observability | Datadog APM + Logs, Prometheus, Grafana, Loki, MLflow |
-| Security Runtime | Falco, CrowdSec, Kyverno, NetworkPolicies, SealedSecrets |
-| Security CI | CodeQL, SonarCloud, Trivy, Docker multi-stage |
-| Backup | Velero + MinIO, EBS snapshots, pg_dumpall |
+| Domain           | Stack                                                           |
+| ---------------- | --------------------------------------------------------------- |
+| Frontend         | React 19, Vite 7, Tailwind CSS 4, TanStack Query, Recharts, Zod |
+| Backend          | Node.js 22, Express 5, Prisma 6, PostgreSQL 17, Redis 7         |
+| ML Engine        | Python 3.11, FastAPI, scikit-learn, pandas, MLflow              |
+| Auth             | JWT, Passport (Google + GitHub OAuth), TOTP MFA, step-up reauth |
+| Orchestration    | Docker Compose, k3s, Kustomize, ArgoCD, Argo Rollouts, Helm     |
+| CI/CD            | GitHub Actions, AWS ECR, custom overlay patching                |
+| IaC              | Terraform (AWS), Kustomize overlays (K8s)                       |
+| Observability    | Datadog APM + Logs, Prometheus, Grafana, Loki, MLflow           |
+| Security Runtime | Falco, CrowdSec, Kyverno, NetworkPolicies, SealedSecrets        |
+| Security CI      | CodeQL, SonarCloud, Trivy, Docker multi-stage                   |
+| Backup           | Velero + MinIO, EBS snapshots, pg_dumpall                       |
 
 ---
 
-*Self-hosted. GitOps-driven. ML-native. Fully observable.*
+_Self-hosted. GitOps-driven. ML-native. Fully observable._

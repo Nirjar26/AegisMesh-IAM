@@ -3,7 +3,7 @@ kind: Deployment
 
 metadata:
   name: frontend
-  namespace: aegismesh
+  namespace: Bastion
 
 spec:
   replicas: 1
@@ -29,7 +29,7 @@ spec:
 
       containers:
         - name: frontend
-          image: 654654364687.dkr.ecr.us-east-1.amazonaws.com/aegismesh-frontend:b11f3991228702265ef848d95b626b06444d4a64
+          image: 654654364687.dkr.ecr.us-east-1.amazonaws.com/bastion-frontend:b11f3991228702265ef848d95b626b06444d4a64
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
@@ -47,7 +47,7 @@ spec:
 
           env:
             - name: BACKEND_UPSTREAM
-              value: backend.aegismesh.svc.cluster.local:5000
+              value: backend.Bastion.svc.cluster.local:5000
 
           ports:
             - containerPort: 3000
@@ -97,7 +97,7 @@ kind: Service
 
 metadata:
   name: frontend
-  namespace: aegismesh
+  namespace: Bastion
 
 spec:
   selector:

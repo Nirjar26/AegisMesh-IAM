@@ -11,7 +11,9 @@ function authorize(action, resource) {
             }
 
             const result = await permissionService.checkPermission(req.user.id, action, resource);
-            auditPermission.checked(req, req.user.id, action, resource, result).catch(err => logger.warn('Audit log write failed', { error: err.message }));
+            auditPermission
+                .checked(req, req.user.id, action, resource, result)
+                .catch((err) => logger.warn('Audit log write failed', { error: err.message }));
 
             if (result.allowed) {
                 return next();
@@ -23,8 +25,8 @@ function authorize(action, resource) {
                 error: {
                     code: 'RBAC_001',
                     message: 'Access denied',
-                    required: { action, resource }
-                }
+                    required: { action, resource },
+                },
             });
         } catch (error) {
             next(error);

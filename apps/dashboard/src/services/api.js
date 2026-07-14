@@ -83,7 +83,9 @@ const isPublicAuthRequest = (url = '') => PUBLIC_AUTH_PATHS.some((path) => url.i
 api.interceptors.request.use(
     async (config) => {
         // Ensure CSRF token is present for mutating requests
-        const isMutating = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(config.method?.toUpperCase());
+        const isMutating = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(
+            config.method?.toUpperCase(),
+        );
         if (isMutating && !csrfToken && config.url !== '/csrf-token') {
             await fetchCsrfToken();
         }
@@ -99,7 +101,9 @@ api.interceptors.request.use(
 
         return config;
     },
-    (error) => { throw error; }
+    (error) => {
+        throw error;
+    },
 );
 
 // Response interceptor
@@ -131,17 +135,21 @@ api.interceptors.response.use(
         }
 
         // Handle expired CSRF token
-        if (error.response?.status === 403 && (responseCode === 'EBADCSRFTOKEN' || responseCode === 'CSRF_ERROR')) {
+        if (
+            error.response?.status === 403 &&
+            (responseCode === 'EBADCSRFTOKEN' || responseCode === 'CSRF_ERROR')
+        ) {
             await fetchCsrfToken();
             originalRequest.headers[CSRF_TOKEN_HEADER] = csrfToken;
             return api(originalRequest);
         }
 
-        const shouldRetry = error.response?.status === 401
-            && originalRequest
-            && !originalRequest._retry
-            && !isRefreshRequest(originalRequest.url || '')
-            && !isPublicAuthRequest(originalRequest.url || '');
+        const shouldRetry =
+            error.response?.status === 401 &&
+            originalRequest &&
+            !originalRequest._retry &&
+            !isRefreshRequest(originalRequest.url || '') &&
+            !isPublicAuthRequest(originalRequest.url || '');
 
         if (shouldRetry) {
             if (isRefreshing) {
@@ -169,7 +177,7 @@ api.interceptors.response.use(
         }
 
         throw error;
-    }
+    },
 );
 
 // Auth API functions
@@ -253,9 +261,10 @@ export const bulkUsers = {
     assignRoles: (data) => api.post('/users/bulk/roles', data),
     assignGroups: (data) => api.post('/users/bulk/groups', data),
     delete: (data) => api.post('/users/bulk/delete', data),
-    export: (data) => api.post('/users/bulk/export', data, {
-        responseType: 'text',
-    }),
+    export: (data) =>
+        api.post('/users/bulk/export', data, {
+            responseType: 'text',
+        }),
 };
 
 export const roleTemplates = {
@@ -302,7 +311,8 @@ export const settingsAPI = {
     getMfaSetup: () => api.get('/settings/security/mfa/setup'),
     verifyMfa: (data) => api.post('/settings/security/mfa/verify', data),
     disableMfa: (credentials = {}) => api.delete('/settings/security/mfa', { data: credentials }),
-    regenerateBackupCodes: (credentials = {}) => api.post('/settings/security/mfa/backup-codes/regenerate', credentials),
+    regenerateBackupCodes: (credentials = {}) =>
+        api.post('/settings/security/mfa/backup-codes/regenerate', credentials),
     getLoginHistory: () => api.get('/settings/security/login-history'),
     getTrustedDevices: () => api.get('/settings/security/trusted-devices'),
     revokeTrustedDevice: (deviceId) => api.delete(`/settings/security/trusted-devices/${deviceId}`),
@@ -311,7 +321,8 @@ export const settingsAPI = {
     // Sessions
     getSessions: () => api.get('/settings/sessions'),
     revokeSession: (sessionId) => api.delete(`/settings/sessions/${sessionId}`),
-    revokeAllOtherSessions: (credentials = {}) => api.delete('/settings/sessions', { data: credentials }),
+    revokeAllOtherSessions: (credentials = {}) =>
+        api.delete('/settings/sessions', { data: credentials }),
 
     // Notifications
     getNotifications: () => api.get('/settings/notifications'),
@@ -320,12 +331,15 @@ export const settingsAPI = {
     // Organization
     getOrganization: () => api.get('/settings/organization'),
     updateOrganization: (data) => api.patch('/settings/organization', data),
-    exportOrganizationData: (credentials = {}) => api.post('/settings/organization/export', credentials, { responseType: 'blob' }),
-    resetOrganizationPolicies: (credentials = {}) => api.post('/settings/organization/reset-policies', credentials),
+    exportOrganizationData: (credentials = {}) =>
+        api.post('/settings/organization/export', credentials, { responseType: 'blob' }),
+    resetOrganizationPolicies: (credentials = {}) =>
+        api.post('/settings/organization/reset-policies', credentials),
 
     // API Keys
     getApiKeys: () => api.get('/settings/api-keys'),
-    createApiKey: (data, credentials = {}) => api.post('/settings/api-keys', { ...data, ...credentials }),
+    createApiKey: (data, credentials = {}) =>
+        api.post('/settings/api-keys', { ...data, ...credentials }),
     revokeApiKey: (tokenId) => api.delete(`/settings/api-keys/${tokenId}`),
 };
 

@@ -10,15 +10,19 @@ function buildWhere(w) {
     if (w.action) p.push(Prisma.sql`"action" = ${w.action}`);
     if (w.category) p.push(Prisma.sql`"category" = ${w.category}`);
     if (w.result) p.push(Prisma.sql`"result" = ${w.result}`);
-    if (w.ipAddress?.contains) p.push(Prisma.sql`"ipAddress" LIKE ${'%' + w.ipAddress.contains + '%'}`);
+    if (w.ipAddress?.contains)
+        p.push(Prisma.sql`"ipAddress" LIKE ${'%' + w.ipAddress.contains + '%'}`);
     if (w.createdAt?.gte) p.push(Prisma.sql`"createdAt" >= ${w.createdAt.gte}`);
     if (w.createdAt?.lte) p.push(Prisma.sql`"createdAt" <= ${w.createdAt.lte}`);
     if (w.OR?.length) {
-        const ors = w.OR.flatMap(o => {
+        const ors = w.OR.flatMap((o) => {
             const q = [];
-            if (o.action?.contains) q.push(Prisma.sql`"action" ILIKE ${'%' + o.action.contains + '%'}`);
-            if (o.resource?.contains) q.push(Prisma.sql`"resource" ILIKE ${'%' + o.resource.contains + '%'}`);
-            if (o.ipAddress?.contains) q.push(Prisma.sql`"ipAddress" ILIKE ${'%' + o.ipAddress.contains + '%'}`);
+            if (o.action?.contains)
+                q.push(Prisma.sql`"action" ILIKE ${'%' + o.action.contains + '%'}`);
+            if (o.resource?.contains)
+                q.push(Prisma.sql`"resource" ILIKE ${'%' + o.resource.contains + '%'}`);
+            if (o.ipAddress?.contains)
+                q.push(Prisma.sql`"ipAddress" ILIKE ${'%' + o.ipAddress.contains + '%'}`);
             return q;
         });
         if (ors.length) p.push(Prisma.sql`(${Prisma.join(ors, ' OR ')})`);
@@ -32,9 +36,16 @@ function buildWhere(w) {
 exports.getAuditLogs = async (req, res, next) => {
     try {
         const {
-            page: rawPage, limit: rawLimit,
-            userId, action, category, result,
-            startDate, endDate, search, ipAddress
+            page: rawPage,
+            limit: rawLimit,
+            userId,
+            action,
+            category,
+            result,
+            startDate,
+            endDate,
+            search,
+            ipAddress,
         } = req.query;
 
         const { page, limit, skip } = parsePagination({ page: rawPage, limit: rawLimit });
@@ -64,9 +75,11 @@ exports.getAuditLogs = async (req, res, next) => {
                 skip,
                 take: limit,
                 orderBy: { createdAt: 'desc' },
-                include: { user: { select: { id: true, email: true, firstName: true, lastName: true } } }
+                include: {
+                    user: { select: { id: true, email: true, firstName: true, lastName: true } },
+                },
             }),
-            prisma.auditLog.count({ where })
+            prisma.auditLog.count({ where }),
         ]);
 
         const totalPages = Math.ceil(total / limit);
@@ -91,20 +104,33 @@ exports.getAuditLogs = async (req, res, next) => {
             WHERE ${wc}
         `;
 
-        const topActions = (summary.topActions || []).map(a => ({ action: a.action, count: a.count }));
+        const topActions = (summary.topActions || []).map((a) => ({
+            action: a.action,
+            count: a.count,
+        }));
 
         res.json({
             success: true,
             data: logs,
-            pagination: { total, page, limit, totalPages, hasNext: page < totalPages, hasPrev: page > 1 },
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages,
+                hasNext: page < totalPages,
+                hasPrev: page > 1,
+            },
             summary: {
                 totalEvents: total,
-                failureRate: total > 0 ? Math.round((summary.failureCount / total) * 100 * 100) / 100 : 0,
+                failureRate:
+                    total > 0 ? Math.round((summary.failureCount / total) * 100 * 100) / 100 : 0,
                 topActions,
-                uniqueUsers: summary.uniqueUsers
-            }
+                uniqueUsers: summary.uniqueUsers,
+            },
         });
-    } catch (error) { next(error); }
+    } catch (error) {
+        next(error);
+    }
 };
 
 /**
@@ -123,20 +149,32 @@ exports.getStats = async (req, res, next) => {
             const results = await prisma.auditLog.groupBy({
                 by: ['action'],
                 where,
-                _count: { _all: true }
+                _count: { _all: true },
             });
 
             const stats = {
                 totalEvents: results.reduce((sum, r) => sum + r._count._all, 0),
-                loginAttempts: results.find(r => r.action === 'LOGIN')?._count._all || 0,
-                failedLogins: results.find(r => r.action === 'LOGIN_FAILED')?._count._all || 0,
-                newUsers: results.find(r => r.action === 'REGISTER')?._count._all || 0,
-                permissionDenied: results.find(r => r.action === 'PERMISSION_DENIED')?._count._all || 0
+                loginAttempts: results.find((r) => r.action === 'LOGIN')?._count._all || 0,
+                failedLogins: results.find((r) => r.action === 'LOGIN_FAILED')?._count._all || 0,
+                newUsers: results.find((r) => r.action === 'REGISTER')?._count._all || 0,
+                permissionDenied:
+                    results.find((r) => r.action === 'PERMISSION_DENIED')?._count._all || 0,
             };
             return stats;
         }
 
-        const [last24h, last7d, last9d, last30d, totalUsers, failedIPsRaw, topActionsRaw, catRaw, hourlyRaw, dailyRaw] = await Promise.all([
+        const [
+            last24h,
+            last7d,
+            last9d,
+            last30d,
+            totalUsers,
+            failedIPsRaw,
+            topActionsRaw,
+            catRaw,
+            hourlyRaw,
+            dailyRaw,
+        ] = await Promise.all([
             getTimeStats(h24),
             getTimeStats(d7),
             getTimeStats(d9),
@@ -148,7 +186,7 @@ exports.getStats = async (req, res, next) => {
                 _count: { ipAddress: true },
                 _max: { createdAt: true },
                 orderBy: { _count: { ipAddress: 'desc' } },
-                take: 10
+                take: 10,
             }),
             prisma.$queryRaw`
                 SELECT 
@@ -164,7 +202,7 @@ exports.getStats = async (req, res, next) => {
                 by: ['category'],
                 where: { createdAt: { gte: d30 } },
                 _count: { category: true },
-                orderBy: { _count: { category: 'desc' } }
+                orderBy: { _count: { category: 'desc' } },
             }),
             prisma.$queryRaw`
                 SELECT EXTRACT(HOUR FROM "createdAt")::int as hour, COUNT(*)::int as count
@@ -177,27 +215,33 @@ exports.getStats = async (req, res, next) => {
                 FROM "AuditLog"
                 WHERE "createdAt" >= ${d30}
                 GROUP BY DATE("createdAt")
-                ORDER BY date`
+                ORDER BY date`,
         ]);
 
         const topFailedIPs = failedIPsRaw
-            .filter(i => i.ipAddress)
-            .map(i => ({ ip: i.ipAddress, count: i._count.ipAddress, lastSeen: i._max.createdAt }));
+            .filter((i) => i.ipAddress)
+            .map((i) => ({
+                ip: i.ipAddress,
+                count: i._count.ipAddress,
+                lastSeen: i._max.createdAt,
+            }));
 
-        const topActions = topActionsRaw.map(a => ({
+        const topActions = topActionsRaw.map((a) => ({
             action: a.action,
             count: a.count,
-            successRate: a.count > 0 ? Math.round((a.successCount / a.count) * 100) : 0
+            successRate: a.count > 0 ? Math.round((a.successCount / a.count) * 100) : 0,
         }));
 
         const totalCat = catRaw.reduce((s, c) => s + c._count.category, 0);
-        const categoryBreakdown = catRaw.map(c => ({
-            category: c.category, count: c._count.category,
-            percentage: totalCat > 0 ? Math.round((c._count.category / totalCat) * 100 * 100) / 100 : 0
+        const categoryBreakdown = catRaw.map((c) => ({
+            category: c.category,
+            count: c._count.category,
+            percentage:
+                totalCat > 0 ? Math.round((c._count.category / totalCat) * 100 * 100) / 100 : 0,
         }));
 
         const hourlyActivity = Array.from({ length: 24 }, (_, i) => {
-            const found = hourlyRaw.find(h => h.hour === i);
+            const found = hourlyRaw.find((h) => h.hour === i);
             return { hour: i, count: found ? found.count : 0 };
         });
 
@@ -209,23 +253,37 @@ exports.getStats = async (req, res, next) => {
             const day = String(d.getDate()).padStart(2, '0');
             const dateStr = `${year}-${month}-${day}`;
 
-            const found = dailyRaw.find(r => {
-                const rawDate = r.date instanceof Date 
-                    ? `${r.date.getFullYear()}-${String(r.date.getMonth() + 1).padStart(2, '0')}-${String(r.date.getDate()).padStart(2, '0')}`
-                    : String(r.date).split('T')[0];
+            const found = dailyRaw.find((r) => {
+                const rawDate =
+                    r.date instanceof Date
+                        ? `${r.date.getFullYear()}-${String(r.date.getMonth() + 1).padStart(2, '0')}-${String(r.date.getDate()).padStart(2, '0')}`
+                        : String(r.date).split('T')[0];
                 return rawDate === dateStr;
             });
             dailyActivity.push({
                 date: dateStr,
-                count: found ? found.count : 0
+                count: found ? found.count : 0,
             });
         }
 
         res.json({
             success: true,
-            data: { last24h, last7d, last9d, last30d, totalUsers, topFailedIPs, topActions, categoryBreakdown, hourlyActivity, dailyActivity }
+            data: {
+                last24h,
+                last7d,
+                last9d,
+                last30d,
+                totalUsers,
+                topFailedIPs,
+                topActions,
+                categoryBreakdown,
+                hourlyActivity,
+                dailyActivity,
+            },
         });
-    } catch (error) { next(error); }
+    } catch (error) {
+        next(error);
+    }
 };
 
 /**
@@ -245,16 +303,19 @@ exports.getSecurityAlerts = async (req, res, next) => {
             _count: { ipAddress: true },
             _min: { createdAt: true },
             _max: { createdAt: true },
-            having: { ipAddress: { _count: { gt: 10 } } }
+            having: { ipAddress: { _count: { gt: 10 } } },
         });
         for (const bf of bruteForce) {
             if (bf.ipAddress) {
                 alerts.push({
-                    type: 'BRUTE_FORCE', severity: 'CRITICAL',
-                    userId: null, ipAddress: bf.ipAddress,
+                    type: 'BRUTE_FORCE',
+                    severity: 'CRITICAL',
+                    userId: null,
+                    ipAddress: bf.ipAddress,
                     count: bf._count.ipAddress,
-                    firstSeen: bf._min.createdAt, lastSeen: bf._max.createdAt,
-                    details: `${bf._count.ipAddress} failed login attempts from ${bf.ipAddress}`
+                    firstSeen: bf._min.createdAt,
+                    lastSeen: bf._max.createdAt,
+                    details: `${bf._count.ipAddress} failed login attempts from ${bf.ipAddress}`,
                 });
             }
         }
@@ -263,14 +324,18 @@ exports.getSecurityAlerts = async (req, res, next) => {
         const lockouts = await prisma.auditLog.findMany({
             where: { action: 'ACCOUNT_LOCKED', createdAt: { gte: h24 } },
             include: { user: { select: { email: true } } },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
         });
         for (const lo of lockouts) {
             alerts.push({
-                type: 'ACCOUNT_LOCKOUT', severity: 'HIGH',
-                userId: lo.userId, ipAddress: lo.ipAddress,
-                count: 1, firstSeen: lo.createdAt, lastSeen: lo.createdAt,
-                details: `Account locked for ${lo.user?.email || lo.userId}`
+                type: 'ACCOUNT_LOCKOUT',
+                severity: 'HIGH',
+                userId: lo.userId,
+                ipAddress: lo.ipAddress,
+                count: 1,
+                firstSeen: lo.createdAt,
+                lastSeen: lo.createdAt,
+                details: `Account locked for ${lo.user?.email || lo.userId}`,
             });
         }
 
@@ -281,16 +346,19 @@ exports.getSecurityAlerts = async (req, res, next) => {
             _count: { userId: true },
             _min: { createdAt: true },
             _max: { createdAt: true },
-            having: { userId: { _count: { gt: 5 } } }
+            having: { userId: { _count: { gt: 5 } } },
         });
         for (const pa of permAbuse) {
             if (pa.userId) {
                 alerts.push({
-                    type: 'PERMISSION_ABUSE', severity: 'MEDIUM',
-                    userId: pa.userId, ipAddress: null,
+                    type: 'PERMISSION_ABUSE',
+                    severity: 'MEDIUM',
+                    userId: pa.userId,
+                    ipAddress: null,
                     count: pa._count.userId,
-                    firstSeen: pa._min.createdAt, lastSeen: pa._max.createdAt,
-                    details: `${pa._count.userId} permission denied events for user ${pa.userId}`
+                    firstSeen: pa._min.createdAt,
+                    lastSeen: pa._max.createdAt,
+                    details: `${pa._count.userId} permission denied events for user ${pa.userId}`,
                 });
             }
         }
@@ -300,16 +368,19 @@ exports.getSecurityAlerts = async (req, res, next) => {
             by: ['ipAddress'],
             where: { action: 'RATE_LIMIT_EXCEEDED', createdAt: { gte: h24 } },
             _count: { ipAddress: true },
-            _max: { createdAt: true }
+            _max: { createdAt: true },
         });
         for (const rl of rateLimits) {
             if (rl.ipAddress) {
                 alerts.push({
-                    type: 'RATE_LIMIT', severity: rl._count.ipAddress > 10 ? 'HIGH' : 'LOW',
-                    userId: null, ipAddress: rl.ipAddress,
+                    type: 'RATE_LIMIT',
+                    severity: rl._count.ipAddress > 10 ? 'HIGH' : 'LOW',
+                    userId: null,
+                    ipAddress: rl.ipAddress,
                     count: rl._count.ipAddress,
-                    firstSeen: rl._max.createdAt, lastSeen: rl._max.createdAt,
-                    details: `Rate limit exceeded ${rl._count.ipAddress} time(s) from ${rl.ipAddress}`
+                    firstSeen: rl._max.createdAt,
+                    lastSeen: rl._max.createdAt,
+                    details: `Rate limit exceeded ${rl._count.ipAddress} time(s) from ${rl.ipAddress}`,
                 });
             }
         }
@@ -320,7 +391,9 @@ exports.getSecurityAlerts = async (req, res, next) => {
         });
 
         res.json({ success: true, data: { alerts, totalAlerts: alerts.length } });
-    } catch (error) { next(error); }
+    } catch (error) {
+        next(error);
+    }
 };
 
 /**
@@ -333,11 +406,15 @@ exports.getAuditLog = async (req, res, next) => {
         }
         const log = await prisma.auditLog.findUnique({
             where: { id: req.params.id },
-            include: { user: { select: { id: true, email: true, firstName: true, lastName: true } } }
+            include: {
+                user: { select: { id: true, email: true, firstName: true, lastName: true } },
+            },
         });
         if (!log) return res.status(404).json({ success: false, error: 'Audit log not found' });
         res.json({ success: true, data: log });
-    } catch (error) { next(error); }
+    } catch (error) {
+        next(error);
+    }
 };
 
 /**
@@ -345,7 +422,15 @@ exports.getAuditLog = async (req, res, next) => {
  */
 exports.getUserAuditLogs = async (req, res, next) => {
     try {
-        const { page: rawPage, limit: rawLimit, action, category, result, startDate, endDate } = req.query;
+        const {
+            page: rawPage,
+            limit: rawLimit,
+            action,
+            category,
+            result,
+            startDate,
+            endDate,
+        } = req.query;
         const { page, limit, skip } = parsePagination({ page: rawPage, limit: rawLimit });
         const where = { userId: req.params.userId };
 
@@ -360,20 +445,33 @@ exports.getUserAuditLogs = async (req, res, next) => {
 
         const [logs, total] = await Promise.all([
             prisma.auditLog.findMany({
-                where, skip, take: Number.parseInt(limit),
+                where,
+                skip,
+                take: Number.parseInt(limit),
                 orderBy: { createdAt: 'desc' },
-                include: { user: { select: { id: true, email: true, firstName: true, lastName: true } } }
+                include: {
+                    user: { select: { id: true, email: true, firstName: true, lastName: true } },
+                },
             }),
-            prisma.auditLog.count({ where })
+            prisma.auditLog.count({ where }),
         ]);
 
         const totalPages = Math.ceil(total / limit);
         res.json({
             success: true,
             data: logs,
-            pagination: { total, page, limit, totalPages, hasNext: page < totalPages, hasPrev: page > 1 }
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages,
+                hasNext: page < totalPages,
+                hasPrev: page > 1,
+            },
         });
-    } catch (error) { next(error); }
+    } catch (error) {
+        next(error);
+    }
 };
 
 /**
@@ -397,10 +495,11 @@ exports.exportLogs = async (req, res, next) => {
             where,
             orderBy: { createdAt: 'desc' },
             take: 10000,
-            include: { user: { select: { email: true } } }
+            include: { user: { select: { email: true } } },
         });
 
-        const header = 'id,timestamp,userId,userEmail,action,category,resource,result,ipAddress,userAgent,errorCode,metadata\n';
+        const header =
+            'id,timestamp,userId,userEmail,action,category,resource,result,ipAddress,userAgent,errorCode,metadata\n';
         const csvEscape = (val) => {
             if (val == null) return '';
             const str = String(val);
@@ -410,20 +509,34 @@ exports.exportLogs = async (req, res, next) => {
             return str;
         };
 
-        const rows = logs.map(log =>
-            [
-                log.id, log.createdAt?.toISOString(), log.userId, log.user?.email,
-                log.action, log.category, log.resource, log.result,
-                log.ipAddress, log.userAgent, log.errorCode,
-                log.metadata ? JSON.stringify(log.metadata) : ''
-            ].map(csvEscape).join(',')
-        ).join('\n');
+        const rows = logs
+            .map((log) =>
+                [
+                    log.id,
+                    log.createdAt?.toISOString(),
+                    log.userId,
+                    log.user?.email,
+                    log.action,
+                    log.category,
+                    log.resource,
+                    log.result,
+                    log.ipAddress,
+                    log.userAgent,
+                    log.errorCode,
+                    log.metadata ? JSON.stringify(log.metadata) : '',
+                ]
+                    .map(csvEscape)
+                    .join(','),
+            )
+            .join('\n');
 
         const dateStr = new Date().toISOString().split('T')[0];
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="audit-logs-${dateStr}.csv"`);
         res.send(header + rows);
-    } catch (error) { next(error); }
+    } catch (error) {
+        next(error);
+    }
 };
 
 /**
@@ -434,7 +547,9 @@ exports.cleanupLogs = async (req, res, next) => {
         const { olderThanDays: rawDays = 90, category: cat } = req.body || {};
         const olderThanDays = Number.isFinite(rawDays) ? rawDays : Number.parseInt(rawDays, 10);
         if (!olderThanDays || olderThanDays < 1 || olderThanDays > 3650) {
-            return res.status(400).json({ success: false, error: 'olderThanDays must be between 1 and 3650' });
+            return res
+                .status(400)
+                .json({ success: false, error: 'olderThanDays must be between 1 and 3650' });
         }
         const cutoff = new Date();
         cutoff.setDate(cutoff.getDate() - olderThanDays);
@@ -450,11 +565,19 @@ exports.cleanupLogs = async (req, res, next) => {
             category: 'SYSTEM',
             resource: 'audit-logs',
             result: 'SUCCESS',
-            metadata: { olderThanDays, deletedCount: deleted.count, cutoffDate: cutoff }
+            metadata: { olderThanDays, deletedCount: deleted.count, cutoffDate: cutoff },
         });
 
-        res.json({ success: true, data: { deleted: deleted.count, message: `Deleted ${deleted.count} audit logs older than ${olderThanDays} days` } });
-    } catch (error) { next(error); }
+        res.json({
+            success: true,
+            data: {
+                deleted: deleted.count,
+                message: `Deleted ${deleted.count} audit logs older than ${olderThanDays} days`,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
 };
 
 /**
@@ -474,10 +597,12 @@ exports.streamLogs = async (req, res, _next) => {
 
     // Ping every 30s
     const pingInterval = setInterval(() => {
-        try { res.write(`data: ${JSON.stringify({ type: 'ping' })}\n\n`); }
-        catch {
+        try {
+            res.write(`data: ${JSON.stringify({ type: 'ping' })}\n\n`);
+        } catch {
             logger.warn('SSE ping write failed, cleaning up client');
-            clearInterval(pingInterval); removeSSEClient(client);
+            clearInterval(pingInterval);
+            removeSSEClient(client);
         }
     }, 30000);
 

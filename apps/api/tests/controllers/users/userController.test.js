@@ -136,7 +136,14 @@ describe('getUsers', () => {
         prisma.user.count.mockResolvedValue(0);
 
         const req = mockReq({
-            query: { search: 'john', status: 'ACTIVE', mfaEnabled: 'true', roleId: 'role-2', page: '1', limit: '10' },
+            query: {
+                search: 'john',
+                status: 'ACTIVE',
+                mfaEnabled: 'true',
+                roleId: 'role-2',
+                page: '1',
+                limit: '10',
+            },
         });
         const res = mockRes();
 
@@ -150,7 +157,7 @@ describe('getUsers', () => {
                     mfaEnabled: true,
                     userRoles: { some: { roleId: 'role-2' } },
                 }),
-            })
+            }),
         );
     });
 
@@ -250,7 +257,13 @@ describe('createUser', () => {
         });
 
         const req = mockReq({
-            body: { email: 'new@example.com', firstName: 'New', lastName: 'User', password: 'P@ss1234', roleIds: ['role-1', 'role-2'] },
+            body: {
+                email: 'new@example.com',
+                firstName: 'New',
+                lastName: 'User',
+                password: 'P@ss1234',
+                roleIds: ['role-1', 'role-2'],
+            },
         });
         const res = mockRes();
 
@@ -279,7 +292,11 @@ describe('createUser', () => {
         prisma.user.findUnique.mockRejectedValue(new Error('DB error'));
         const res = mockRes();
 
-        await userController.createUser(mockReq({ body: { email: 'test@example.com' } }), res, next);
+        await userController.createUser(
+            mockReq({ body: { email: 'test@example.com' } }),
+            res,
+            next,
+        );
 
         expect(next).toHaveBeenCalled();
     });
@@ -373,7 +390,11 @@ describe('updateUserStatus', () => {
     });
 
     it('prevents self-status change', async () => {
-        const req = mockReq({ params: { id: 'admin-1' }, body: { status: 'INACTIVE' }, user: { id: 'admin-1' } });
+        const req = mockReq({
+            params: { id: 'admin-1' },
+            body: { status: 'INACTIVE' },
+            user: { id: 'admin-1' },
+        });
         const res = mockRes();
 
         await userController.updateUserStatus(req, res, next);
@@ -387,7 +408,11 @@ describe('updateUserStatus', () => {
         prisma.user.findUnique.mockResolvedValue(user);
         prisma.user.count.mockResolvedValue(1);
 
-        const req = mockReq({ params: { id: 'user-1' }, body: { status: 'LOCKED' }, user: { id: 'admin-1', role: 'SuperAdmin' } });
+        const req = mockReq({
+            params: { id: 'user-1' },
+            body: { status: 'LOCKED' },
+            user: { id: 'admin-1', role: 'SuperAdmin' },
+        });
         const res = mockRes();
 
         await userController.updateUserStatus(req, res, next);
@@ -399,7 +424,11 @@ describe('updateUserStatus', () => {
     it('passes errors to next', async () => {
         prisma.user.findUnique.mockRejectedValue(new Error('DB error'));
 
-        await userController.updateUserStatus(mockReq({ params: { id: 'user-1' }, body: { status: 'ACTIVE' } }), mockRes(), next);
+        await userController.updateUserStatus(
+            mockReq({ params: { id: 'user-1' }, body: { status: 'ACTIVE' } }),
+            mockRes(),
+            next,
+        );
 
         expect(next).toHaveBeenCalled();
     });
@@ -411,7 +440,11 @@ describe('verifyUserEmail', () => {
     it('verifies email and sets status to ACTIVE if INACTIVE', async () => {
         const inactiveUser = { ...MOCK_USER, emailVerified: false, status: 'INACTIVE' };
         prisma.user.findUnique.mockResolvedValue(inactiveUser);
-        prisma.user.update.mockResolvedValue({ ...inactiveUser, emailVerified: true, status: 'ACTIVE' });
+        prisma.user.update.mockResolvedValue({
+            ...inactiveUser,
+            emailVerified: true,
+            status: 'ACTIVE',
+        });
 
         const req = mockReq({ params: { id: 'user-1' } });
         const res = mockRes();
@@ -422,7 +455,7 @@ describe('verifyUserEmail', () => {
         expect(prisma.user.update).toHaveBeenCalledWith(
             expect.objectContaining({
                 data: expect.objectContaining({ emailVerified: true, emailVerifyToken: null }),
-            })
+            }),
         );
     });
 
@@ -453,7 +486,11 @@ describe('verifyUserEmail', () => {
     it('passes errors to next', async () => {
         prisma.user.findUnique.mockRejectedValue(new Error('DB error'));
 
-        await userController.verifyUserEmail(mockReq({ params: { id: 'user-1' } }), mockRes(), next);
+        await userController.verifyUserEmail(
+            mockReq({ params: { id: 'user-1' } }),
+            mockRes(),
+            next,
+        );
 
         expect(next).toHaveBeenCalled();
     });

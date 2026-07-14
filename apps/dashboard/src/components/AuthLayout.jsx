@@ -27,48 +27,67 @@ export default function AuthLayout({ children, title, subtitle }) {
                             A
                         </div>
                         <div>
-                            <h1 className="text-2xl font-black tracking-tight text-black">AegisMesh</h1>
-                            <p className="mt-1 text-sm text-black/80">Enterprise Identity &amp; Access Management</p>
+                            <h1 className="text-2xl font-black tracking-tight text-black">
+                                Bastion
+                            </h1>
+                            <p className="mt-1 text-sm text-black/80">
+                                Identity &amp; Access Management
+                            </p>
                         </div>
                     </Link>
 
                     <div className="max-w-xl">
-                        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-black">Identity Control Surface</p>
+                        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-black">
+                            Identity Control Surface
+                        </p>
                         <h2 className="mt-6 text-5xl font-black leading-[0.95] tracking-tight text-black">
                             Secure every login, session, and access decision.
                         </h2>
                         <p className="mt-6 max-w-lg text-base leading-7 text-black">
-                            Operate identity with live audit visibility, adaptive security, and policy controls built for high-trust environments.
+                            Operate identity with live audit visibility, adaptive security, and
+                            policy controls built for high-trust environments.
                         </p>
                     </div>
 
-                    <p className="text-xs text-black/80">© 2026 AegisMesh · Secure Authentication Platform</p>
-                </div>
+                    <p className="text-xs text-black/80">
+                        © 2026 Bastion · Secure Authentication Platform
+                        </p>
+                    </div>
 
-                <div className="flex w-full items-center justify-center px-6 py-8 lg:w-1/2 lg:px-12 lg:py-12">
-                    <div className="w-full max-w-md animate-fade-in-up">
-                        <Link to="/" className="mb-6 inline-flex items-center gap-3 lg:hidden">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-aws-orange/12 text-sm font-black text-aws-orange">
-                                A
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-black tracking-tight text-black">AegisMesh</h1>
-                                <p className="text-xs text-black/80">Enterprise Identity &amp; Access Management</p>
-                            </div>
-                        </Link>
+                    <div className="flex w-full items-center justify-center px-6 py-8 lg:w-1/2 lg:px-12 lg:py-12">
+                        <div className="w-full max-w-md animate-fade-in-up">
+                            <Link to="/" className="mb-6 inline-flex items-center gap-3 lg:hidden">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-aws-orange/12 text-sm font-black text-aws-orange">
+                                    A
+                                </div>
+                                <div>
+                                    <h1 className="text-xl font-black tracking-tight text-black">
+                                        Bastion
+                                    </h1>
+                                    <p className="text-xs text-black/80">
+                                        Identity &amp; Access Management
+                                    </p>
+                                </div>
+                            </Link>
 
                         <div className="glass rounded-2xl p-6 py-8 shadow-2xl shadow-black/40 sm:p-8 lg:px-12 lg:py-12">
                             {(title || subtitle) && (
                                 <div className="mb-8 text-center">
-                                    {title ? <h2 className="mb-2 text-2xl font-bold text-[#0f1623]">{title}</h2> : null}
-                                    {subtitle ? <p className="text-sm text-aws-text-dim">{subtitle}</p> : null}
+                                    {title ? (
+                                        <h2 className="mb-2 text-2xl font-bold text-[#0f1623]">
+                                            {title}
+                                        </h2>
+                                    ) : null}
+                                    {subtitle ? (
+                                        <p className="text-sm text-aws-text-dim">{subtitle}</p>
+                                    ) : null}
                                 </div>
                             )}
                             {children}
                         </div>
 
                         <p className="mt-6 text-center text-xs text-aws-text-dim lg:hidden">
-                            © 2026 AegisMesh · Secure Authentication Platform
+                            © 2026 Bastion · Secure Authentication Platform
                         </p>
                     </div>
                 </div>
@@ -82,5 +101,3 @@ AuthLayout.propTypes = {
     title: PropTypes.string,
     subtitle: PropTypes.string,
 };
-
-
