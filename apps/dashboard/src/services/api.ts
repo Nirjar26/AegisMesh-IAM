@@ -1,13 +1,11 @@
-import axios from 'axios';
+import axios, { type AxiosRequestConfig } from 'axios';
 import { logger } from '../utils/logger';
 import type { QueryParams } from './types';
 import type { ApiResponse, PaginatedResponse, User } from '@bastion/types';
 
 interface InterceptorError {
-    config?: Record<string, unknown> & {
+    config?: AxiosRequestConfig & {
         _retry?: boolean;
-        url?: string;
-        headers?: Record<string, string>;
     };
     response?: { status?: number; data?: { code?: string; error?: { code?: string } } };
 }
@@ -150,7 +148,7 @@ api.interceptors.response.use(
             if (originalRequest.headers && csrfToken) {
                 originalRequest.headers[CSRF_TOKEN_HEADER] = csrfToken;
             }
-            return api(originalRequest as any);
+            return api(originalRequest);
         }
 
         const shouldRetry =

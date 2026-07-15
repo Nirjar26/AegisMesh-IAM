@@ -51,6 +51,7 @@ const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
         secure: process.env.NODE_ENV === 'production',
     },
     getTokenFromRequest: (req) => req.headers['x-csrf-token'],
+    skipCsrfProtection: (req) => csrfExemptPaths.has(req.path),
 });
 
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
@@ -134,13 +135,7 @@ const csrfExemptPaths = new Set([
     '/api/auth/oauth/github/callback',
 ]);
 
-app.use((req, res, next) => {
-    const isMutating = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
-    if (!isMutating || csrfExemptPaths.has(req.path)) {
-        return next();
-    }
-    doubleCsrfProtection(req, res, next);
-});
+app.use(doubleCsrfProtection);
 
 // ═══════════════════════════════════════
 // RATE LIMITING
