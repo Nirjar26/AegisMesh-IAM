@@ -23,7 +23,7 @@ WORKDIR /app
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev=17.10-0+deb13u1 \
-    curl=8.14.1-2+deb13u3 \
+    curl \
     && rm -rf /var/lib/apt/lists/* \
     && addgroup --system --gid 10001 securitygroup \
     && adduser --system --uid 10001 --gid 10001 securityuser
