@@ -43,7 +43,7 @@ async function refreshAccessToken({ refreshToken, req }) {
         refreshToken,
         session.userId,
         deviceInfo,
-        ipAddress
+        ipAddress,
     );
 
     const newAccessToken = tokenService.generateAccessToken(session.user, rotation.session.id);

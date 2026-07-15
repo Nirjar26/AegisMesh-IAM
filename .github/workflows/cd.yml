@@ -34,8 +34,8 @@ jobs:
           SHA: ${{ steps.tags.outputs.sha }}
           REG: ${{ secrets.ECR_REGISTRY }}
         run: |
-          if grep -qF "${REG}/aegismesh-backend:${SHA}" platform/kubernetes/overlays/prod/patch-backend-image.yaml &&
-             grep -qF "${REG}/aegismesh-frontend:${SHA}" platform/kubernetes/overlays/prod/patch-frontend-image.yaml; then
+          if grep -qF "${REG}/bastion-backend:${SHA}" platform/kubernetes/overlays/prod/patch-backend-image.yaml &&
+             grep -qF "${REG}/bastion-frontend:${SHA}" platform/kubernetes/overlays/prod/patch-frontend-image.yaml; then
             echo "skip=true" >> $GITHUB_OUTPUT
           else
             echo "skip=false" >> $GITHUB_OUTPUT
@@ -47,7 +47,7 @@ jobs:
           SHA: ${{ steps.tags.outputs.sha }}
           REG: ${{ secrets.ECR_REGISTRY }}
         run: |
-          bash .github/scripts/update-k8s-images.sh "${REG}/aegismesh-backend:${SHA}" "${REG}/aegismesh-frontend:${SHA}"
+          bash .github/scripts/update-k8s-images.sh "${REG}/bastion-backend:${SHA}" "${REG}/bastion-frontend:${SHA}"
 
       - name: Create or update deploy PR
         if: steps.check.outputs.skip != 'true'
@@ -61,7 +61,7 @@ jobs:
           body: |
             Automated overlay update from CD workflow.
 
-            **Image**: `${{ secrets.ECR_REGISTRY }}/aegismesh-backend:${{ steps.tags.outputs.sha }}`
+            **Image**: `${{ secrets.ECR_REGISTRY }}/bastion-backend:${{ steps.tags.outputs.sha }}`
             Auto-merge enabled — will squash to main on CI pass.
           delete-branch: true
           labels: automated-deploy

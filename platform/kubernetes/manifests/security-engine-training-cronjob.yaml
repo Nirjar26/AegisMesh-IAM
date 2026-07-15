@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: security-engine-retraining
-  namespace: aegismesh
+  namespace: Bastion
 spec:
   schedule: "0 0 * * *" # Every day at midnight
   startingDeadlineSeconds: 300

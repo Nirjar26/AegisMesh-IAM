@@ -21,21 +21,49 @@ const LEGACY_ACTION_DEFAULTS = {
     LOGIN_FAILED: { category: 'AUTHENTICATION', resource: 'auth/login', result: 'FAILURE' },
     LOGIN_MFA_FAILED: { category: 'AUTHENTICATION', resource: 'auth/login', result: 'FAILURE' },
     LOGOUT: { category: 'AUTHENTICATION', resource: 'auth/logout', result: 'SUCCESS' },
-    TOKEN_REFRESHED: { category: 'SESSION_MANAGEMENT', resource: 'auth/refresh-token', result: 'SUCCESS' },
-    EMAIL_VERIFIED: { category: 'AUTHENTICATION', resource: 'auth/verify-email', result: 'SUCCESS' },
-    PASSWORD_RESET_REQUESTED: { category: 'AUTHENTICATION', resource: 'auth/forgot-password', result: 'SUCCESS' },
-    PASSWORD_RESET: { category: 'AUTHENTICATION', resource: 'auth/reset-password', result: 'SUCCESS' },
+    TOKEN_REFRESHED: {
+        category: 'SESSION_MANAGEMENT',
+        resource: 'auth/refresh-token',
+        result: 'SUCCESS',
+    },
+    EMAIL_VERIFIED: {
+        category: 'AUTHENTICATION',
+        resource: 'auth/verify-email',
+        result: 'SUCCESS',
+    },
+    PASSWORD_RESET_REQUESTED: {
+        category: 'AUTHENTICATION',
+        resource: 'auth/forgot-password',
+        result: 'SUCCESS',
+    },
+    PASSWORD_RESET: {
+        category: 'AUTHENTICATION',
+        resource: 'auth/reset-password',
+        result: 'SUCCESS',
+    },
     OAUTH_LOGIN: { category: 'AUTHENTICATION', resource: 'auth/oauth', result: 'SUCCESS' },
     ACCOUNT_LOCKED: { category: 'SECURITY', resource: 'users/security', result: 'BLOCKED' },
     SUSPICIOUS_ACTIVITY: { category: 'SECURITY', resource: 'security/monitor', result: 'BLOCKED' },
-    RATE_LIMIT_EXCEEDED: { category: 'SECURITY', resource: 'security/rate-limit', result: 'BLOCKED' },
-    UNAUTHORIZED_ACCESS: { category: 'AUTHORIZATION', resource: 'authorization', result: 'BLOCKED' },
+    RATE_LIMIT_EXCEEDED: {
+        category: 'SECURITY',
+        resource: 'security/rate-limit',
+        result: 'BLOCKED',
+    },
+    UNAUTHORIZED_ACCESS: {
+        category: 'AUTHORIZATION',
+        resource: 'authorization',
+        result: 'BLOCKED',
+    },
     MFA_ENABLED: { category: 'MFA', resource: 'auth/mfa', result: 'SUCCESS' },
     MFA_DISABLED: { category: 'MFA', resource: 'auth/mfa', result: 'SUCCESS' },
     MFA_BACKUP_CODE_USED: { category: 'MFA', resource: 'auth/mfa/backup', result: 'SUCCESS' },
     MFA_SETUP_INITIATED: { category: 'MFA', resource: 'auth/mfa/setup', result: 'SUCCESS' },
     SESSION_REVOKED: { category: 'SESSION_MANAGEMENT', resource: 'sessions', result: 'SUCCESS' },
-    ALL_SESSIONS_REVOKED: { category: 'SESSION_MANAGEMENT', resource: 'sessions', result: 'SUCCESS' },
+    ALL_SESSIONS_REVOKED: {
+        category: 'SESSION_MANAGEMENT',
+        resource: 'sessions',
+        result: 'SUCCESS',
+    },
     ROLE_CREATED: { category: 'ROLE_MANAGEMENT', resource: 'roles', result: 'SUCCESS' },
     ROLE_UPDATED: { category: 'ROLE_MANAGEMENT', resource: 'roles', result: 'SUCCESS' },
     ROLE_DELETED: { category: 'ROLE_MANAGEMENT', resource: 'roles', result: 'SUCCESS' },
@@ -44,22 +72,66 @@ const LEGACY_ACTION_DEFAULTS = {
     POLICY_CREATED: { category: 'POLICY_MANAGEMENT', resource: 'policies', result: 'SUCCESS' },
     POLICY_UPDATED: { category: 'POLICY_MANAGEMENT', resource: 'policies', result: 'SUCCESS' },
     POLICY_DELETED: { category: 'POLICY_MANAGEMENT', resource: 'policies', result: 'SUCCESS' },
-    POLICY_ATTACHED: { category: 'POLICY_MANAGEMENT', resource: 'roles/policies', result: 'SUCCESS' },
-    POLICY_DETACHED: { category: 'POLICY_MANAGEMENT', resource: 'roles/policies', result: 'SUCCESS' },
-    POLICY_SIMULATED: { category: 'POLICY_MANAGEMENT', resource: 'policies/simulate', result: 'SUCCESS' },
+    POLICY_ATTACHED: {
+        category: 'POLICY_MANAGEMENT',
+        resource: 'roles/policies',
+        result: 'SUCCESS',
+    },
+    POLICY_DETACHED: {
+        category: 'POLICY_MANAGEMENT',
+        resource: 'roles/policies',
+        result: 'SUCCESS',
+    },
+    POLICY_SIMULATED: {
+        category: 'POLICY_MANAGEMENT',
+        resource: 'policies/simulate',
+        result: 'SUCCESS',
+    },
     GROUP_CREATED: { category: 'GROUP_MANAGEMENT', resource: 'groups', result: 'SUCCESS' },
     GROUP_UPDATED: { category: 'GROUP_MANAGEMENT', resource: 'groups', result: 'SUCCESS' },
     GROUP_DELETED: { category: 'GROUP_MANAGEMENT', resource: 'groups', result: 'SUCCESS' },
-    GROUP_MEMBER_ADDED: { category: 'GROUP_MANAGEMENT', resource: 'groups/members', result: 'SUCCESS' },
-    GROUP_MEMBER_REMOVED: { category: 'GROUP_MANAGEMENT', resource: 'groups/members', result: 'SUCCESS' },
-    GROUP_ROLE_ATTACHED: { category: 'GROUP_MANAGEMENT', resource: 'groups/roles', result: 'SUCCESS' },
-    GROUP_ROLE_DETACHED: { category: 'GROUP_MANAGEMENT', resource: 'groups/roles', result: 'SUCCESS' },
-    BULK_STATUS_CHANGE: { category: 'USER_MANAGEMENT', resource: 'users/bulk/status', result: 'SUCCESS' },
-    BULK_ROLE_ASSIGN: { category: 'ROLE_MANAGEMENT', resource: 'users/bulk/roles', result: 'SUCCESS' },
-    BULK_GROUP_ASSIGN: { category: 'GROUP_MANAGEMENT', resource: 'users/bulk/groups', result: 'SUCCESS' },
+    GROUP_MEMBER_ADDED: {
+        category: 'GROUP_MANAGEMENT',
+        resource: 'groups/members',
+        result: 'SUCCESS',
+    },
+    GROUP_MEMBER_REMOVED: {
+        category: 'GROUP_MANAGEMENT',
+        resource: 'groups/members',
+        result: 'SUCCESS',
+    },
+    GROUP_ROLE_ATTACHED: {
+        category: 'GROUP_MANAGEMENT',
+        resource: 'groups/roles',
+        result: 'SUCCESS',
+    },
+    GROUP_ROLE_DETACHED: {
+        category: 'GROUP_MANAGEMENT',
+        resource: 'groups/roles',
+        result: 'SUCCESS',
+    },
+    BULK_STATUS_CHANGE: {
+        category: 'USER_MANAGEMENT',
+        resource: 'users/bulk/status',
+        result: 'SUCCESS',
+    },
+    BULK_ROLE_ASSIGN: {
+        category: 'ROLE_MANAGEMENT',
+        resource: 'users/bulk/roles',
+        result: 'SUCCESS',
+    },
+    BULK_GROUP_ASSIGN: {
+        category: 'GROUP_MANAGEMENT',
+        resource: 'users/bulk/groups',
+        result: 'SUCCESS',
+    },
     BULK_DELETE: { category: 'USER_MANAGEMENT', resource: 'users/bulk/delete', result: 'SUCCESS' },
     BULK_EXPORT: { category: 'DATA_ACCESS', resource: 'users/bulk/export', result: 'SUCCESS' },
-    ROLE_CREATED_FROM_TEMPLATE: { category: 'ROLE_MANAGEMENT', resource: 'roles/templates', result: 'SUCCESS' },
+    ROLE_CREATED_FROM_TEMPLATE: {
+        category: 'ROLE_MANAGEMENT',
+        resource: 'roles/templates',
+        result: 'SUCCESS',
+    },
     PERMISSION_CHECKED: { category: 'AUTHORIZATION', resource: 'authorization', result: 'SUCCESS' },
     PERMISSION_DENIED: { category: 'AUTHORIZATION', resource: 'authorization', result: 'BLOCKED' },
     AUDIT_LOGS_CLEANED: { category: 'SYSTEM', resource: 'audit-logs', result: 'SUCCESS' },
@@ -148,9 +220,13 @@ async function audit({
         const prevHash = prevEntry?.metadata?.chain_hash || null;
 
         const canonicalData = `${prevHash || ''}|${action}|${category}|${resource || ''}|${resourceId || ''}|${result}`;
-        const chainHash = crypto.pbkdf2Sync(canonicalData, process.env.JWT_SECRET || 'audit-chain', 10, 64, 'sha512').toString('hex');
+        const chainHash = crypto
+            .pbkdf2Sync(canonicalData, process.env.JWT_SECRET || 'audit-chain', 10, 64, 'sha512')
+            .toString('hex');
 
-        const enrichedMetadata = metadata ? { ...metadata, chain_hash: chainHash } : { chain_hash: chainHash };
+        const enrichedMetadata = metadata
+            ? { ...metadata, chain_hash: chainHash }
+            : { chain_hash: chainHash };
 
         const entry = await prisma.auditLog.create({
             data: {

@@ -18,5 +18,3 @@ export default function PolicyBadge({ effect }) {
 PolicyBadge.propTypes = {
     effect: PropTypes.oneOf(['ALLOW', 'DENY']),
 };
-
-

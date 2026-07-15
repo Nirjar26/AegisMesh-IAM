@@ -2,7 +2,9 @@ import PropTypes from 'prop-types';
 
 export function CardShell({ children, className = '' }) {
     return (
-        <div className={`bg-white border border-[#d0d7e8] rounded-2xl shadow-sm overflow-hidden ${className}`}>
+        <div
+            className={`bg-white border border-[#d0d7e8] rounded-2xl shadow-sm overflow-hidden ${className}`}
+        >
             {children}
         </div>
     );

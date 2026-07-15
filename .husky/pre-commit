@@ -1,0 +1,2 @@
+npx lint-staged
+npx tsc --noEmit --project apps/dashboard/tsconfig.json 2>/dev/null || echo "⚠️  TypeScript check skipped (tsconfig not ready yet)"

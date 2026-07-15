@@ -23,20 +23,22 @@ jest.mock('../../src/config/database', () => ({
         findUnique: jest.fn(),
         deleteMany: jest.fn(),
     },
-    $transaction: jest.fn((cb) => cb({
-        user: {
-            create: jest.fn(),
-            findUnique: jest.fn(),
-            update: jest.fn(),
-        },
-        userRole: {
-            createMany: jest.fn(),
-            deleteMany: jest.fn(),
-        },
-        session: {
-            deleteMany: jest.fn(),
-        },
-    })),
+    $transaction: jest.fn((cb) =>
+        cb({
+            user: {
+                create: jest.fn(),
+                findUnique: jest.fn(),
+                update: jest.fn(),
+            },
+            userRole: {
+                createMany: jest.fn(),
+                deleteMany: jest.fn(),
+            },
+            session: {
+                deleteMany: jest.fn(),
+            },
+        }),
+    ),
 }));
 
 jest.mock('../../src/services/token.service', () => ({
@@ -134,9 +136,7 @@ const MOCK_USER = {
     passwordChangedAt: null,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
-    userRoles: [
-        { role: { name: 'Admin' } },
-    ],
+    userRoles: [{ role: { name: 'Admin' } }],
 };
 
 function mockRequest(overrides = {}) {
@@ -172,7 +172,7 @@ describe('register', () => {
                     firstName: 'Test',
                     lastName: 'User',
                 }),
-            })
+            }),
         );
         expect(emailService.sendVerificationEmail).toHaveBeenCalled();
         expect(auditLog.auditAuth.registered).toHaveBeenCalled();
@@ -181,12 +181,14 @@ describe('register', () => {
     it('throws AUTH_009 when email already exists', async () => {
         prisma.user.findUnique.mockResolvedValue(MOCK_USER);
 
-        await expect(authService.register({
-            email: 'test@example.com',
-            password: TEST_PASSWORD,
-            firstName: 'Test',
-            req: mockRequest(),
-        })).rejects.toThrow('Email already registered');
+        await expect(
+            authService.register({
+                email: 'test@example.com',
+                password: TEST_PASSWORD,
+                firstName: 'Test',
+                req: mockRequest(),
+            }),
+        ).rejects.toThrow('Email already registered');
 
         expect(prisma.user.create).not.toHaveBeenCalled();
     });
@@ -221,7 +223,9 @@ describe('login', () => {
         const user = mockUser(userOverrides);
         orgSettings.getOrganizationSettings.mockResolvedValue({ maxFailedAttempts: 5 });
         prisma.user.findUnique.mockResolvedValue(user);
-        jest.spyOn(bcrypt, 'compare').mockImplementation((pw, _hash) => Promise.resolve(pw === VALID_PASSWORD));
+        jest.spyOn(bcrypt, 'compare').mockImplementation((pw, _hash) =>
+            Promise.resolve(pw === VALID_PASSWORD),
+        );
         prisma.user.update.mockResolvedValue(user);
         tokenService.generateRefreshToken.mockReturnValue('refresh-token-value');
         tokenService.createSession.mockResolvedValue({ id: 'session-1' });
@@ -231,7 +235,12 @@ describe('login', () => {
 
     it('returns tokens for valid credentials', async () => {
         const user = setupSuccessMocks();
-        prisma.user.update.mockResolvedValue({ ...user, failedLoginCount: 0, lockedUntil: null, status: 'ACTIVE' });
+        prisma.user.update.mockResolvedValue({
+            ...user,
+            failedLoginCount: 0,
+            lockedUntil: null,
+            status: 'ACTIVE',
+        });
 
         const result = await authService.login({
             email: 'test@example.com',
@@ -250,11 +259,13 @@ describe('login', () => {
         orgSettings.getOrganizationSettings.mockResolvedValue({ maxFailedAttempts: 5 });
         prisma.user.findUnique.mockResolvedValue(null);
 
-        await expect(authService.login({
-            email: 'unknown@example.com',
-            password: VALID_PASSWORD,
-            req: mockRequest(),
-        })).rejects.toThrow('Invalid credentials');
+        await expect(
+            authService.login({
+                email: 'unknown@example.com',
+                password: VALID_PASSWORD,
+                req: mockRequest(),
+            }),
+        ).rejects.toThrow('Invalid credentials');
 
         expect(auditLog.auditAuth.loginFailed).toHaveBeenCalled();
     });
@@ -263,11 +274,13 @@ describe('login', () => {
         orgSettings.getOrganizationSettings.mockResolvedValue({ maxFailedAttempts: 5 });
         prisma.user.findUnique.mockResolvedValue(mockUser({ status: 'INACTIVE' }));
 
-        await expect(authService.login({
-            email: 'test@example.com',
-            password: VALID_PASSWORD,
-            req: mockRequest(),
-        })).rejects.toThrow('Account inactive');
+        await expect(
+            authService.login({
+                email: 'test@example.com',
+                password: VALID_PASSWORD,
+                req: mockRequest(),
+            }),
+        ).rejects.toThrow('Account inactive');
     });
 
     it('throws AUTH_002 when account is LOCKED', async () => {
@@ -275,11 +288,13 @@ describe('login', () => {
         orgSettings.getOrganizationSettings.mockResolvedValue({ maxFailedAttempts: 5 });
         prisma.user.findUnique.mockResolvedValue(mockUser({ status: 'LOCKED', lockedUntil }));
 
-        await expect(authService.login({
-            email: 'test@example.com',
-            password: VALID_PASSWORD,
-            req: mockRequest(),
-        })).rejects.toThrow('Account locked');
+        await expect(
+            authService.login({
+                email: 'test@example.com',
+                password: VALID_PASSWORD,
+                req: mockRequest(),
+            }),
+        ).rejects.toThrow('Account locked');
     });
 
     it('resets lock and proceeds if lock has expired', async () => {
@@ -301,7 +316,9 @@ describe('login', () => {
 
         expect(result.accessToken).toBe('access-token');
         expect(prisma.user.update).toHaveBeenCalledWith(
-            expect.objectContaining({ data: expect.objectContaining({ status: 'ACTIVE', failedLoginCount: 0 }) })
+            expect.objectContaining({
+                data: expect.objectContaining({ status: 'ACTIVE', failedLoginCount: 0 }),
+            }),
         );
     });
 
@@ -309,11 +326,13 @@ describe('login', () => {
         orgSettings.getOrganizationSettings.mockResolvedValue({ maxFailedAttempts: 5 });
         prisma.user.findUnique.mockResolvedValue(mockUser({ emailVerified: false }));
 
-        await expect(authService.login({
-            email: 'test@example.com',
-            password: VALID_PASSWORD,
-            req: mockRequest(),
-        })).rejects.toThrow('Email not verified');
+        await expect(
+            authService.login({
+                email: 'test@example.com',
+                password: VALID_PASSWORD,
+                req: mockRequest(),
+            }),
+        ).rejects.toThrow('Email not verified');
     });
 
     it('throws AUTH_001 for wrong password and increments failed count', async () => {
@@ -323,14 +342,16 @@ describe('login', () => {
         jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
         prisma.user.update.mockResolvedValue(user);
 
-        await expect(authService.login({
-            email: 'test@example.com',
-            password: 'wrong',
-            req: mockRequest(),
-        })).rejects.toThrow('Invalid credentials');
+        await expect(
+            authService.login({
+                email: 'test@example.com',
+                password: 'wrong',
+                req: mockRequest(),
+            }),
+        ).rejects.toThrow('Invalid credentials');
 
         expect(prisma.user.update).toHaveBeenCalledWith(
-            expect.objectContaining({ data: expect.objectContaining({ failedLoginCount: 1 }) })
+            expect.objectContaining({ data: expect.objectContaining({ failedLoginCount: 1 }) }),
         );
     });
 
@@ -341,11 +362,13 @@ describe('login', () => {
         jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
         prisma.user.update.mockResolvedValue(user);
 
-        await expect(authService.login({
-            email: 'test@example.com',
-            password: 'wrong',
-            req: mockRequest(),
-        })).rejects.toThrow('Account locked');
+        await expect(
+            authService.login({
+                email: 'test@example.com',
+                password: 'wrong',
+                req: mockRequest(),
+            }),
+        ).rejects.toThrow('Account locked');
 
         expect(prisma.user.update).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -354,7 +377,7 @@ describe('login', () => {
                     status: 'LOCKED',
                     lockedUntil: expect.any(Date),
                 }),
-            })
+            }),
         );
         expect(auditLog.auditSecurity.accountLocked).toHaveBeenCalled();
     });
@@ -362,11 +385,13 @@ describe('login', () => {
     it('requires MFA code when user has MFA enabled', async () => {
         setupSuccessMocks({ mfaEnabled: true });
 
-        await expect(authService.login({
-            email: 'test@example.com',
-            password: VALID_PASSWORD,
-            req: mockRequest(),
-        })).rejects.toThrow('MFA code required');
+        await expect(
+            authService.login({
+                email: 'test@example.com',
+                password: VALID_PASSWORD,
+                req: mockRequest(),
+            }),
+        ).rejects.toThrow('MFA code required');
     });
 
     it('validates MFA code successfully', async () => {
@@ -393,12 +418,14 @@ describe('login', () => {
         cryptoUtil.decryptText.mockReturnValue('decrypted-secret');
         mfaService.verifyTOTP.mockReturnValue(false);
 
-        await expect(authService.login({
-            email: 'test@example.com',
-            password: VALID_PASSWORD,
-            totpCode: '000000',
-            req: mockRequest(),
-        })).rejects.toThrow('Invalid MFA code');
+        await expect(
+            authService.login({
+                email: 'test@example.com',
+                password: VALID_PASSWORD,
+                totpCode: '000000',
+                req: mockRequest(),
+            }),
+        ).rejects.toThrow('Invalid MFA code');
 
         expect(auditLog.auditAuth.loginMFAFailed).toHaveBeenCalled();
     });
@@ -407,7 +434,11 @@ describe('login', () => {
         const realBcrypt = jest.requireActual('bcryptjs');
         const hashedBackup = realBcrypt.hashSync('ABCD1234', 12);
 
-        const user = mockUser({ mfaEnabled: true, mfaSecret: 'encrypted-secret', backupCodes: [hashedBackup] });
+        const user = mockUser({
+            mfaEnabled: true,
+            mfaSecret: 'encrypted-secret',
+            backupCodes: [hashedBackup],
+        });
         orgSettings.getOrganizationSettings.mockResolvedValue({ maxFailedAttempts: 5 });
         prisma.user.findUnique.mockResolvedValue(user);
         jest.spyOn(bcrypt, 'compare').mockImplementation((pw, hash) => {
@@ -463,7 +494,9 @@ describe('logout', () => {
         });
 
         expect(auditLog.auditAuth.logout).toHaveBeenCalledWith(
-            expect.anything(), 'user-1', 'sess-from-req'
+            expect.anything(),
+            'user-1',
+            'sess-from-req',
         );
     });
 });
@@ -499,20 +532,24 @@ describe('refreshAccessToken', () => {
     it('throws AUTH_006 when token verification fails', async () => {
         tokenService.verifyRefreshToken.mockReturnValue(null);
 
-        await expect(authService.refreshAccessToken({
-            refreshToken: 'invalid',
-            req: mockRequest(),
-        })).rejects.toThrow('Token expired');
+        await expect(
+            authService.refreshAccessToken({
+                refreshToken: 'invalid',
+                req: mockRequest(),
+            }),
+        ).rejects.toThrow('Token expired');
     });
 
     it('throws AUTH_007 when session is not found', async () => {
         tokenService.verifyRefreshToken.mockReturnValue({ sub: 'user-1' });
         tokenService.findSessionByToken.mockResolvedValue(null);
 
-        await expect(authService.refreshAccessToken({
-            refreshToken: 'orphaned',
-            req: mockRequest(),
-        })).rejects.toThrow('Token invalid');
+        await expect(
+            authService.refreshAccessToken({
+                refreshToken: 'orphaned',
+                req: mockRequest(),
+            }),
+        ).rejects.toThrow('Token invalid');
     });
 
     it('throws AUTH_006 and deletes session when session is expired', async () => {
@@ -522,10 +559,12 @@ describe('refreshAccessToken', () => {
             expiresAt: new Date(Date.now() - 3600000),
         });
 
-        await expect(authService.refreshAccessToken({
-            refreshToken: 'expired',
-            req: mockRequest(),
-        })).rejects.toThrow('Token expired');
+        await expect(
+            authService.refreshAccessToken({
+                refreshToken: 'expired',
+                req: mockRequest(),
+            }),
+        ).rejects.toThrow('Token expired');
 
         expect(tokenService.deleteSession).toHaveBeenCalledWith('expired');
     });
@@ -551,7 +590,7 @@ describe('forgotPassword', () => {
                     passwordResetToken: expect.any(String),
                     passwordResetExpires: expect.any(Date),
                 }),
-            })
+            }),
         );
         expect(emailService.sendPasswordResetEmail).toHaveBeenCalled();
         expect(auditLog.auditAuth.passwordResetRequested).toHaveBeenCalled();
@@ -608,7 +647,7 @@ describe('resetPassword', () => {
                     failedLoginCount: 0,
                     lockedUntil: null,
                 }),
-            })
+            }),
         );
         expect(tokenService.deleteAllUserSessions).toHaveBeenCalledWith('user-1');
         expect(auditLog.auditAuth.passwordReset).toHaveBeenCalled();
@@ -618,11 +657,13 @@ describe('resetPassword', () => {
     it('throws AUTH_010 when token is invalid or expired', async () => {
         prisma.user.findFirst.mockResolvedValue(null);
 
-        await expect(authService.resetPassword({
-            token: 'bad-token',
-            newPassword: TEST_PASSWORD,
-            req: mockRequest(),
-        })).rejects.toThrow('Invalid reset token');
+        await expect(
+            authService.resetPassword({
+                token: 'bad-token',
+                newPassword: TEST_PASSWORD,
+                req: mockRequest(),
+            }),
+        ).rejects.toThrow('Invalid reset token');
     });
 });
 
@@ -645,7 +686,7 @@ describe('verifyEmail', () => {
                     emailVerified: true,
                     emailVerifyToken: null,
                 }),
-            })
+            }),
         );
         expect(auditLog.auditAuth.emailVerified).toHaveBeenCalled();
     });
@@ -653,10 +694,12 @@ describe('verifyEmail', () => {
     it('throws AUTH_007 when token is invalid', async () => {
         prisma.user.findFirst.mockResolvedValue(null);
 
-        await expect(authService.verifyEmail({
-            token: 'bad-token',
-            req: mockRequest(),
-        })).rejects.toThrow('Invalid verification token');
+        await expect(
+            authService.verifyEmail({
+                token: 'bad-token',
+                req: mockRequest(),
+            }),
+        ).rejects.toThrow('Invalid verification token');
     });
 });
 

@@ -1,11 +1,7 @@
 const prisma = require('../../config/database');
 
 function asObject(value) {
-    return value &&
-        typeof value === 'object' &&
-        !Array.isArray(value)
-        ? value
-        : {};
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 }
 
 function formatActorName(actor) {
@@ -53,18 +49,13 @@ function buildRoleAssignedMessage(roleName, actorName) {
 async function buildRoleAssignedNotification(entry) {
     const metadata = asObject(entry.metadata);
 
-    const targetUserId =
-        metadata.assignedTo ||
-        entry.resourceId ||
-        null;
+    const targetUserId = metadata.assignedTo || entry.resourceId || null;
 
     if (!targetUserId) {
         return null;
     }
 
-    const roleName = await resolveRoleName(
-        metadata.roleId
-    );
+    const roleName = await resolveRoleName(metadata.roleId);
 
     const actorName = formatActorName(entry.user);
 
@@ -74,10 +65,7 @@ async function buildRoleAssignedNotification(entry) {
         type: 'role',
         severity: 'info',
         title: 'Role assigned',
-        message: buildRoleAssignedMessage(
-            roleName,
-            actorName
-        ),
+        message: buildRoleAssignedMessage(roleName, actorName),
         link: '/dashboard',
         metadata: {
             roleId: metadata.roleId || null,
@@ -109,18 +97,11 @@ async function buildPolicyChangedNotification(entry) {
 
     const metadata = asObject(entry.metadata);
 
-    const policyId =
-        metadata.policyId ||
-        entry.resourceId ||
-        null;
+    const policyId = metadata.policyId || entry.resourceId || null;
 
-    const policyName =
-        metadata.policyName ||
-        await resolvePolicyName(policyId);
+    const policyName = metadata.policyName || (await resolvePolicyName(policyId));
 
-    const verb =
-        POLICY_ACTION_VERBS[entry.action] ||
-        'updated';
+    const verb = POLICY_ACTION_VERBS[entry.action] || 'updated';
 
     return {
         targetUserId: entry.userId,
@@ -128,10 +109,7 @@ async function buildPolicyChangedNotification(entry) {
         type: 'system',
         severity: 'info',
         title: 'Policy updated',
-        message: buildPolicyMessage(
-            policyName,
-            verb
-        ),
+        message: buildPolicyMessage(policyName, verb),
         link: '/dashboard/policies',
         metadata: {
             policyId,

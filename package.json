@@ -1,13 +1,14 @@
 {
-  "name": "aegismesh-iam",
+  "name": "bastion-iam",
   "private": true,
   "version": "1.0.0",
-  "description": "AegisMesh IAM — monorepo",
+  "description": "Bastion IAM — monorepo",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
-  "scripts": {
+    "scripts": {
+    "prepare": "husky",
     "dev": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
@@ -15,10 +16,12 @@
     "test:api": "turbo test:api",
     "lint:fix": "turbo lint:fix",
     "clean": "turbo clean",
-    "format": "prettier --write \"**/*.{js,jsx,json,css,md}\" --ignore-path .gitignore",
-    "format:check": "prettier --check \"**/*.{js,jsx,json,css,md}\" --ignore-path .gitignore"
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\" --ignore-path .gitignore"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
     "prettier": "^3.5.0",
     "turbo": "^2.10.0",
     "typescript": "^6.0.3"

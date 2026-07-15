@@ -1,10 +1,4 @@
-const {
-    audit,
-    createAuditLog,
-    sseClients,
-    addSSEClient,
-    removeSSEClient,
-} = require('./_core');
+const { audit, createAuditLog, sseClients, addSSEClient, removeSSEClient } = require('./_core');
 
 const { auditAuth, auditSecurity, auditMFA, auditSession } = require('./authEvents');
 const { auditRole, auditPolicy, auditGroup, auditPermission } = require('./rbacEvents');

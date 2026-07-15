@@ -3,10 +3,10 @@ set -euo pipefail
 
 # Create a SealedSecret from platform/kubernetes/manifests/secret.yaml
 # Requirements: kubeseal (https://github.com/bitnami-labs/kubeseal) and kubectl configured.
-# Usage: bash scripts/secrets/create-sealedsecret.sh platform/kubernetes/manifests/secret.yaml platform/kubernetes/overlays/prod/sealedsecret-aegismesh.yaml
+# Usage: bash scripts/secrets/create-sealedsecret.sh platform/kubernetes/manifests/secret.yaml platform/kubernetes/overlays/prod/sealedsecret-Bastion.yaml
 
 SRC=${1:-platform/kubernetes/manifests/secret.yaml}
-OUT=${2:-platform/kubernetes/overlays/prod/sealedsecret-aegismesh.yaml}
+OUT=${2:-platform/kubernetes/overlays/prod/sealedsecret-Bastion.yaml}
 
 if ! command -v kubeseal >/dev/null 2>&1; then
   echo "kubeseal is not installed. See https://github.com/bitnami-labs/kubeseal#installation"

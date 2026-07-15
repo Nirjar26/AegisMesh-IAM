@@ -1,11 +1,7 @@
 const prisma = require('../../config/database');
 
 function asObject(value) {
-    return value &&
-        typeof value === 'object' &&
-        !Array.isArray(value)
-        ? value
-        : {};
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 }
 
 async function resolveApiTokenName(tokenId) {
@@ -40,8 +36,7 @@ function buildSessionRevokedNotification(entry) {
         type: 'security',
         severity: 'warning',
         title: 'Session revoked',
-        message:
-            'An active session was revoked from your account.',
+        message: 'An active session was revoked from your account.',
         link: '/settings/sessions',
     };
 }
@@ -51,10 +46,7 @@ function buildOtherSessionsMessage(revokedCount) {
         return 'Other active sessions were signed out from your account.';
     }
 
-    const sessionLabel =
-        revokedCount === 1
-            ? 'session'
-            : 'sessions';
+    const sessionLabel = revokedCount === 1 ? 'session' : 'sessions';
 
     return `${revokedCount} other ${sessionLabel} were signed out from your account.`;
 }
@@ -66,9 +58,7 @@ function buildAllOtherSessionsRevokedNotification(entry) {
 
     const metadata = asObject(entry.metadata);
 
-    const revokedCount = Number(
-        metadata.revokedCount || 0
-    );
+    const revokedCount = Number(metadata.revokedCount || 0);
 
     return {
         targetUserId: entry.userId,
@@ -76,17 +66,12 @@ function buildAllOtherSessionsRevokedNotification(entry) {
         type: 'security',
         severity: 'warning',
         title: 'Other sessions signed out',
-        message: buildOtherSessionsMessage(
-            revokedCount
-        ),
+        message: buildOtherSessionsMessage(revokedCount),
         link: '/settings/sessions',
     };
 }
 
-function buildAllSessionsMessage(
-    isAdminAction,
-    actorName
-) {
+function buildAllSessionsMessage(isAdminAction, actorName) {
     if (!isAdminAction) {
         return 'All of your active sessions were signed out.';
     }
@@ -97,17 +82,13 @@ function buildAllSessionsMessage(
 function buildAllSessionsRevokedNotification(entry) {
     const metadata = asObject(entry.metadata);
 
-    const targetUserId = metadata.revokedBy
-        ? entry.resourceId || null
-        : entry.userId;
+    const targetUserId = metadata.revokedBy ? entry.resourceId || null : entry.userId;
 
     if (!targetUserId) {
         return null;
     }
 
-    const isAdminAction =
-        Boolean(metadata.revokedBy) &&
-        targetUserId !== entry.userId;
+    const isAdminAction = Boolean(metadata.revokedBy) && targetUserId !== entry.userId;
 
     return {
         targetUserId,
@@ -115,10 +96,7 @@ function buildAllSessionsRevokedNotification(entry) {
         type: 'security',
         severity: 'warning',
         title: 'All sessions signed out',
-        message: buildAllSessionsMessage(
-            isAdminAction,
-            formatActorName(entry.user)
-        ),
+        message: buildAllSessionsMessage(isAdminAction, formatActorName(entry.user)),
         link: '/settings/sessions',
     };
 }
@@ -138,9 +116,7 @@ function buildDataExportedNotification(entry) {
 
     const metadata = asObject(entry.metadata);
 
-    const auditLogs = Number(
-        metadata.auditLogs || 0
-    );
+    const auditLogs = Number(metadata.auditLogs || 0);
 
     return {
         targetUserId: entry.userId,
@@ -166,9 +142,7 @@ async function buildApiKeyCreatedNotification(entry) {
         return null;
     }
 
-    const tokenName = await resolveApiTokenName(
-        entry.resourceId || null
-    );
+    const tokenName = await resolveApiTokenName(entry.resourceId || null);
 
     return {
         targetUserId: entry.userId,
@@ -176,9 +150,7 @@ async function buildApiKeyCreatedNotification(entry) {
         type: 'access',
         severity: 'warning',
         title: 'API token created',
-        message: buildApiTokenCreatedMessage(
-            tokenName
-        ),
+        message: buildApiTokenCreatedMessage(tokenName),
         link: '/settings/api-keys',
         metadata: {
             tokenName,
@@ -199,9 +171,7 @@ async function buildApiKeyRevokedNotification(entry) {
         return null;
     }
 
-    const tokenName = await resolveApiTokenName(
-        entry.resourceId || null
-    );
+    const tokenName = await resolveApiTokenName(entry.resourceId || null);
 
     return {
         targetUserId: entry.userId,
@@ -209,9 +179,7 @@ async function buildApiKeyRevokedNotification(entry) {
         type: 'access',
         severity: 'info',
         title: 'API token revoked',
-        message: buildApiTokenRevokedMessage(
-            tokenName
-        ),
+        message: buildApiTokenRevokedMessage(tokenName),
         link: '/settings/api-keys',
         metadata: {
             tokenName,
@@ -226,9 +194,7 @@ function buildConnectedAppRevokedNotification(entry) {
 
     const metadata = asObject(entry.metadata);
 
-    const appName =
-        metadata.appName ||
-        'a connected app';
+    const appName = metadata.appName || 'a connected app';
 
     return {
         targetUserId: entry.userId,
@@ -255,15 +221,12 @@ function buildTrustedDeviceRevokedNotification(entry) {
         type: 'access',
         severity: 'warning',
         title: 'Trusted device removed',
-        message:
-            'A trusted device was removed from your account.',
+        message: 'A trusted device was removed from your account.',
         link: '/dashboard/security?tab=devices',
     };
 }
 
-function buildAllTrustedDevicesRevokedNotification(
-    entry
-) {
+function buildAllTrustedDevicesRevokedNotification(entry) {
     if (!entry.userId) {
         return null;
     }
@@ -274,8 +237,7 @@ function buildAllTrustedDevicesRevokedNotification(
         type: 'access',
         severity: 'warning',
         title: 'Trusted devices cleared',
-        message:
-            'All trusted devices were removed from your account.',
+        message: 'All trusted devices were removed from your account.',
         link: '/dashboard/security?tab=devices',
     };
 }

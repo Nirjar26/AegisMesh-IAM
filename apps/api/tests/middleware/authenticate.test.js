@@ -1,7 +1,10 @@
 'use strict';
 
 jest.mock('../../src/utils/logger', () => ({
-    debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(),
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
 }));
 
 jest.mock('../../src/config/database', () => ({
@@ -16,9 +19,9 @@ jest.mock('../../src/services/token.service', () => ({
 
 jest.mock('../../src/middleware/apiKeyAuth', () => ({
     authenticateApiKeyToken: jest.fn(),
-    derivePrimaryRole: jest.fn(u => {
-        const names = (u?.userRoles || []).map(r => r.role?.name).filter(Boolean);
-        return names.includes('SuperAdmin') ? 'SuperAdmin' : (names[0] || null);
+    derivePrimaryRole: jest.fn((u) => {
+        const names = (u?.userRoles || []).map((r) => r.role?.name).filter(Boolean);
+        return names.includes('SuperAdmin') ? 'SuperAdmin' : names[0] || null;
     }),
 }));
 
@@ -243,7 +246,10 @@ describe('authenticate middleware', () => {
     });
 
     it('returns 401 when the session has been revoked', async () => {
-        tokenService.verifyAccessToken.mockReturnValue({ sub: 'user-1', sessionId: 'revoked-sess' });
+        tokenService.verifyAccessToken.mockReturnValue({
+            sub: 'user-1',
+            sessionId: 'revoked-sess',
+        });
         tokenService.isTokenBlacklisted.mockResolvedValue(false);
         prisma.user.findUnique.mockResolvedValue(ACTIVE_USER);
         prisma.session.updateMany.mockResolvedValue({ count: 0 });

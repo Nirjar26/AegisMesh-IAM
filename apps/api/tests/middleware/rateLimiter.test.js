@@ -25,7 +25,6 @@ jest.mock('express-rate-limit', () => {
 afterEach(() => {
     jest.clearAllMocks();
     delete process.env.NODE_ENV;
-
 });
 
 describe('rateLimiter config', () => {
@@ -102,9 +101,17 @@ describe('rateLimiter handlers', () => {
         const mockReq = { ip: '192.168.1.1' };
         const mockRes = { status: jest.fn().mockReturnThis(), json: jest.fn() };
 
-        limiters.loginLimiter.options.handler(mockReq, mockRes, jest.fn(), limiters.loginLimiter.options);
+        limiters.loginLimiter.options.handler(
+            mockReq,
+            mockRes,
+            jest.fn(),
+            limiters.loginLimiter.options,
+        );
 
-        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for auth/login', { ip: '192.168.1.1', path: undefined });
+        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for auth/login', {
+            ip: '192.168.1.1',
+            path: undefined,
+        });
         expect(auditSecurity.rateLimitExceeded).toHaveBeenCalledWith(mockReq, 'auth/login');
         expect(mockRes.status).toHaveBeenCalledWith(429);
         expect(mockRes.json).toHaveBeenCalledWith(limiters.loginLimiter.options.message);
@@ -115,9 +122,17 @@ describe('rateLimiter handlers', () => {
         const mockReq = { ip: '10.0.0.1' };
         const mockRes = { status: jest.fn().mockReturnThis(), json: jest.fn() };
 
-        limiters.registerLimiter.options.handler(mockReq, mockRes, jest.fn(), limiters.registerLimiter.options);
+        limiters.registerLimiter.options.handler(
+            mockReq,
+            mockRes,
+            jest.fn(),
+            limiters.registerLimiter.options,
+        );
 
-        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for auth/register', { ip: '10.0.0.1', path: undefined });
+        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for auth/register', {
+            ip: '10.0.0.1',
+            path: undefined,
+        });
     });
 
     it('handler calls logger.warn on password reset limit', () => {
@@ -125,9 +140,17 @@ describe('rateLimiter handlers', () => {
         const mockReq = { ip: '10.0.0.2' };
         const mockRes = { status: jest.fn().mockReturnThis(), json: jest.fn() };
 
-        limiters.passwordResetLimiter.options.handler(mockReq, mockRes, jest.fn(), limiters.passwordResetLimiter.options);
+        limiters.passwordResetLimiter.options.handler(
+            mockReq,
+            mockRes,
+            jest.fn(),
+            limiters.passwordResetLimiter.options,
+        );
 
-        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for auth/forgot-password', { ip: '10.0.0.2', path: undefined });
+        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for auth/forgot-password', {
+            ip: '10.0.0.2',
+            path: undefined,
+        });
     });
 
     it('handler includes path for generalLimiter', () => {
@@ -135,8 +158,16 @@ describe('rateLimiter handlers', () => {
         const mockReq = { ip: '10.0.0.3', path: '/api/users' };
         const mockRes = { status: jest.fn().mockReturnThis(), json: jest.fn() };
 
-        limiters.generalLimiter.options.handler(mockReq, mockRes, jest.fn(), limiters.generalLimiter.options);
+        limiters.generalLimiter.options.handler(
+            mockReq,
+            mockRes,
+            jest.fn(),
+            limiters.generalLimiter.options,
+        );
 
-        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for ', { ip: '10.0.0.3', path: '/api/users' });
+        expect(logger.warn).toHaveBeenCalledWith('Rate limit exceeded for ', {
+            ip: '10.0.0.3',
+            path: '/api/users',
+        });
     });
 });

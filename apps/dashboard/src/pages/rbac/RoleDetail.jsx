@@ -67,14 +67,19 @@ export default function RoleDetail() {
         return new Date(value).toLocaleString();
     };
 
-    if (roleLoading) return <div className="p-8 text-center text-slate-500 text-[13px]">Loading role details...</div>;
+    if (roleLoading)
+        return (
+            <div className="p-8 text-center text-slate-500 text-[13px]">
+                Loading role details...
+            </div>
+        );
     if (!role) return <div className="p-8 text-center text-red-400">Role not found</div>;
 
-    const attachedPolicyIds = new Set(role.rolePolicies?.map(rp => rp.policy.id));
-    const availablePolicies = policies.filter(p => !attachedPolicyIds.has(p.id));
+    const attachedPolicyIds = new Set(role.rolePolicies?.map((rp) => rp.policy.id));
+    const availablePolicies = policies.filter((p) => !attachedPolicyIds.has(p.id));
     const assignedUserIds = role.userRoles?.map((entry) => entry.user?.id).filter(Boolean) || [];
 
-    const roleArn = `arn:aegismesh::account:role/${role.name}`;
+    const roleArn = `arn:bastion::account:role/${role.name}`;
     const toggleChip = (policyId, type) => {
         const key = `${policyId}:${type}`;
         setExpandedChips((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -92,7 +97,11 @@ export default function RoleDetail() {
                 queryClient.invalidateQueries({ queryKey: ['users-for-role'] }),
             ]);
         } catch (e) {
-            toast.error(e.response?.data?.message || e.response?.data?.error?.message || 'Failed to assign user');
+            toast.error(
+                e.response?.data?.message ||
+                    e.response?.data?.error?.message ||
+                    'Failed to assign user',
+            );
         } finally {
             setAssigning(false);
         }
@@ -105,7 +114,11 @@ export default function RoleDetail() {
             toast.success('User removed from role');
             await queryClient.invalidateQueries({ queryKey: ['role', roleId] });
         } catch (e) {
-            toast.error(e.response?.data?.message || e.response?.data?.error?.message || 'Failed to remove user');
+            toast.error(
+                e.response?.data?.message ||
+                    e.response?.data?.error?.message ||
+                    'Failed to remove user',
+            );
         }
     }
 
@@ -123,8 +136,12 @@ export default function RoleDetail() {
                 <div className="mb-6">
                     <div className="mb-1.5 flex flex-wrap items-start justify-between gap-3">
                         <div>
-                            <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-slate-900">{role.name}</h1>
-                            <p className="mt-1 text-[14px] text-slate-500">{role.description || 'No description provided.'}</p>
+                            <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-slate-900">
+                                {role.name}
+                            </h1>
+                            <p className="mt-1 text-[14px] text-slate-500">
+                                {role.description || 'No description provided.'}
+                            </p>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2">
@@ -158,7 +175,9 @@ export default function RoleDetail() {
                         <div className="inline-flex items-center gap-1.5 text-[12px] text-slate-500">
                             <Shield size={13} className="text-slate-400" />
                             Role ID:
-                            <span className="font-mono text-[11px] text-slate-400">{role.id.slice(0, 8)}...</span>
+                            <span className="font-mono text-[11px] text-slate-400">
+                                {role.id.slice(0, 8)}...
+                            </span>
                         </div>
                         <div className="inline-flex items-center gap-1.5 text-[12px] text-slate-500">
                             <CalendarDays size={13} className="text-slate-400" />
@@ -183,7 +202,9 @@ export default function RoleDetail() {
                                 <span className="mr-3 rounded-lg bg-indigo-50 p-1.5 text-indigo-600">
                                     <Shield size={16} />
                                 </span>
-                                <h2 className="text-[15px] font-bold text-slate-900">Permissions</h2>
+                                <h2 className="text-[15px] font-bold text-slate-900">
+                                    Permissions
+                                </h2>
                             </div>
                             <span className="rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-[12px] font-semibold text-indigo-700">
                                 {role.rolePolicies.length} Policies
@@ -191,7 +212,10 @@ export default function RoleDetail() {
                         </div>
 
                         <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4">
-                            <label htmlFor="attachPolicySelect" className="mb-2 block text-[12px] font-semibold uppercase tracking-[0.05em] text-slate-700">
+                            <label
+                                htmlFor="attachPolicySelect"
+                                className="mb-2 block text-[12px] font-semibold uppercase tracking-[0.05em] text-slate-700"
+                            >
                                 Attach Additional Policy
                             </label>
                             <div className="flex flex-col gap-3 sm:flex-row">
@@ -203,7 +227,9 @@ export default function RoleDetail() {
                                 >
                                     <option value="">Select a policy</option>
                                     {availablePolicies.map((p) => (
-                                        <option key={p.id} value={p.id}>{p.name} ({p.effect})</option>
+                                        <option key={p.id} value={p.id}>
+                                            {p.name} ({p.effect})
+                                        </option>
                                     ))}
                                 </select>
                                 <button
@@ -221,85 +247,130 @@ export default function RoleDetail() {
                             {role.rolePolicies.length === 0 ? (
                                 <div className="py-12 text-center">
                                     <Shield size={32} className="mx-auto mb-3 text-slate-300" />
-                                    <p className="text-[14px] font-medium text-slate-400">No policies attached</p>
-                                    <p className="mt-1 text-[12px] text-slate-300">Attach a policy to grant permissions to this role</p>
+                                    <p className="text-[14px] font-medium text-slate-400">
+                                        No policies attached
+                                    </p>
+                                    <p className="mt-1 text-[12px] text-slate-300">
+                                        Attach a policy to grant permissions to this role
+                                    </p>
                                 </div>
-                            ) : role.rolePolicies.map(({ policy }) => {
-                                const actionsExpanded = expandedChips[`${policy.id}:actions`];
-                                const resourcesExpanded = expandedChips[`${policy.id}:resources`];
-                                const allow = policy.effect === 'ALLOW';
+                            ) : (
+                                role.rolePolicies.map(({ policy }) => {
+                                    const actionsExpanded = expandedChips[`${policy.id}:actions`];
+                                    const resourcesExpanded =
+                                        expandedChips[`${policy.id}:resources`];
+                                    const allow = policy.effect === 'ALLOW';
 
-                                return (
-                                    <div key={policy.id} className="flex items-start gap-3.5 px-6 py-4 transition-colors hover:bg-slate-50/50">
-                                        <div className={`mt-0.5 inline-flex h-[34px] w-[34px] items-center justify-center rounded-[9px] ${allow ? 'bg-emerald-50 text-emerald-500' : 'bg-red-50 text-red-500'}`}>
-                                            {allow ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
-                                        </div>
-
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex flex-wrap items-start justify-between gap-2">
-                                                <Link to={`/dashboard/policies/${policy.id}`} className="cursor-pointer text-[13px] font-semibold text-indigo-500 hover:underline">
-                                                    {policy.name}
-                                                </Link>
-                                                <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold tracking-[0.05em] ${allow ? 'border border-emerald-200 bg-emerald-50 text-emerald-700' : 'border border-red-200 bg-red-50 text-red-700'}`}>
-                                                    {policy.effect}
-                                                </span>
-                                            </div>
-
-                                            <p className="mt-1 text-[12px] text-slate-500">{policy.description || 'No description provided.'}</p>
-
-                                            <div className="mt-2 flex flex-wrap gap-1.5">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => toggleChip(policy.id, 'actions')}
-                                                    className="rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 font-mono text-[10px] text-slate-600"
-                                                    title={actionsExpanded ? 'Hide actions list' : 'Show actions list'}
-                                                >
-                                                    ACTIONS: {policy.actions.length}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => toggleChip(policy.id, 'resources')}
-                                                    className="rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 font-mono text-[10px] text-slate-600"
-                                                    title={resourcesExpanded ? 'Hide resources list' : 'Show resources list'}
-                                                >
-                                                    RESOURCES: {policy.resources.length}
-                                                </button>
-                                            </div>
-
-                                            {actionsExpanded && (
-                                                <div className="mt-2 flex flex-wrap gap-1.5">
-                                                    {policy.actions.map((action) => (
-                                                        <span key={action} className="rounded-md border border-slate-200 bg-white px-2 py-0.5 font-mono text-[10px] text-slate-600">
-                                                            {action}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {resourcesExpanded && (
-                                                <div className="mt-2 flex flex-wrap gap-1.5">
-                                                    {policy.resources.map((resource) => (
-                                                        <span key={resource} className="rounded-md border border-slate-200 bg-white px-2 py-0.5 font-mono text-[10px] text-slate-600">
-                                                            {resource}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <button
-                                            type="button"
-                                            title="Detach policy"
-                                            onClick={() => {
-                                                if (globalThis.confirm(`Detach ${policy.name}?`)) detachMutation.mutate(policy.id);
-                                            }}
-                                            className="inline-flex h-7 w-7 items-center justify-center rounded-[7px] border border-slate-200 bg-white text-slate-400 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+                                    return (
+                                        <div
+                                            key={policy.id}
+                                            className="flex items-start gap-3.5 px-6 py-4 transition-colors hover:bg-slate-50/50"
                                         >
-                                            <X size={12} />
-                                        </button>
-                                    </div>
-                                );
-                            })}
+                                            <div
+                                                className={`mt-0.5 inline-flex h-[34px] w-[34px] items-center justify-center rounded-[9px] ${allow ? 'bg-emerald-50 text-emerald-500' : 'bg-red-50 text-red-500'}`}
+                                            >
+                                                {allow ? (
+                                                    <CheckCircle2 size={16} />
+                                                ) : (
+                                                    <XCircle size={16} />
+                                                )}
+                                            </div>
+
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex flex-wrap items-start justify-between gap-2">
+                                                    <Link
+                                                        to={`/dashboard/policies/${policy.id}`}
+                                                        className="cursor-pointer text-[13px] font-semibold text-indigo-500 hover:underline"
+                                                    >
+                                                        {policy.name}
+                                                    </Link>
+                                                    <span
+                                                        className={`rounded-md px-2 py-0.5 text-[10px] font-bold tracking-[0.05em] ${allow ? 'border border-emerald-200 bg-emerald-50 text-emerald-700' : 'border border-red-200 bg-red-50 text-red-700'}`}
+                                                    >
+                                                        {policy.effect}
+                                                    </span>
+                                                </div>
+
+                                                <p className="mt-1 text-[12px] text-slate-500">
+                                                    {policy.description ||
+                                                        'No description provided.'}
+                                                </p>
+
+                                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            toggleChip(policy.id, 'actions')
+                                                        }
+                                                        className="rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 font-mono text-[10px] text-slate-600"
+                                                        title={
+                                                            actionsExpanded
+                                                                ? 'Hide actions list'
+                                                                : 'Show actions list'
+                                                        }
+                                                    >
+                                                        ACTIONS: {policy.actions.length}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            toggleChip(policy.id, 'resources')
+                                                        }
+                                                        className="rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 font-mono text-[10px] text-slate-600"
+                                                        title={
+                                                            resourcesExpanded
+                                                                ? 'Hide resources list'
+                                                                : 'Show resources list'
+                                                        }
+                                                    >
+                                                        RESOURCES: {policy.resources.length}
+                                                    </button>
+                                                </div>
+
+                                                {actionsExpanded && (
+                                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                                        {policy.actions.map((action) => (
+                                                            <span
+                                                                key={action}
+                                                                className="rounded-md border border-slate-200 bg-white px-2 py-0.5 font-mono text-[10px] text-slate-600"
+                                                            >
+                                                                {action}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {resourcesExpanded && (
+                                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                                        {policy.resources.map((resource) => (
+                                                            <span
+                                                                key={resource}
+                                                                className="rounded-md border border-slate-200 bg-white px-2 py-0.5 font-mono text-[10px] text-slate-600"
+                                                            >
+                                                                {resource}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                title="Detach policy"
+                                                onClick={() => {
+                                                    if (
+                                                        globalThis.confirm(`Detach ${policy.name}?`)
+                                                    )
+                                                        detachMutation.mutate(policy.id);
+                                                }}
+                                                className="inline-flex h-7 w-7 items-center justify-center rounded-[7px] border border-slate-200 bg-white text-slate-400 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+                                            >
+                                                <X size={12} />
+                                            </button>
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
                     </div>
 
@@ -310,7 +381,9 @@ export default function RoleDetail() {
                                     <span className="mr-3 rounded-lg bg-purple-50 p-1.5 text-purple-600">
                                         <Users size={15} />
                                     </span>
-                                    <h3 className="text-[14px] font-bold text-slate-900">Assigned Users</h3>
+                                    <h3 className="text-[14px] font-bold text-slate-900">
+                                        Assigned Users
+                                    </h3>
                                 </div>
                                 <span className="rounded-full border border-purple-100 bg-purple-50 px-3 py-1 text-[12px] font-semibold text-purple-700">
                                     {role.userRoles.length} Users
@@ -318,24 +391,26 @@ export default function RoleDetail() {
                             </div>
 
                             <div className="px-5 py-4">
-                                <div style={{
-                                    display: 'flex',
-                                    gap: 10,
-                                    marginBottom: 16,
-                                    paddingBottom: 16,
-                                    borderBottom: '1px solid #f1f5f9',
-                                }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        gap: 10,
+                                        marginBottom: 16,
+                                        paddingBottom: 16,
+                                        borderBottom: '1px solid var(--ds-color-bg-0)',
+                                    }}
+                                >
                                     <select
                                         value={selectedUserId}
                                         onChange={(e) => setSelectedUserId(e.target.value)}
                                         style={{
                                             flex: 1,
-                                            border: '1px solid #e2e8f0',
+                                            border: '1px solid var(--ds-color-border)',
                                             borderRadius: 10,
                                             padding: '8px 12px',
                                             fontSize: 13,
-                                            color: '#374151',
-                                            background: '#fff',
+                                            color: 'var(--ds-color-text-secondary)',
+                                            background: 'var(--ds-color-surface)',
                                         }}
                                     >
                                         <option value="">-- Select a user --</option>
@@ -352,8 +427,8 @@ export default function RoleDetail() {
                                         onClick={handleAssignUser}
                                         disabled={!selectedUserId || assigning}
                                         style={{
-                                            background: '#6366f1',
-                                            color: '#fff',
+                                            background: 'var(--ds-color-accent)',
+                                            color: 'var(--ds-color-white)',
                                             border: 'none',
                                             borderRadius: 10,
                                             padding: '8px 16px',
@@ -374,28 +449,42 @@ export default function RoleDetail() {
                                 {role.userRoles.length === 0 ? (
                                     <div className="py-8 text-center">
                                         <UserX size={28} className="mx-auto mb-2 text-slate-300" />
-                                        <p className="text-[13px] text-slate-400">No users assigned</p>
+                                        <p className="text-[13px] text-slate-400">
+                                            No users assigned
+                                        </p>
                                         <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-left">
                                             <p className="inline-flex items-start gap-1.5 text-[11px] text-slate-400">
                                                 <Info size={12} className="mt-0.5" />
-                                                Users can also inherit this role via group membership
+                                                Users can also inherit this role via group
+                                                membership
                                             </p>
                                         </div>
                                     </div>
                                 ) : (
                                     <ul>
                                         {role.userRoles.map(({ user }) => {
-                                            const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
+                                            const initials =
+                                                `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
                                             return (
-                                                <li key={user.id} className="flex items-center gap-2.5 border-b border-slate-50 py-3 last:border-b-0">
+                                                <li
+                                                    key={user.id}
+                                                    className="flex items-center gap-2.5 border-b border-slate-50 py-3 last:border-b-0"
+                                                >
                                                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-[11px] font-bold text-indigo-700">
                                                         {initials || 'U'}
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <p className="truncate text-[13px] font-medium text-slate-900">{user.firstName} {user.lastName}</p>
-                                                        <p className="truncate text-[11px] text-slate-400">{user.email}</p>
+                                                        <p className="truncate text-[13px] font-medium text-slate-900">
+                                                            {user.firstName} {user.lastName}
+                                                        </p>
+                                                        <p className="truncate text-[11px] text-slate-400">
+                                                            {user.email}
+                                                        </p>
                                                     </div>
-                                                    <Link to={`/dashboard/users/${user.id}`} className="text-[11px] text-indigo-500 hover:underline">
+                                                    <Link
+                                                        to={`/dashboard/users/${user.id}`}
+                                                        className="text-[11px] text-indigo-500 hover:underline"
+                                                    >
                                                         View →
                                                     </Link>
                                                     <button
@@ -416,28 +505,50 @@ export default function RoleDetail() {
 
                         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                             <div className="border-b border-slate-100 px-5 py-4">
-                                <h3 className="text-[14px] font-bold text-slate-900">Role Details</h3>
+                                <h3 className="text-[14px] font-bold text-slate-900">
+                                    Role Details
+                                </h3>
                             </div>
                             <div className="px-5 py-4">
                                 <div className="flex items-center justify-between border-b border-slate-50 py-2.5">
-                                    <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">Type</span>
-                                    <span className="text-right text-[12px] font-medium text-slate-700">{role.isSystem ? 'System' : 'Custom'}</span>
+                                    <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                                        Type
+                                    </span>
+                                    <span className="text-right text-[12px] font-medium text-slate-700">
+                                        {role.isSystem ? 'System' : 'Custom'}
+                                    </span>
                                 </div>
                                 <div className="flex items-center justify-between border-b border-slate-50 py-2.5">
-                                    <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">Policies</span>
-                                    <span className="text-right text-[12px] font-medium text-slate-700">{role.rolePolicies.length} attached</span>
+                                    <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                                        Policies
+                                    </span>
+                                    <span className="text-right text-[12px] font-medium text-slate-700">
+                                        {role.rolePolicies.length} attached
+                                    </span>
                                 </div>
                                 <div className="flex items-center justify-between border-b border-slate-50 py-2.5">
-                                    <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">Users</span>
-                                    <span className="text-right text-[12px] font-medium text-slate-700">{role.userRoles.length} assigned</span>
+                                    <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                                        Users
+                                    </span>
+                                    <span className="text-right text-[12px] font-medium text-slate-700">
+                                        {role.userRoles.length} assigned
+                                    </span>
                                 </div>
                                 <div className="flex items-center justify-between border-b border-slate-50 py-2.5">
-                                    <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">Created</span>
-                                    <span className="text-right text-[12px] font-medium text-slate-700">{formatDate(role.createdAt)}</span>
+                                    <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                                        Created
+                                    </span>
+                                    <span className="text-right text-[12px] font-medium text-slate-700">
+                                        {formatDate(role.createdAt)}
+                                    </span>
                                 </div>
                                 <div className="flex items-center justify-between py-2.5">
-                                    <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">Last Updated</span>
-                                    <span className="text-right text-[12px] font-medium text-slate-700">{formatDate(role.updatedAt)}</span>
+                                    <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                                        Last Updated
+                                    </span>
+                                    <span className="text-right text-[12px] font-medium text-slate-700">
+                                        {formatDate(role.updatedAt)}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -451,5 +562,3 @@ export default function RoleDetail() {
 RoleDetail.propTypes = {
     // No direct props as it uses useParams
 };
-
-

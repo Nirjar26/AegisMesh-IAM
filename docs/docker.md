@@ -1,7 +1,7 @@
 <div align="center">
-  <h1>Docker Setup - AegisMesh</h1>
+  <h1>Docker Setup - Bastion</h1>
 
-  <p>Complete Docker setup for containerizing the AegisMesh IAM application.</p>
+  <p>Complete Docker setup for containerizing the Bastion IAM application.</p>
 </div>
 
 ## Files Created
@@ -21,25 +21,27 @@
 ### Production Setup
 
 1. **Create `.env` file:**
-   ```bash
-   cp .env.example .env
-   ```
+
+    ```bash
+    cp .env.example .env
+    ```
 
 2. **Update sensitive values in `.env`:**
-   - `DB_PASSWORD` - Change to a secure password
-   - `JWT_SECRET` - Generate a secure token
-   - `REFRESH_TOKEN_SECRET` - Generate a secure token
-   - `SMTP_*` - Configure email settings
+    - `DB_PASSWORD` - Change to a secure password
+    - `JWT_SECRET` - Generate a secure token
+    - `REFRESH_TOKEN_SECRET` - Generate a secure token
+    - `SMTP_*` - Configure email settings
 
 3. **Build and start containers:**
-   ```bash
-   docker-compose up --build
-   ```
+
+    ```bash
+    docker-compose up --build
+    ```
 
 4. **Access the application:**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:5000
-   - Database: localhost:5432
+    - Frontend: http://localhost:3000
+    - Backend API: http://localhost:5000
+    - Database: localhost:5432
 
 ### Development Setup
 
@@ -54,6 +56,7 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 ## Common Commands
 
 ### Build Images
+
 ```bash
 # Rebuild all images
 docker-compose build --no-cache
@@ -63,6 +66,7 @@ docker-compose build backend
 ```
 
 ### Container Management
+
 ```bash
 # View running containers
 docker-compose ps
@@ -80,18 +84,20 @@ docker-compose down -v
 ```
 
 ### Database Operations
+
 ```bash
 # Run Prisma migrations
 docker-compose exec backend npm run prisma:migrate
 
 # Access database shell
-docker-compose exec db psql -U admin -d aegismesh
+docker-compose exec db psql -U admin -d Bastion
 
 # Seed database
 docker-compose exec backend npm run seed
 ```
 
 ### Debugging
+
 ```bash
 # Execute command in running container
 docker-compose exec backend sh
@@ -99,7 +105,7 @@ docker-compose exec frontend sh
 docker-compose exec db bash
 
 # Inspect container
-docker inspect aegismesh-backend
+docker inspect Bastion-backend
 ```
 
 ## Service Architecture
@@ -129,6 +135,7 @@ docker inspect aegismesh-backend
 ## Security Best Practices
 
 **Implemented:**
+
 - Multi-stage builds to reduce image size
 - Non-root user execution (nodejs for backend, nginx for frontend)
 - `.dockerignore` to exclude unnecessary files
@@ -137,6 +144,7 @@ docker inspect aegismesh-backend
 - Alpine Linux for smaller footprint
 
 **Before Production:**
+
 1. Change all default secrets in `.env`
 2. Enable HTTPS/TLS in Nginx configuration
 3. Set up proper logging aggregation
@@ -147,6 +155,7 @@ docker inspect aegismesh-backend
 ## Environment Variables
 
 ### Backend Variables
+
 - `NODE_ENV` - Environment (production/development)
 - `DATABASE_URL` - PostgreSQL connection string
 - `JWT_SECRET` - JWT signing key
@@ -155,9 +164,11 @@ docker inspect aegismesh-backend
 - `LOG_LEVEL` - Logging level
 
 ### Frontend Variables
+
 - `VITE_API_URL` - Backend API base URL
 
 ### Database Variables
+
 - `POSTGRES_DB` - Database name
 - `POSTGRES_USER` - Database user
 - `POSTGRES_PASSWORD` - Database password
@@ -165,6 +176,7 @@ docker inspect aegismesh-backend
 ## Troubleshooting
 
 ### Container fails to start
+
 ```bash
 # Check logs
 docker-compose logs backend
@@ -177,6 +189,7 @@ docker-compose logs db
 ```
 
 ### Cannot access frontend
+
 ```bash
 # Check if service is running
 docker-compose ps frontend
@@ -186,15 +199,16 @@ docker-compose exec frontend curl http://localhost:3000
 ```
 
 ### Database connection issues
+
 ```bash
 # Verify connection string in backend logs
 docker-compose logs backend | grep DATABASE_URL
 
 # Connect directly to database
-docker-compose exec db psql -U admin -d aegismesh
+docker-compose exec db psql -U admin -d Bastion
 ```
 
-##  Image Sizes (Approximate)
+## Image Sizes (Approximate)
 
 - Backend: ~280 MB (Node 22 Alpine + dependencies)
 - Frontend: ~50 MB (Alpine + Nginx)

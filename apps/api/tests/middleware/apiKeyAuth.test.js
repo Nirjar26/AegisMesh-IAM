@@ -21,19 +21,19 @@ const { getRequiredScope, authenticateApiKeyToken } = require('../../src/middlew
 // ---------------------------------------------------------------------------
 describe('getRequiredScope', () => {
     const cases = [
-        ['GET',    '/api/users',           'read:users'],
-        ['POST',   '/api/users',           'write:users'],
-        ['DELETE', '/api/users/123',       'write:users'],
-        ['GET',    '/api/roles',           'read:roles'],
-        ['PUT',    '/api/roles/abc',       'write:roles'],
-        ['GET',    '/api/policies',        'read:policies'],
-        ['PATCH',  '/api/policies/xyz',    'write:policies'],
-        ['POST',   '/api/groups',          'write:groups'],
-        ['DELETE', '/api/groups/g1',       'write:groups'],
-        ['GET',    '/api/audit-logs',      'read:audit'],
-        ['GET',    '/api/audit-logs/123',  'read:audit'],
-        ['GET',    '/api/unknown',         null],
-        ['POST',   '/api/settings',        'write:settings'],
+        ['GET', '/api/users', 'read:users'],
+        ['POST', '/api/users', 'write:users'],
+        ['DELETE', '/api/users/123', 'write:users'],
+        ['GET', '/api/roles', 'read:roles'],
+        ['PUT', '/api/roles/abc', 'write:roles'],
+        ['GET', '/api/policies', 'read:policies'],
+        ['PATCH', '/api/policies/xyz', 'write:policies'],
+        ['POST', '/api/groups', 'write:groups'],
+        ['DELETE', '/api/groups/g1', 'write:groups'],
+        ['GET', '/api/audit-logs', 'read:audit'],
+        ['GET', '/api/audit-logs/123', 'read:audit'],
+        ['GET', '/api/unknown', null],
+        ['POST', '/api/settings', 'write:settings'],
     ];
 
     it.each(cases)('%s %s → %s', (method, path, expected) => {
@@ -115,7 +115,7 @@ describe('authenticateApiKeyToken', () => {
             expect.objectContaining({
                 where: { id: 'token-1' },
                 data: expect.objectContaining({ isActive: false }),
-            })
+            }),
         );
     });
 

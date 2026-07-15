@@ -9,13 +9,13 @@ Quickstart:
 1. Create an initial backup:
 
 ```bash
-velero backup create initial-backup --include-namespaces=aegismesh --wait
+velero backup create initial-backup --include-namespaces=Bastion --wait
 ```
 
 1. Create a daily scheduled backup:
 
 ```bash
-velero schedule create daily-backup --schedule "0 2 * * *" --include-namespaces=aegismesh
+velero schedule create daily-backup --schedule "0 2 * * *" --include-namespaces=Bastion
 ```
 
 1. Test restores in a non-production namespace before relying on this for DR.

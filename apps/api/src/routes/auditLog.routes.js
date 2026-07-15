@@ -11,16 +11,37 @@ router.get('/stream', authenticate, authorize('audit:read', '*'), auditLogContro
 
 // Stats + Security (before :id to avoid route conflict)
 router.get('/stats', authenticate, authorize('audit:read', '*'), auditLogController.getStats);
-router.get('/security-alerts', authenticate, authorize('audit:read', '*'), auditLogController.getSecurityAlerts);
+router.get(
+    '/security-alerts',
+    authenticate,
+    authorize('audit:read', '*'),
+    auditLogController.getSecurityAlerts,
+);
 
 // User-specific logs
-router.get('/user/:userId', authenticate, authorize('audit:read', '*'), auditLogController.getUserAuditLogs);
+router.get(
+    '/user/:userId',
+    authenticate,
+    authorize('audit:read', '*'),
+    auditLogController.getUserAuditLogs,
+);
 
 // Export
-router.post('/export', authenticate, authorize('audit:read', '*'), validate(schemas.auditExport), auditLogController.exportLogs);
+router.post(
+    '/export',
+    authenticate,
+    authorize('audit:read', '*'),
+    validate(schemas.auditExport),
+    auditLogController.exportLogs,
+);
 
 // Cleanup (SuperAdmin only via audit:delete)
-router.delete('/cleanup', authenticate, authorize('audit:delete', '*'), auditLogController.cleanupLogs);
+router.delete(
+    '/cleanup',
+    authenticate,
+    authorize('audit:delete', '*'),
+    auditLogController.cleanupLogs,
+);
 
 // List all + single
 router.get('/', authenticate, authorize('audit:read', '*'), auditLogController.getAuditLogs);

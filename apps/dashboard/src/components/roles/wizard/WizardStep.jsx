@@ -11,7 +11,9 @@ export default function WizardStep({ title, subtitle, icon: Icon, color, childre
             {(title || subtitle) && (
                 <div className="flex items-center gap-3">
                     {Icon && (
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${colors.bg}`}>
+                        <div
+                            className={`flex h-10 w-10 items-center justify-center rounded-xl ${colors.bg}`}
+                        >
                             <Icon size={18} className={colors.icon} />
                         </div>
                     )}

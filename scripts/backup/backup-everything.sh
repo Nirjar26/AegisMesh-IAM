@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # backup-everything.sh
-# Comprehensive backup for AegisMesh:
+# Comprehensive backup for Bastion:
 # - repository source and git metadata
 # - Kubernetes manifests, resources, secrets, PVCs, PVs
 # - EC2 attached EBS volumes as snapshots
@@ -20,7 +20,7 @@ Required:
 Optional:
   --aws-profile NAME   AWS profile name (default: default)
   --backup-dir PATH    Backup output root (default: ./backups)
-  --pg-namespace NAME  Kubernetes namespace for Postgres (default: aegismesh)
+  --pg-namespace NAME  Kubernetes namespace for Postgres (default: Bastion)
   --pg-deployment NAME Postgres deployment name (default: postgres)
   --pg-user NAME       Postgres user for pg_dumpall (default: postgres)
   --docker-volumes     Back up local Docker named volumes if present
@@ -34,7 +34,7 @@ EOF
 INSTANCE_ID=""
 AWS_PROFILE="default"
 BACKUP_DIR="./backups"
-PG_NAMESPACE="aegismesh"
+PG_NAMESPACE="Bastion"
 PG_DEPLOYMENT="postgres"
 PG_USER="postgres"
 DOCKER_VOLUMES=0
@@ -107,7 +107,7 @@ if [[ "$SKIP_REPO" -eq 0 ]]; then
   safe_run git log -1 --stat
   archive_if_exists "repo-source.tar.gz" \
     apps docs packages platform scripts \
-    README.md CI_CD_RUNBOOK.md Docker_Setup.md LICENSE CODE_OF_CONDUCT.md AegisMesh-IAM-Fix-Logic-Guide.md \
+    README.md CI_CD_RUNBOOK.md Docker_Setup.md LICENSE CODE_OF_CONDUCT.md Bastion-IAM-Fix-Logic-Guide.md \
     docker-compose.yml docker-compose.dev.yml
 fi
 
@@ -153,7 +153,7 @@ if [[ "$SKIP_SNAPSHOTS" -eq 0 ]]; then
   : > "$OUT_DIR/ebs-snapshots.txt"
   for vol in $VOLUME_IDS; do
     [[ -z "$vol" ]] && continue
-    SNAP_ID=$(AWS_PROFILE="$AWS_PROFILE" aws ec2 create-snapshot --volume-id "$vol" --description "AegisMesh pre-delete backup $INSTANCE_ID $TS" --query SnapshotId --output text 2>> "$OUT_DIR/backup.log" || true)
+    SNAP_ID=$(AWS_PROFILE="$AWS_PROFILE" aws ec2 create-snapshot --volume-id "$vol" --description "Bastion pre-delete backup $INSTANCE_ID $TS" --query SnapshotId --output text 2>> "$OUT_DIR/backup.log" || true)
     printf '%s -> %s\n' "$vol" "$SNAP_ID" >> "$OUT_DIR/ebs-snapshots.txt"
   done
 fi

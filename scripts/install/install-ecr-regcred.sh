@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Deprecated: do not use rotating ECR pull secrets for AegisMesh workloads.
+# Deprecated: do not use rotating ECR pull secrets for Bastion workloads.
 # The durable fix is node-side kubelet ECR credential-provider auth.
 #
 # Use:

@@ -55,9 +55,7 @@ export default function RoleRow({ role, onDelete }) {
 
             <div className="mb-4 flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-bold text-[#0f172a] truncate">
-                        {role.name}
-                    </h3>
+                    <h3 className="text-sm font-bold text-[#0f172a] truncate">{role.name}</h3>
                     {role.isSystem ? (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#dbeafe] text-[#1d4ed8] uppercase tracking-wider">
                             System
@@ -76,12 +74,20 @@ export default function RoleRow({ role, onDelete }) {
             <div className="pt-4 border-t border-[#f1f5f9] flex items-center justify-between">
                 <div className="flex gap-4">
                     <div className="flex flex-col">
-                        <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">Policies</span>
-                        <span className="text-[13px] font-semibold text-[#334155]">{role._count?.rolePolicies || 0}</span>
+                        <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">
+                            Policies
+                        </span>
+                        <span className="text-[13px] font-semibold text-[#334155]">
+                            {role._count?.rolePolicies || 0}
+                        </span>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">Users</span>
-                        <span className="text-[13px] font-semibold text-[#334155]">{role._count?.userRoles || 0}</span>
+                        <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">
+                            Users
+                        </span>
+                        <span className="text-[13px] font-semibold text-[#334155]">
+                            {role._count?.userRoles || 0}
+                        </span>
                     </div>
                 </div>
                 <button

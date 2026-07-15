@@ -38,8 +38,16 @@ async function checkSchema() {
 
         console.log('\n=== Checking for NEW FIELDS ===\n');
         const newFields = [
-            'jobTitle', 'department', 'timezone', 'language', 'avatarUrl',
-            'mfaType', 'backupCodes', 'trustedDevices', 'notificationPreferences', 'passwordChangedAt',
+            'jobTitle',
+            'department',
+            'timezone',
+            'language',
+            'avatarUrl',
+            'mfaType',
+            'backupCodes',
+            'trustedDevices',
+            'notificationPreferences',
+            'passwordChangedAt',
         ];
         const existingFields = new Set(columns.map((c) => c.column_name));
 

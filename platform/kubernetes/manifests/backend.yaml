@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: aegismesh
+  namespace: Bastion
 spec:
   replicas: 1
 
@@ -41,7 +41,7 @@ spec:
             - -c
             - |
               until pg_isready \
-                -h postgres.aegismesh.svc.cluster.local \
+                -h postgres.Bastion.svc.cluster.local \
                 -p 5432 \
                 -U "$DB_USER" \
                 -d "$DB_NAME"; do
@@ -53,19 +53,19 @@ spec:
             - name: DB_NAME
               valueFrom:
                 secretKeyRef:
-                  name: aegismesh-secrets
+                  name: Bastion-secrets
                   key: DB_NAME
 
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: aegismesh-secrets
+                  name: Bastion-secrets
                   key: DB_USER
 
             - name: PGPASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: aegismesh-secrets
+                  name: Bastion-secrets
                   key: DB_PASSWORD
 
           resources:
@@ -83,7 +83,7 @@ spec:
               mountPath: /tmp
 
         - name: prisma-migrate
-          image: 654654364687.dkr.ecr.us-east-1.amazonaws.com/aegismesh-backend:b11f3991228702265ef848d95b626b06444d4a64
+          image: 654654364687.dkr.ecr.us-east-1.amazonaws.com/bastion-backend:b11f3991228702265ef848d95b626b06444d4a64
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
@@ -110,29 +110,29 @@ spec:
 
           envFrom:
             - configMapRef:
-                name: aegismesh-config
+                name: Bastion-config
 
             - secretRef:
-                name: aegismesh-secrets
+                name: Bastion-secrets
 
           env:
             - name: DB_NAME
               valueFrom:
                 secretKeyRef:
-                  name: aegismesh-secrets
+                  name: Bastion-secrets
                   key: DB_NAME
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: aegismesh-secrets
+                  name: Bastion-secrets
                   key: DB_USER
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: aegismesh-secrets
+                  name: Bastion-secrets
                   key: DB_PASSWORD
             - name: DATABASE_URL
-              value: postgresql://$(DB_USER):$(DB_PASSWORD)@postgres.aegismesh.svc.cluster.local:5432/$(DB_NAME)
+              value: postgresql://$(DB_USER):$(DB_PASSWORD)@postgres.Bastion.svc.cluster.local:5432/$(DB_NAME)
 
           resources:
             requests:
@@ -150,7 +150,7 @@ spec:
 
       containers:
         - name: backend
-          image: 654654364687.dkr.ecr.us-east-1.amazonaws.com/aegismesh-backend:b11f3991228702265ef848d95b626b06444d4a64
+          image: 654654364687.dkr.ecr.us-east-1.amazonaws.com/bastion-backend:b11f3991228702265ef848d95b626b06444d4a64
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
@@ -164,35 +164,35 @@ spec:
 
           envFrom:
             - configMapRef:
-                name: aegismesh-config
+                name: Bastion-config
 
             - secretRef:
-                name: aegismesh-secrets
+                name: Bastion-secrets
 
           env:
             - name: DB_NAME
               valueFrom:
                 secretKeyRef:
-                  name: aegismesh-secrets
+                  name: Bastion-secrets
                   key: DB_NAME
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: aegismesh-secrets
+                  name: Bastion-secrets
                   key: DB_USER
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: aegismesh-secrets
+                  name: Bastion-secrets
                   key: DB_PASSWORD
             - name: DATABASE_URL
-              value: postgresql://$(DB_USER):$(DB_PASSWORD)@postgres.aegismesh.svc.cluster.local:5432/$(DB_NAME)
+              value: postgresql://$(DB_USER):$(DB_PASSWORD)@postgres.Bastion.svc.cluster.local:5432/$(DB_NAME)
             - name: DD_AGENT_HOST
               value: "datadog-agent"
             - name: DD_ENV
               value: "development"
             - name: DD_SERVICE
-              value: "aegismesh-backend"
+              value: "bastion-backend"
             - name: DD_VERSION
               value: "1.0.0"
             - name: DD_LOGS_INJECTION
@@ -252,7 +252,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: backend
-  namespace: aegismesh
+  namespace: Bastion
 
 spec:
   selector:

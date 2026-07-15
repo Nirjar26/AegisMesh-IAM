@@ -1,7 +1,10 @@
 'use strict';
 
 jest.mock('../../src/utils/logger', () => ({
-    debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn(),
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
 }));
 
 jest.mock('../../src/services/permission.service', () => ({
@@ -42,7 +45,10 @@ afterEach(() => jest.clearAllMocks());
 
 describe('authorize middleware', () => {
     it('calls next() when permission is allowed', async () => {
-        permissionService.checkPermission.mockResolvedValue({ allowed: true, reason: 'Allowed by policy' });
+        permissionService.checkPermission.mockResolvedValue({
+            allowed: true,
+            reason: 'Allowed by policy',
+        });
 
         const req = mockReq();
         const next = jest.fn();
@@ -54,7 +60,10 @@ describe('authorize middleware', () => {
     });
 
     it('returns 403 when permission is denied', async () => {
-        permissionService.checkPermission.mockResolvedValue({ allowed: false, reason: 'No matching policy' });
+        permissionService.checkPermission.mockResolvedValue({
+            allowed: false,
+            reason: 'No matching policy',
+        });
 
         const req = mockReq();
         const res = mockRes();

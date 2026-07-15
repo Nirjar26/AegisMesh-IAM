@@ -36,7 +36,9 @@ export default function StepSelector({ steps, currentStep, onStepClick }) {
                         </span>
 
                         {index < steps.length - 1 && (
-                            <span className={`mx-1 h-px w-6 sm:w-10 ${isCompleted ? 'bg-emerald-300' : 'bg-slate-200'}`} />
+                            <span
+                                className={`mx-1 h-px w-6 sm:w-10 ${isCompleted ? 'bg-emerald-300' : 'bg-slate-200'}`}
+                            />
                         )}
                     </button>
                 );

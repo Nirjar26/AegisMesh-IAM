@@ -124,7 +124,7 @@ function issueReauthToken(userId, sessionId, method) {
             reauthAt: new Date().toISOString(),
         },
         getReauthSecret(),
-        { expiresIn: REAUTH_WINDOW_SECONDS }
+        { expiresIn: REAUTH_WINDOW_SECONDS },
     );
 }
 
@@ -248,7 +248,7 @@ function requireReauth(action) {
                 resource: 'reauth',
                 result: 'SUCCESS',
                 metadata: { action, method },
-            }).catch(err => logger.warn('Reauth audit log failed', { error: err.message }));
+            }).catch((err) => logger.warn('Reauth audit log failed', { error: err.message }));
 
             return next();
         } catch (error) {

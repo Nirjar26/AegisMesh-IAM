@@ -29,27 +29,27 @@ if ($Mode -eq "Backup") {
     Log-Info "Starting backup to $BackupDir..."
 
     # 1. Backup secrets
-    Log-Info "Backing up aegismesh-secrets..."
+    Log-Info "Backing up Bastion-secrets..."
     try {
-        $secretYaml = kubectl get secret aegismesh-secrets -n aegismesh -o yaml
+        $secretYaml = kubectl get secret Bastion-secrets -n Bastion -o yaml
         # Remove cluster-specific metadata to make it clean for restoration
         $cleanedYaml = $secretYaml -replace '(?m)^\s*uid:\s*.*$', '' `
                                    -replace '(?m)^\s*resourceVersion:\s*.*$', '' `
                                    -replace '(?m)^\s*creationTimestamp:\s*.*$', '' `
                                    -replace '(?m)^\s*namespace:\s*.*$', ''
-        $cleanedYaml | Out-File -FilePath (Join-Path $BackupDir "aegismesh-secrets.yaml") -Encoding utf8
+        $cleanedYaml | Out-File -FilePath (Join-Path $BackupDir "Bastion-secrets.yaml") -Encoding utf8
     } catch {
-        Log-Warn "Could not backup secrets. Make sure the secret exists in aegismesh namespace."
+        Log-Warn "Could not backup secrets. Make sure the secret exists in Bastion namespace."
     }
 
     # 2. Backup Database data
     Log-Info "Backing up PostgreSQL databases..."
     try {
-        $postgresPod = kubectl get pods -n aegismesh -l app=postgres -o jsonpath='{.items[0].metadata.name}'
+        $postgresPod = kubectl get pods -n Bastion -l app=postgres -o jsonpath='{.items[0].metadata.name}'
         if ($postgresPod) {
             Log-Info "Found PostgreSQL pod: $postgresPod. Dumping databases..."
-            kubectl exec $postgresPod -n aegismesh -- pg_dump -U iam_user -d iam_auth > (Join-Path $BackupDir "iam_auth_backup.sql")
-            kubectl exec $postgresPod -n aegismesh -- pg_dump -U iam_user -d mlflow_db > (Join-Path $BackupDir "mlflow_db_backup.sql")
+            kubectl exec $postgresPod -n Bastion -- pg_dump -U iam_user -d iam_auth > (Join-Path $BackupDir "iam_auth_backup.sql")
+            kubectl exec $postgresPod -n Bastion -- pg_dump -U iam_user -d mlflow_db > (Join-Path $BackupDir "mlflow_db_backup.sql")
             Log-Info "Database backups completed."
         } else {
             Log-Warn "Postgres pod not found, skipping database dump."
@@ -81,7 +81,7 @@ elseif ($Mode -eq "Restore") {
 
     # 2. Ensure namespaces exist
     Log-Info "Checking namespaces..."
-    foreach ($ns in @("aegismesh", "monitoring", "falco")) {
+    foreach ($ns in @("Bastion", "monitoring", "falco")) {
         $nsExists = kubectl get ns $ns -o name -ErrorAction SilentlyContinue
         if (-not $nsExists) {
             Log-Info "Creating namespace: $ns"
@@ -90,13 +90,13 @@ elseif ($Mode -eq "Restore") {
     }
 
     # 3. Apply secrets
-    $secretFile = Join-Path $BackupPath "aegismesh-secrets.yaml"
+    $secretFile = Join-Path $BackupPath "Bastion-secrets.yaml"
     if (Test-Path $secretFile) {
-        Log-Info "Restoring secrets to aegismesh and monitoring namespaces..."
-        kubectl apply -f $secretFile -n aegismesh | Out-Null
+        Log-Info "Restoring secrets to Bastion and monitoring namespaces..."
+        kubectl apply -f $secretFile -n Bastion | Out-Null
         kubectl apply -f $secretFile -n monitoring | Out-Null
     } else {
-        Log-Warn "aegismesh-secrets.yaml not found in backup."
+        Log-Warn "Bastion-secrets.yaml not found in backup."
     }
 
     # 4. Apply manifests
@@ -109,34 +109,34 @@ elseif ($Mode -eq "Restore") {
 
     # 5. Wait for PostgreSQL to be ready
     Log-Info "Waiting for PostgreSQL deployment to be ready..."
-    kubectl rollout status statefulset/postgres -n aegismesh --timeout=120s
+    kubectl rollout status statefulset/postgres -n Bastion --timeout=120s
 
     # 6. Verify and create mlflow_db
     Log-Info "Ensuring mlflow_db database exists..."
-    $postgresPod = kubectl get pods -n aegismesh -l app=postgres -o jsonpath='{.items[0].metadata.name}'
-    kubectl exec $postgresPod -n aegismesh -- psql -U iam_user -d postgres -c "CREATE DATABASE mlflow_db;" -ErrorAction SilentlyContinue | Out-Null
+    $postgresPod = kubectl get pods -n Bastion -l app=postgres -o jsonpath='{.items[0].metadata.name}'
+    kubectl exec $postgresPod -n Bastion -- psql -U iam_user -d postgres -c "CREATE DATABASE mlflow_db;" -ErrorAction SilentlyContinue | Out-Null
 
     # 7. Restore Database Data
     $iamAuthBackup = Join-Path $BackupPath "iam_auth_backup.sql"
     if (Test-Path $iamAuthBackup) {
         Log-Info "Restoring iam_auth database data..."
-        Get-Content -Raw $iamAuthBackup | kubectl exec -i $postgresPod -n aegismesh -- psql -U iam_user -d iam_auth
+        Get-Content -Raw $iamAuthBackup | kubectl exec -i $postgresPod -n Bastion -- psql -U iam_user -d iam_auth
     }
     $mlflowDbBackup = Join-Path $BackupPath "mlflow_db_backup.sql"
     if (Test-Path $mlflowDbBackup) {
         Log-Info "Restoring mlflow_db database data..."
-        Get-Content -Raw $mlflowDbBackup | kubectl exec -i $postgresPod -n aegismesh -- psql -U iam_user -d mlflow_db
+        Get-Content -Raw $mlflowDbBackup | kubectl exec -i $postgresPod -n Bastion -- psql -U iam_user -d mlflow_db
     }
 
     # 8. Restart dependent services to clear caches/reconnect
     Log-Info "Restarting dependent deployments to re-establish connections..."
-    kubectl rollout restart deployment/backend -n aegismesh
-    kubectl rollout restart deployment/security-engine -n aegismesh
-    kubectl rollout restart deployment/crowdsec -n aegismesh
+    kubectl rollout restart deployment/backend -n Bastion
+    kubectl rollout restart deployment/security-engine -n Bastion
+    kubectl rollout restart deployment/crowdsec -n Bastion
     kubectl rollout restart deployment/mlflow -n monitoring
     kubectl rollout restart deployment/trivy-operator -n monitoring
 
     Log-Info "Restoration completed! Checking current pod status..."
     Start-Sleep -Seconds 10
-    kubectl get pods -A | Select-String -Pattern "aegismesh|monitoring|falco"
+    kubectl get pods -A | Select-String -Pattern "Bastion|monitoring|falco"
 }

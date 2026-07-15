@@ -83,7 +83,11 @@ async function verifyEmail({ token, req }) {
     if (user.emailVerifyTokenCreatedAt) {
         const elapsed = Date.now() - new Date(user.emailVerifyTokenCreatedAt).getTime();
         if (elapsed > VERIFY_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000) {
-            throw new AppError('Verification token has expired. Please request a new one.', 410, 'AUTH_010');
+            throw new AppError(
+                'Verification token has expired. Please request a new one.',
+                410,
+                'AUTH_010',
+            );
         }
     }
 

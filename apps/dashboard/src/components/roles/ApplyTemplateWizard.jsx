@@ -2,46 +2,24 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import {
-    ChevronLeft,
-    ChevronRight,
-    Loader2,
-    ShieldCheck,
-    X,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, ShieldCheck, X } from 'lucide-react';
 
 import toast from 'react-hot-toast';
 
-import {
-    roleTemplates,
-    rbacAPI,
-    userAPI,
-} from '../../services/api';
+import { roleTemplates, rbacAPI, userAPI } from '../../services/api';
 
-import {
-    COLOR_MAP,
-    ICON_MAP,
-} from './templateMeta';
+import { COLOR_MAP, ICON_MAP } from './templateMeta';
 
 import MultiSelectSearch from './MultiSelectSearch';
 import { WizardStep, StepSelector } from './wizard';
 
-const STEPS = [
-    { label: 'Role Info' },
-    { label: 'Assignments' },
-    { label: 'Review' },
-];
+const STEPS = [{ label: 'Role Info' }, { label: 'Assignments' }, { label: 'Review' }];
 
 function classNames(...values) {
     return values.filter(Boolean).join(' ');
 }
 
-export default function ApplyTemplateWizard({
-    template,
-    onBack,
-    onClose,
-    onSuccess,
-}) {
+export default function ApplyTemplateWizard({ template, onBack, onClose, onSuccess }) {
     const colors = COLOR_MAP[template.color] || COLOR_MAP.indigo;
     const IconComponent = ICON_MAP[template.icon] || ShieldCheck;
 
@@ -59,16 +37,13 @@ export default function ApplyTemplateWizard({
 
     const { data: users = [] } = useQuery({
         queryKey: ['users-list', 'template-wizard'],
-        queryFn: () => userAPI.getUsers({ page: 1, limit: 100 }).then(
-            (response) => response.data?.data || [],
-        ),
+        queryFn: () =>
+            userAPI.getUsers({ page: 1, limit: 100 }).then((response) => response.data?.data || []),
     });
 
     const { data: groups = [] } = useQuery({
         queryKey: ['groups', 'template-wizard'],
-        queryFn: () => rbacAPI.getGroups().then(
-            (response) => response.data?.data || [],
-        ),
+        queryFn: () => rbacAPI.getGroups().then((response) => response.data?.data || []),
     });
 
     const canProceed = () => {
@@ -117,8 +92,7 @@ export default function ApplyTemplateWizard({
             toast.success(`Role "${roleName.trim()}" created with ${policiesCreated} policies!`);
             onSuccess?.(response.data?.data?.role);
         } catch (error) {
-            const code = error?.response?.data?.code
-                || error?.response?.data?.error?.code;
+            const code = error?.response?.data?.code || error?.response?.data?.error?.code;
 
             if (code === 'ROLE_NAME_EXISTS') {
                 setNameError('A role with this name already exists');
@@ -145,7 +119,9 @@ export default function ApplyTemplateWizard({
                         <ChevronLeft size={18} />
                     </button>
 
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${colors.bg}`}>
+                    <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-xl ${colors.bg}`}
+                    >
                         <IconComponent size={18} className={colors.icon} />
                     </div>
 
@@ -174,14 +150,18 @@ export default function ApplyTemplateWizard({
                 {currentStep !== 2 && (
                     <div className="mx-6 mt-4 flex items-center gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                         <div>
-                            <p className="text-2xl font-bold text-slate-900">{template.policies.length}</p>
+                            <p className="text-2xl font-bold text-slate-900">
+                                {template.policies.length}
+                            </p>
                             <p className="text-xs text-slate-400">Policies</p>
                         </div>
 
                         <span className="h-8 w-px bg-slate-200" />
 
                         <div>
-                            <p className="text-2xl font-bold text-slate-900">{template.permissions.length}</p>
+                            <p className="text-2xl font-bold text-slate-900">
+                                {template.permissions.length}
+                            </p>
                             <p className="text-xs text-slate-400">Permissions</p>
                         </div>
                     </div>
@@ -191,7 +171,10 @@ export default function ApplyTemplateWizard({
                 {currentStep === 0 && (
                     <WizardStep>
                         <div>
-                            <label htmlFor={roleNameInputId} className="mb-1.5 block text-sm font-medium text-slate-700">
+                            <label
+                                htmlFor={roleNameInputId}
+                                className="mb-1.5 block text-sm font-medium text-slate-700"
+                            >
                                 Role Name *
                             </label>
 
@@ -211,13 +194,14 @@ export default function ApplyTemplateWizard({
                                 )}
                             />
 
-                            {nameError && (
-                                <p className="mt-1 text-xs text-red-500">{nameError}</p>
-                            )}
+                            {nameError && <p className="mt-1 text-xs text-red-500">{nameError}</p>}
                         </div>
 
                         <div>
-                            <label htmlFor={descriptionInputId} className="mb-1.5 block text-sm font-medium text-slate-700">
+                            <label
+                                htmlFor={descriptionInputId}
+                                className="mb-1.5 block text-sm font-medium text-slate-700"
+                            >
                                 Description
                             </label>
 
@@ -242,7 +226,8 @@ export default function ApplyTemplateWizard({
                             onChange={setSelectedUserIds}
                             placeholder="Search users..."
                             getPrimary={(user) =>
-                                `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email
+                                `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+                                user.email
                             }
                             getSecondary={(user) => user.email}
                         />
@@ -271,23 +256,32 @@ export default function ApplyTemplateWizard({
                             <p className="text-sm font-medium text-slate-700">Summary</p>
 
                             <div className="mt-2 space-y-1 text-sm text-slate-600">
-                                <p>Role: <span className="font-semibold text-slate-900">{roleName}</span></p>
+                                <p>
+                                    Role:{' '}
+                                    <span className="font-semibold text-slate-900">{roleName}</span>
+                                </p>
 
                                 {description && <p>Description: {description}</p>}
 
                                 <p>
                                     Policies:{' '}
-                                    <span className="font-semibold text-slate-900">{template.policies.length}</span>
+                                    <span className="font-semibold text-slate-900">
+                                        {template.policies.length}
+                                    </span>
                                 </p>
 
                                 <p>
                                     Users assigned:{' '}
-                                    <span className="font-semibold text-slate-900">{selectedUserIds.length}</span>
+                                    <span className="font-semibold text-slate-900">
+                                        {selectedUserIds.length}
+                                    </span>
                                 </p>
 
                                 <p>
                                     Groups assigned:{' '}
-                                    <span className="font-semibold text-slate-900">{selectedGroupIds.length}</span>
+                                    <span className="font-semibold text-slate-900">
+                                        {selectedGroupIds.length}
+                                    </span>
                                 </p>
                             </div>
                         </div>
@@ -299,16 +293,16 @@ export default function ApplyTemplateWizard({
                                 className="flex items-center gap-2 text-sm font-medium text-slate-700"
                             >
                                 {showPolicies ? '▲' : '▼'}
-
                                 View policies that will be created ({template.policies.length})
                             </button>
 
                             {showPolicies && (
                                 <div className="mt-2 space-y-2">
                                     {template.policies.map((policy) => {
-                                        const effectClasses = policy.effect === 'ALLOW'
-                                            ? 'bg-emerald-100 text-emerald-700'
-                                            : 'bg-red-100 text-red-700';
+                                        const effectClasses =
+                                            policy.effect === 'ALLOW'
+                                                ? 'bg-emerald-100 text-emerald-700'
+                                                : 'bg-red-100 text-red-700';
 
                                         return (
                                             <div
@@ -316,14 +310,18 @@ export default function ApplyTemplateWizard({
                                                 className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"
                                             >
                                                 <div className="flex items-center gap-2">
-                                                    <span className={classNames(
-                                                        'rounded-md px-2 py-0.5 text-[10px] font-bold uppercase',
-                                                        effectClasses,
-                                                    )}>
+                                                    <span
+                                                        className={classNames(
+                                                            'rounded-md px-2 py-0.5 text-[10px] font-bold uppercase',
+                                                            effectClasses,
+                                                        )}
+                                                    >
                                                         {policy.effect}
                                                     </span>
 
-                                                    <p className="text-sm font-medium text-slate-900">{policy.name}</p>
+                                                    <p className="text-sm font-medium text-slate-900">
+                                                        {policy.name}
+                                                    </p>
                                                 </div>
 
                                                 <p className="mt-1 truncate text-xs text-slate-500">
@@ -375,9 +373,7 @@ export default function ApplyTemplateWizard({
                                 disabled={isSubmitting}
                                 className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700 disabled:opacity-60"
                             >
-                                {isSubmitting && (
-                                    <Loader2 size={15} className="animate-spin" />
-                                )}
+                                {isSubmitting && <Loader2 size={15} className="animate-spin" />}
 
                                 {isSubmitting ? 'Creating...' : 'Create Role'}
                             </button>
@@ -395,10 +391,7 @@ ApplyTemplateWizard.propTypes = {
     onSuccess: PropTypes.func,
 
     template: PropTypes.shape({
-        id: PropTypes.oneOfType([
-            PropTypes.string,
-            PropTypes.number,
-        ]).isRequired,
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 
         name: PropTypes.string.isRequired,
         description: PropTypes.string,

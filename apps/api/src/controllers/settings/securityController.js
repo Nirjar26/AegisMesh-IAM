@@ -22,7 +22,9 @@ exports.changePassword = async (req, res, next) => {
 
         const user = await prisma.user.findUnique({ where: { id: req.user.id } });
         if (!user?.passwordHash) {
-            return res.status(404).json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
+            return res
+                .status(404)
+                .json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
         }
 
         const errors = [];
@@ -36,7 +38,9 @@ exports.changePassword = async (req, res, next) => {
             : false;
 
         if (matchesExistingPassword) {
-            errors.push(fieldError('newPassword', 'New password must be different from current password'));
+            errors.push(
+                fieldError('newPassword', 'New password must be different from current password'),
+            );
         }
 
         if (String(newPassword || '') !== String(confirmPassword || '')) {
@@ -70,7 +74,10 @@ exports.changePassword = async (req, res, next) => {
             },
         });
 
-        const revokedCount = await tokenService.revokeAllOtherSessions(req.user.id, req.user.sessionId || null);
+        const revokedCount = await tokenService.revokeAllOtherSessions(
+            req.user.id,
+            req.user.sessionId || null,
+        );
 
         await createAuditLog({
             req,
@@ -223,21 +230,24 @@ exports.getConnectedApps = async (req, res, next) => {
             }),
         ]);
 
-        const oauthResources = Array.from(new Set(oauthApps.map((app) => `auth/oauth/${app.provider}`)));
-        const oauthLogEntries = oauthResources.length > 0
-            ? await prisma.auditLog.findMany({
-                where: {
-                    userId: req.user.id,
-                    action: 'OAUTH_LOGIN',
-                    resource: { in: oauthResources },
-                },
-                orderBy: { createdAt: 'desc' },
-                select: {
-                    resource: true,
-                    createdAt: true,
-                },
-            })
-            : [];
+        const oauthResources = Array.from(
+            new Set(oauthApps.map((app) => `auth/oauth/${app.provider}`)),
+        );
+        const oauthLogEntries =
+            oauthResources.length > 0
+                ? await prisma.auditLog.findMany({
+                      where: {
+                          userId: req.user.id,
+                          action: 'OAUTH_LOGIN',
+                          resource: { in: oauthResources },
+                      },
+                      orderBy: { createdAt: 'desc' },
+                      select: {
+                          resource: true,
+                          createdAt: true,
+                      },
+                  })
+                : [];
 
         const oauthActivityMap = oauthLogEntries.reduce((map, entry) => {
             const list = map.get(entry.resource) || [];
@@ -280,7 +290,9 @@ exports.getConnectedApps = async (req, res, next) => {
             riskLevel: token.scopes.some((scope) => {
                 const normalized = String(scope || '');
                 return normalized.startsWith('write:') || normalized.startsWith('delete:');
-            }) ? 'medium' : 'low',
+            })
+                ? 'medium'
+                : 'low',
             description: `API key with ${token.scopes.length} permissions`,
         }));
 

@@ -1,18 +1,16 @@
 const prisma = require('../../config/database');
 const { auditUser } = require('../../utils/auditLog');
 const bcrypt = require('bcryptjs');
-const { parsePagination, sanitizeUser, validateUserUpdate, sanitizeUpdateRoleIds } = require('./userHelpers');
+const {
+    parsePagination,
+    sanitizeUser,
+    validateUserUpdate,
+    sanitizeUpdateRoleIds,
+} = require('./userHelpers');
 
 exports.getUsers = async (req, res, next) => {
     try {
-        const {
-            search,
-            status,
-            mfaEnabled,
-            roleId,
-            page = 1,
-            limit = 20,
-        } = req.query;
+        const { search, status, mfaEnabled, roleId, page = 1, limit = 20 } = req.query;
 
         const where = {};
 
@@ -43,10 +41,7 @@ exports.getUsers = async (req, res, next) => {
             where.status = status;
         }
 
-        if (
-            mfaEnabled !== undefined &&
-            mfaEnabled !== ''
-        ) {
+        if (mfaEnabled !== undefined && mfaEnabled !== '') {
             where.mfaEnabled = mfaEnabled === 'true';
         }
 
@@ -58,86 +53,73 @@ exports.getUsers = async (req, res, next) => {
 
         const pagination = parsePagination(page, limit);
 
-        const [
-            users,
-            total,
-            totalActive,
-            totalInactive,
-            totalLocked,
-            totalUnverified,
-        ] = await Promise.all([
-            prisma.user.findMany({
-                where,
-                skip: pagination.skip,
-                take: pagination.take,
-                include: {
-                    userRoles: {
-                        include: { role: true },
-                    },
-                    oauthAccounts: {
-                        select: { provider: true },
-                    },
-                    sessions: {
-                        where: {
-                            expiresAt: {
-                                gt: new Date(),
+        const [users, total, totalActive, totalInactive, totalLocked, totalUnverified] =
+            await Promise.all([
+                prisma.user.findMany({
+                    where,
+                    skip: pagination.skip,
+                    take: pagination.take,
+                    include: {
+                        userRoles: {
+                            include: { role: true },
+                        },
+                        oauthAccounts: {
+                            select: { provider: true },
+                        },
+                        sessions: {
+                            where: {
+                                expiresAt: {
+                                    gt: new Date(),
+                                },
+                            },
+                            orderBy: {
+                                createdAt: 'desc',
+                            },
+                            take: 1,
+                        },
+                        _count: {
+                            select: {
+                                sessions: true,
                             },
                         },
-                        orderBy: {
-                            createdAt: 'desc',
-                        },
-                        take: 1,
                     },
-                    _count: {
-                        select: {
-                            sessions: true,
-                        },
+                    orderBy: {
+                        createdAt: 'desc',
                     },
-                },
-                orderBy: {
-                    createdAt: 'desc',
-                },
-            }),
-            prisma.user.count({ where }),
-            prisma.user.count({
-                where: {
-                    ...where,
-                    status: 'ACTIVE',
-                },
-            }),
-            prisma.user.count({
-                where: {
-                    ...where,
-                    status: 'INACTIVE',
-                },
-            }),
-            prisma.user.count({
-                where: {
-                    ...where,
-                    status: 'LOCKED',
-                },
-            }),
-            prisma.user.count({
-                where: {
-                    ...where,
-                    emailVerified: false,
-                },
-            }),
-        ]);
+                }),
+                prisma.user.count({ where }),
+                prisma.user.count({
+                    where: {
+                        ...where,
+                        status: 'ACTIVE',
+                    },
+                }),
+                prisma.user.count({
+                    where: {
+                        ...where,
+                        status: 'INACTIVE',
+                    },
+                }),
+                prisma.user.count({
+                    where: {
+                        ...where,
+                        status: 'LOCKED',
+                    },
+                }),
+                prisma.user.count({
+                    where: {
+                        ...where,
+                        emailVerified: false,
+                    },
+                }),
+            ]);
 
         const data = users.map((user) => ({
             ...sanitizeUser(user),
-            roles: user.userRoles.map(
-                (ur) => ur.role
-            ),
-            oauthProviders: user.oauthAccounts.map(
-                (oa) => oa.provider
-            ),
+            roles: user.userRoles.map((ur) => ur.role),
+            oauthProviders: user.oauthAccounts.map((oa) => oa.provider),
             sessionCount: user._count.sessions,
-            lastLoginAt:
-                user.sessions.length > 0
-                    ? user.sessions[0].createdAt
-                    : null,
+            lastLoginAt: user.sessions.length > 0 ? user.sessions[0].createdAt : null,
         }));
 
         res.json({
@@ -147,12 +129,8 @@ exports.getUsers = async (req, res, next) => {
                 total,
                 page: pagination.page,
                 limit: pagination.limit,
-                totalPages: Math.ceil(
-                    total / pagination.take
-                ),
-                hasNext:
-                    pagination.skip + pagination.take <
-                    total,
+                totalPages: Math.ceil(total / pagination.take),
+                hasNext: pagination.skip + pagination.take < total,
                 hasPrev: pagination.skip > 0,
             },
             summary: {
@@ -209,33 +187,19 @@ exports.getUserById = async (req, res, next) => {
 
         const safeUser = sanitizeUser(user);
 
-        const sortedSessions = [
-            ...(user.sessions || []),
-        ].sort(
-            (a, b) =>
-                b.createdAt.getTime() -
-                a.createdAt.getTime()
+        const sortedSessions = [...(user.sessions || [])].sort(
+            (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
         );
 
         res.json({
             success: true,
             data: {
                 ...safeUser,
-                roles: user.userRoles.map(
-                    (ur) => ur.role
-                ),
-                groups: user.userGroups.map(
-                    (ug) => ug.group
-                ),
-                oauthProviders:
-                    user.oauthAccounts.map(
-                        (oa) => oa.provider
-                    ),
-                sessionCount:
-                    user._count.sessions,
-                lastLoginAt:
-                    sortedSessions[0]?.createdAt ||
-                    null,
+                roles: user.userRoles.map((ur) => ur.role),
+                groups: user.userGroups.map((ug) => ug.group),
+                oauthProviders: user.oauthAccounts.map((oa) => oa.provider),
+                sessionCount: user._count.sessions,
+                lastLoginAt: sortedSessions[0]?.createdAt || null,
             },
         });
     } catch (error) {
@@ -249,7 +213,12 @@ exports.createUser = async (req, res, next) => {
 
         const existing = await prisma.user.findUnique({ where: { email } });
         if (existing) {
-            return res.status(409).json({ success: false, error: { code: 'USER_006', message: 'Email already in use' } });
+            return res
+                .status(409)
+                .json({
+                    success: false,
+                    error: { code: 'USER_006', message: 'Email already in use' },
+                });
         }
 
         const passwordHash = await bcrypt.hash(password, 12);
@@ -268,8 +237,12 @@ exports.createUser = async (req, res, next) => {
 
             if (Array.isArray(roleIds) && roleIds.length > 0) {
                 await tx.userRole.createMany({
-                    data: roleIds.map((roleId) => ({ userId: user.id, roleId, assignedBy: req.user.id })),
-                    skipDuplicates: true
+                    data: roleIds.map((roleId) => ({
+                        userId: user.id,
+                        roleId,
+                        assignedBy: req.user.id,
+                    })),
+                    skipDuplicates: true,
                 });
             }
 
@@ -297,23 +270,40 @@ exports.updateUser = async (req, res, next) => {
         });
 
         if (!user) {
-            return res.status(404).json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
+            return res
+                .status(404)
+                .json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
         }
 
         if (req.user.id === id && status && status !== 'ACTIVE') {
-            return res.status(400).json({ success: false, error: { code: 'USER_008', message: 'Cannot change your own status' } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: { code: 'USER_008', message: 'Cannot change your own status' },
+                });
         }
 
         const validation = await validateUserUpdate(id, status, user, email);
         if (!validation.valid) {
-            return res.status(400).json({ success: false, error: { code: validation.code, message: validation.message } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: { code: validation.code, message: validation.message },
+                });
         }
 
         let sanitizedRoleIds;
         try {
             sanitizedRoleIds = await sanitizeUpdateRoleIds(roleIds);
         } catch (error) {
-            return res.status(400).json({ success: false, error: { code: 'ROLE_001', message: error.message.split(': ')[1] } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: { code: 'ROLE_001', message: error.message.split(': ')[1] },
+                });
         }
 
         const updateData = {
@@ -322,7 +312,7 @@ exports.updateUser = async (req, res, next) => {
             ...(firstName !== undefined && { firstName }),
             ...(lastName !== undefined && { lastName }),
             ...(status !== undefined && { status }),
-            ...(status === 'ACTIVE' && { failedLoginCount: 0, lockedUntil: null })
+            ...(status === 'ACTIVE' && { failedLoginCount: 0, lockedUntil: null }),
         };
 
         const updatedUser = await prisma.$transaction(async (tx) => {
@@ -334,7 +324,11 @@ exports.updateUser = async (req, res, next) => {
                 await tx.userRole.deleteMany({ where: { userId: id } });
                 if (sanitizedRoleIds.length > 0) {
                     await tx.userRole.createMany({
-                        data: sanitizedRoleIds.map((roleId) => ({ userId: id, roleId, assignedBy: req.user.id })),
+                        data: sanitizedRoleIds.map((roleId) => ({
+                            userId: id,
+                            roleId,
+                            assignedBy: req.user.id,
+                        })),
                         skipDuplicates: true,
                     });
                 }
@@ -345,7 +339,10 @@ exports.updateUser = async (req, res, next) => {
                 await tx.user.update({ where: { id }, data: { failedLoginCount: 0 } });
             }
 
-            return tx.user.findUnique({ where: { id }, include: { userRoles: { include: { role: true } } } });
+            return tx.user.findUnique({
+                where: { id },
+                include: { userRoles: { include: { role: true } } },
+            });
         });
 
         if (status && status !== user.status) {
@@ -358,7 +355,10 @@ exports.updateUser = async (req, res, next) => {
         Reflect.deleteProperty(safeUser, 'mfaBackupCodes');
         Reflect.deleteProperty(safeUser, 'passwordResetToken');
         Reflect.deleteProperty(safeUser, 'emailVerifyToken');
-        res.json({ success: true, data: { ...safeUser, roles: updatedUser.userRoles.map((ur) => ur.role) } });
+        res.json({
+            success: true,
+            data: { ...safeUser, roles: updatedUser.userRoles.map((ur) => ur.role) },
+        });
     } catch (error) {
         next(error);
     }

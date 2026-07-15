@@ -21,7 +21,12 @@ export default function GroupDetail() {
         }
     }, [groupId, navigate]);
 
-    const { data: groupData, isLoading: groupLoading, error: groupError, refetch: refetchGroup } = useQuery({
+    const {
+        data: groupData,
+        isLoading: groupLoading,
+        error: groupError,
+        refetch: refetchGroup,
+    } = useQuery({
         queryKey: ['group', groupId],
         queryFn: () => rbacAPI.getGroup(groupId),
         enabled: !!groupId,
@@ -34,7 +39,10 @@ export default function GroupDetail() {
 
     const { data: usersData, isFetching: isSearchingUsers } = useQuery({
         queryKey: ['group-member-search', debouncedUserSearch],
-        queryFn: () => userAPI.getUsers({ search: debouncedUserSearch, page: 1, limit: 8 }).then((res) => res.data?.data || []),
+        queryFn: () =>
+            userAPI
+                .getUsers({ search: debouncedUserSearch, page: 1, limit: 8 })
+                .then((res) => res.data?.data || []),
         enabled: debouncedUserSearch.trim().length >= 2,
     });
 
@@ -45,7 +53,7 @@ export default function GroupDetail() {
             setSearchInput('');
             setSelectedMemberId('');
         },
-        onError: (err) => alert(err.response?.data?.error?.message || 'Error adding member')
+        onError: (err) => alert(err.response?.data?.error?.message || 'Error adding member'),
     });
 
     const removeMemberMutation = useMutation({
@@ -69,7 +77,7 @@ export default function GroupDetail() {
     const deleteGroupMutation = useMutation({
         mutationFn: () => rbacAPI.deleteGroup(groupId),
         onSuccess: () => navigate('/dashboard/groups'),
-        onError: (err) => alert(err.response?.data?.error?.message || 'Error deleting group')
+        onError: (err) => alert(err.response?.data?.error?.message || 'Error deleting group'),
     });
 
     const handleCopyArn = () => {
@@ -138,8 +146,8 @@ export default function GroupDetail() {
         );
     }
 
-    const attachedRoleIds = new Set(group.groupRoles?.map(gr => gr.role.id));
-    const availableRoles = allRoles.filter(r => !attachedRoleIds.has(r.id));
+    const attachedRoleIds = new Set(group.groupRoles?.map((gr) => gr.role.id));
+    const availableRoles = allRoles.filter((r) => !attachedRoleIds.has(r.id));
     const arn = `arn:aws:iam::account:group/${group.name}`;
 
     // Get user initials
@@ -154,11 +162,14 @@ export default function GroupDetail() {
     let dropdownContent = null;
     if (searchInput.trim().length >= 2) {
         if (isSearchingUsers) {
-            dropdownContent = <div className="px-3 py-2 text-xs text-[#7a87a8]">Searching users...</div>;
+            dropdownContent = (
+                <div className="px-3 py-2 text-xs text-[#7a87a8]">Searching users...</div>
+            );
         } else if (availableUsers.length > 0) {
             dropdownContent = availableUsers.map((user) => {
                 const isSelected = selectedMemberId === user.id;
-                const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email;
+                const fullName =
+                    `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email;
 
                 return (
                     <button
@@ -176,7 +187,9 @@ export default function GroupDetail() {
                 );
             });
         } else {
-            dropdownContent = <div className="px-3 py-2 text-xs text-[#7a87a8]">No matching users found</div>;
+            dropdownContent = (
+                <div className="px-3 py-2 text-xs text-[#7a87a8]">No matching users found</div>
+            );
         }
     }
 
@@ -188,7 +201,10 @@ export default function GroupDetail() {
                     to="/dashboard/groups"
                     className="flex items-center gap-1.5 text-sm text-[#7a87a8] hover:text-[#4f46e5] transition-colors mb-5 w-fit cursor-pointer group"
                 >
-                    <ChevronLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+                    <ChevronLeft
+                        size={14}
+                        className="group-hover:-translate-x-0.5 transition-transform"
+                    />
                     Back to Groups
                 </Link>
 
@@ -204,8 +220,12 @@ export default function GroupDetail() {
 
                             {/* Content */}
                             <div>
-                                <h1 className="text-[22px] font-bold text-[#0f1623]">{group.name}</h1>
-                                <p className="text-[13px] text-[#7a87a8] mt-1">{group.description || 'No description provided'}</p>
+                                <h1 className="text-[22px] font-bold text-[#0f1623]">
+                                    {group.name}
+                                </h1>
+                                <p className="text-[13px] text-[#7a87a8] mt-1">
+                                    {group.description || 'No description provided'}
+                                </p>
 
                                 {/* ARN */}
                                 <div className="mt-3 font-mono text-xs text-[#3a4560] bg-[#f4f6fb] border border-[#d0d7e8] rounded-lg px-3 py-1.5 inline-flex items-center gap-2">
@@ -238,7 +258,11 @@ export default function GroupDetail() {
                             </button>
                             <button
                                 onClick={() => {
-                                    if (globalThis.confirm(`Are you sure you want to delete "${group.name}"?`)) {
+                                    if (
+                                        globalThis.confirm(
+                                            `Are you sure you want to delete "${group.name}"?`,
+                                        )
+                                    ) {
                                         deleteGroupMutation.mutate();
                                     }
                                 }}
@@ -258,7 +282,9 @@ export default function GroupDetail() {
                     <div className="bg-white border border-[#d0d7e8] rounded-2xl overflow-hidden shadow-sm">
                         {/* Card Header */}
                         <div className="px-6 py-4 border-b border-[#f0f2f8] flex items-center justify-between">
-                            <p className="text-[15px] font-semibold text-[#0f1623]">Group Members</p>
+                            <p className="text-[15px] font-semibold text-[#0f1623]">
+                                Group Members
+                            </p>
                             <span className="bg-[#4f46e5]/8 text-[#4f46e5] text-xs font-semibold px-2.5 py-1 rounded-full">
                                 {group.userGroups.length} Users
                             </span>
@@ -286,7 +312,9 @@ export default function GroupDetail() {
                             </div>
 
                             <button
-                                onClick={() => selectedMemberId && addMemberMutation.mutate(selectedMemberId)}
+                                onClick={() =>
+                                    selectedMemberId && addMemberMutation.mutate(selectedMemberId)
+                                }
                                 disabled={!selectedMemberId || addMemberMutation.isPending}
                                 className="bg-[#4f46e5] hover:bg-[#3730a3] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
                             >
@@ -297,7 +325,9 @@ export default function GroupDetail() {
                         {/* Member List */}
                         {group.userGroups.length === 0 ? (
                             <div className="px-6 py-8 text-center">
-                                <p className="text-[#7a87a8] text-sm">No members in this group yet</p>
+                                <p className="text-[#7a87a8] text-sm">
+                                    No members in this group yet
+                                </p>
                             </div>
                         ) : (
                             <div>
@@ -305,7 +335,9 @@ export default function GroupDetail() {
                                     <div
                                         key={user.id}
                                         className={`px-6 py-3.5 flex items-center justify-between hover:bg-[#f8f9fd] transition-colors ${
-                                            index === group.userGroups.length - 1 ? '' : 'border-b border-[#f0f2f8]'
+                                            index === group.userGroups.length - 1
+                                                ? ''
+                                                : 'border-b border-[#f0f2f8]'
                                         }`}
                                     >
                                         {/* User Info */}
@@ -314,8 +346,12 @@ export default function GroupDetail() {
                                                 {getInitials(user.firstName, user.lastName)}
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-[14px] font-semibold text-[#0f1623]">{user.firstName} {user.lastName}</p>
-                                                <p className="text-[11px] font-mono text-[#7a87a8]">{truncateId(user.id)}</p>
+                                                <p className="text-[14px] font-semibold text-[#0f1623]">
+                                                    {user.firstName} {user.lastName}
+                                                </p>
+                                                <p className="text-[11px] font-mono text-[#7a87a8]">
+                                                    {truncateId(user.id)}
+                                                </p>
                                             </div>
                                         </div>
 
@@ -329,7 +365,11 @@ export default function GroupDetail() {
                                             </Link>
                                             <button
                                                 onClick={() => {
-                                                    if (globalThis.confirm(`Remove ${user.firstName} ${user.lastName}?`)) {
+                                                    if (
+                                                        globalThis.confirm(
+                                                            `Remove ${user.firstName} ${user.lastName}?`,
+                                                        )
+                                                    ) {
                                                         removeMemberMutation.mutate(user.id);
                                                     }
                                                 }}
@@ -349,7 +389,9 @@ export default function GroupDetail() {
                     <div className="bg-white border border-[#d0d7e8] rounded-2xl overflow-hidden shadow-sm">
                         {/* Card Header */}
                         <div className="px-6 py-4 border-b border-[#f0f2f8] flex items-center justify-between">
-                            <p className="text-[15px] font-semibold text-[#0f1623]">Attached Roles</p>
+                            <p className="text-[15px] font-semibold text-[#0f1623]">
+                                Attached Roles
+                            </p>
                             <span className="bg-[#16a34a]/8 text-[#16a34a] text-xs font-semibold px-2.5 py-1 rounded-full">
                                 {group.groupRoles.length} Roles
                             </span>
@@ -364,14 +406,21 @@ export default function GroupDetail() {
                                     className="w-full border border-[#d0d7e8] rounded-xl px-4 py-2.5 text-sm bg-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] text-[#0f1623]"
                                 >
                                     <option value="">Select a role</option>
-                                    {availableRoles.map(r => (
-                                        <option key={r.id} value={r.id}>{r.name}</option>
+                                    {availableRoles.map((r) => (
+                                        <option key={r.id} value={r.id}>
+                                            {r.name}
+                                        </option>
                                     ))}
                                 </select>
-                                <ChevronDown size={16} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#7a87a8] pointer-events-none" />
+                                <ChevronDown
+                                    size={16}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#7a87a8] pointer-events-none"
+                                />
                             </div>
                             <button
-                                onClick={() => selectedRole && attachRoleMutation.mutate(selectedRole)}
+                                onClick={() =>
+                                    selectedRole && attachRoleMutation.mutate(selectedRole)
+                                }
                                 disabled={!selectedRole || attachRoleMutation.isPending}
                                 className="bg-[#4f46e5] hover:bg-[#3730a3] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
                             >
@@ -385,8 +434,12 @@ export default function GroupDetail() {
                                 <div className="bg-[#f4f6fb] rounded-2xl p-3 inline-flex">
                                     <KeyRound size={24} className="text-[#7a87a8]" />
                                 </div>
-                                <p className="text-[14px] font-semibold text-[#0f1623]">No roles attached</p>
-                                <p className="text-[12px] text-[#7a87a8]">Attach a role to grant this group permissions.</p>
+                                <p className="text-[14px] font-semibold text-[#0f1623]">
+                                    No roles attached
+                                </p>
+                                <p className="text-[12px] text-[#7a87a8]">
+                                    Attach a role to grant this group permissions.
+                                </p>
                             </div>
                         ) : (
                             <div>
@@ -394,7 +447,9 @@ export default function GroupDetail() {
                                     <div
                                         key={role.id}
                                         className={`px-6 py-3.5 flex items-center justify-between hover:bg-[#f8f9fd] transition-colors ${
-                                            index === group.groupRoles.length - 1 ? '' : 'border-b border-[#f0f2f8]'
+                                            index === group.groupRoles.length - 1
+                                                ? ''
+                                                : 'border-b border-[#f0f2f8]'
                                         }`}
                                     >
                                         {/* Role Info */}
@@ -409,14 +464,20 @@ export default function GroupDetail() {
                                                 >
                                                     {role.name}
                                                 </Link>
-                                                <p className="text-[11px] text-[#7a87a8] truncate">{role.description || '—'}</p>
+                                                <p className="text-[11px] text-[#7a87a8] truncate">
+                                                    {role.description || '—'}
+                                                </p>
                                             </div>
                                         </div>
 
                                         {/* Detach Button */}
                                         <button
                                             onClick={() => {
-                                                if (globalThis.confirm(`Detach role "${role.name}"?`)) {
+                                                if (
+                                                    globalThis.confirm(
+                                                        `Detach role "${role.name}"?`,
+                                                    )
+                                                ) {
                                                     detachRoleMutation.mutate(role.id);
                                                 }
                                             }}

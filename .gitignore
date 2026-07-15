@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════════════════════════
-# AegisMesh IAM - Global Git Ignore
+# Bastion - Global Git Ignore
 # ═══════════════════════════════════════════════════════════════
 
 # ── Environment & Secrets ──────────────────────────────────────
@@ -18,26 +18,23 @@ credentials-*
 
 # ── Dependencies ────────────────────────────────────────────────
 node_modules/
-.turbo/cache
-
-# ── AI/IDE configs ─────────────────────────────────────────────
-.continue/
-.opencode/
 
 # ── Build Outputs ───────────────────────────────────────────────
 dist/
 build/
+storybook-static/
 *.tsbuildinfo
 packages/*/dist/
 coverage/
 .nyc_output/
 
-# ── Logs ────────────────────────────────────────────────────────
+# ── Logs & Reports ──────────────────────────────────────────────
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+eslint-*.json
 
 # ── Python ──────────────────────────────────────────────────────
 __pycache__/
@@ -63,14 +60,12 @@ pg_dumpall*
 *secrets*.yml
 db_data/
 
-# ── IDE & Editor ────────────────────────────────────────────────
+# ── IDE, Editor & OS ────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# ── OS ──────────────────────────────────────────────────────────
 .DS_Store
 .DS_Store?
 ._*
@@ -78,7 +73,7 @@ db_data/
 .Trashes
 ehthumbs.db
 
-# ── Temporary / Cache ───────────────────────────────────────────
+# ── Cache & Temp ────────────────────────────────────────────────
 tmp/
 temp/
 *.tmp
@@ -99,8 +94,9 @@ CLAUDE.md
 .continue/
 .archive/
 .jenkins/
-.continue/
+.opencode/
 
-# ── Local Dev Scripts (not needed in CI) ───────────────────────
+# ── Plans & Local Scripts (not committed) ─────────────────────
+.plans/
 scripts/ci/sonar-report.js
 scripts/ci/scan-repo/

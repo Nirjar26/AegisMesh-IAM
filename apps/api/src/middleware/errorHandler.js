@@ -18,7 +18,10 @@ function errorHandler(err, req, res, _next) {
         success: false,
         error: {
             code: 'INTERNAL_ERROR',
-            message: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred' : err.message,
+            message:
+                process.env.NODE_ENV === 'production'
+                    ? 'An unexpected error occurred'
+                    : err.message,
         },
     };
 
@@ -28,18 +31,30 @@ function errorHandler(err, req, res, _next) {
         err.constructor?.name === 'PrismaClientInitializationError' ||
         errMsgLower.includes('authentication failed against database server') ||
         errMsgLower.includes('database credentials') ||
-        errMsgLower.includes('can\'t reach database server') ||
+        errMsgLower.includes("can't reach database server") ||
         errMsgLower.includes('cannot connect to the database');
 
     if (err.isOperational) {
         status = err.statusCode;
-        body.error = { code: err.errorCode, message: err.message, details: err.details || undefined };
+        body.error = {
+            code: err.errorCode,
+            message: err.message,
+            details: err.details || undefined,
+        };
     } else if (isPrismaConnError) {
         status = 503;
-        body.error = { code: 'DATABASE_ERROR', message: 'Database connection or authentication failed. Please verify credentials and database availability.' };
+        body.error = {
+            code: 'DATABASE_ERROR',
+            message:
+                'Database connection or authentication failed. Please verify credentials and database availability.',
+        };
     } else if (err.code === 'P2002') {
         status = 409;
-        body.error = { code: 'CONFLICT', message: 'A record with this data already exists', details: err.meta?.target ? { target: err.meta.target } : undefined };
+        body.error = {
+            code: 'CONFLICT',
+            message: 'A record with this data already exists',
+            details: err.meta?.target ? { target: err.meta.target } : undefined,
+        };
     } else if (err.code === 'P2025') {
         status = 404;
         body.error = { code: 'NOT_FOUND', message: 'Record not found' };

@@ -25,7 +25,9 @@ function getRiskLabel(level) {
 function SummaryCard({ label, value }) {
     return (
         <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-center shadow-sm">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">{label}</p>
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
+                {label}
+            </p>
             <p className="text-2xl font-semibold text-slate-900 mt-2">{value}</p>
         </div>
     );
@@ -97,7 +99,11 @@ export default function ConnectedApps() {
             ]);
         },
         onError: (error) => {
-            toast.error(error.response?.data?.error?.message || error.response?.data?.message || 'Failed to revoke access');
+            toast.error(
+                error.response?.data?.error?.message ||
+                    error.response?.data?.message ||
+                    'Failed to revoke access',
+            );
         },
     });
 
@@ -131,7 +137,8 @@ export default function ConnectedApps() {
             <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex gap-3">
                 <Info size={18} className="text-blue-600 mt-0.5 shrink-0" />
                 <p className="text-sm text-blue-800">
-                    These are all services and API keys that have access to your account. Revoke access for anything you do not recognize or no longer use.
+                    These are all services and API keys that have access to your account. Revoke
+                    access for anything you do not recognize or no longer use.
                 </p>
             </div>
 
@@ -151,7 +158,7 @@ export default function ConnectedApps() {
                             'px-4 py-2 rounded-full text-sm font-medium border transition-colors',
                             activeFilter === option.id
                                 ? 'bg-indigo-600 border-indigo-600 text-white'
-                                : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900'
+                                : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900',
                         )}
                     >
                         {option.label}
@@ -159,7 +166,9 @@ export default function ConnectedApps() {
                 ))}
             </div>
 
-            {isLoading ? <div className="text-sm text-slate-500">Loading connected apps...</div> : null}
+            {isLoading ? (
+                <div className="text-sm text-slate-500">Loading connected apps...</div>
+            ) : null}
 
             {!isLoading && apps.length === 0 ? (
                 <div className="bg-white border border-slate-200 rounded-2xl shadow-sm py-14 flex flex-col items-center text-center px-6">
@@ -182,32 +191,45 @@ export default function ConnectedApps() {
             {!isLoading && filteredApps.length > 0 ? (
                 <div className="space-y-3">
                     {filteredApps.map((app) => (
-                        <div key={app.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition-all">
+                        <div
+                            key={app.id}
+                            className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition-all"
+                        >
                             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                                 <div className="flex items-start gap-4 min-w-0 xl:w-[280px]">
                                     <ConnectedAppIcon app={app} />
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <h3 className="font-semibold text-slate-900">{app.name}</h3>
-                                            <span className={classNames(
-                                                'text-xs px-2 py-0.5 rounded-full font-medium',
-                                                app.type === 'oauth'
-                                                    ? 'bg-blue-50 text-blue-700'
-                                                    : 'bg-indigo-50 text-indigo-700'
-                                            )}
+                                            <h3 className="font-semibold text-slate-900">
+                                                {app.name}
+                                            </h3>
+                                            <span
+                                                className={classNames(
+                                                    'text-xs px-2 py-0.5 rounded-full font-medium',
+                                                    app.type === 'oauth'
+                                                        ? 'bg-blue-50 text-blue-700'
+                                                        : 'bg-indigo-50 text-indigo-700',
+                                                )}
                                             >
                                                 {app.type === 'oauth' ? 'OAuth' : 'API Key'}
                                             </span>
                                         </div>
-                                        <p className="text-xs text-slate-500 mt-1">{app.description}</p>
+                                        <p className="text-xs text-slate-500 mt-1">
+                                            {app.description}
+                                        </p>
                                     </div>
                                 </div>
 
                                 <div className="flex-1 xl:px-2">
-                                    <p className="text-xs font-medium text-slate-400 uppercase tracking-[0.18em] mb-1">Permissions</p>
+                                    <p className="text-xs font-medium text-slate-400 uppercase tracking-[0.18em] mb-1">
+                                        Permissions
+                                    </p>
                                     <div className="flex flex-wrap gap-1.5">
                                         {(app.scopes || []).map((scope) => (
-                                            <span key={scope} className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full">
+                                            <span
+                                                key={scope}
+                                                className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full"
+                                            >
                                                 {scope}
                                             </span>
                                         ))}
@@ -216,21 +238,40 @@ export default function ConnectedApps() {
                                     <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-500">
                                         <div className="inline-flex items-center gap-1.5">
                                             <Calendar size={13} />
-                                            <span>Connected {app.connectedAt ? formatRelative(app.connectedAt) : 'Unknown'}</span>
+                                            <span>
+                                                Connected{' '}
+                                                {app.connectedAt
+                                                    ? formatRelative(app.connectedAt)
+                                                    : 'Unknown'}
+                                            </span>
                                         </div>
                                         <div className="inline-flex items-center gap-1.5">
                                             <Clock size={13} />
-                                            <span>Last used {app.lastUsedAt ? formatRelative(app.lastUsedAt) : 'Never used'}</span>
+                                            <span>
+                                                Last used{' '}
+                                                {app.lastUsedAt
+                                                    ? formatRelative(app.lastUsedAt)
+                                                    : 'Never used'}
+                                            </span>
                                         </div>
                                         <div className="inline-flex items-center gap-1.5">
                                             <Clock size={13} />
-                                            <span>{app.expiresAt ? `Expires ${formatDate(app.expiresAt)}` : 'Never expires'}</span>
+                                            <span>
+                                                {app.expiresAt
+                                                    ? `Expires ${formatDate(app.expiresAt)}`
+                                                    : 'Never expires'}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="xl:w-[150px] xl:text-right">
-                                    <span className={classNames('inline-flex items-center px-3 py-1 rounded-full border text-xs font-medium', getRiskBadgeClasses(app.riskLevel))}>
+                                    <span
+                                        className={classNames(
+                                            'inline-flex items-center px-3 py-1 rounded-full border text-xs font-medium',
+                                            getRiskBadgeClasses(app.riskLevel),
+                                        )}
+                                    >
                                         {getRiskLabel(app.riskLevel)}
                                     </span>
                                     <div className="mt-3">
@@ -260,7 +301,10 @@ export default function ConnectedApps() {
                         }
                     }}
                     onKeyDown={(event) => {
-                        if ((event.key === 'Enter' || event.key === ' ') && !revokeMutation.isPending) {
+                        if (
+                            (event.key === 'Enter' || event.key === ' ') &&
+                            !revokeMutation.isPending
+                        ) {
                             setPendingRevoke(null);
                         }
                     }}
@@ -270,7 +314,9 @@ export default function ConnectedApps() {
                             <ShieldAlert size={22} />
                         </div>
 
-                        <h3 className="text-lg font-semibold text-slate-900 text-center">Revoke access for {pendingRevoke.name}?</h3>
+                        <h3 className="text-lg font-semibold text-slate-900 text-center">
+                            Revoke access for {pendingRevoke.name}?
+                        </h3>
                         <p className="text-sm text-slate-500 text-center mt-2">
                             {pendingRevoke.type === 'oauth'
                                 ? `This will disconnect your ${pendingRevoke.name} account. You will need to reconnect it to use ${pendingRevoke.name} login again.`
@@ -280,7 +326,10 @@ export default function ConnectedApps() {
                         {pendingRevoke.type === 'oauth' ? (
                             <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 flex gap-2">
                                 <AlertTriangle size={14} className="mt-0.5 shrink-0" />
-                                <span>If this is your only login method, you may need your password to sign in.</span>
+                                <span>
+                                    If this is your only login method, you may need your password to
+                                    sign in.
+                                </span>
                             </div>
                         ) : null}
 

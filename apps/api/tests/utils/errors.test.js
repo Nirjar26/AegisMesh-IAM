@@ -28,12 +28,31 @@ describe('AppError', () => {
 
 describe('ErrorCodes', () => {
     const required = [
-        'AUTH_001', 'AUTH_002', 'AUTH_003', 'AUTH_004', 'AUTH_005',
-        'AUTH_006', 'AUTH_007', 'AUTH_008', 'AUTH_009', 'AUTH_010',
-        'RBAC_001', 'RBAC_002', 'RBAC_003', 'RBAC_004', 'RBAC_005',
-        'RBAC_006', 'RBAC_007',
-        'USER_001', 'USER_002', 'USER_003', 'USER_004', 'USER_005',
-        'USER_006', 'USER_007', 'USER_008',
+        'AUTH_001',
+        'AUTH_002',
+        'AUTH_003',
+        'AUTH_004',
+        'AUTH_005',
+        'AUTH_006',
+        'AUTH_007',
+        'AUTH_008',
+        'AUTH_009',
+        'AUTH_010',
+        'RBAC_001',
+        'RBAC_002',
+        'RBAC_003',
+        'RBAC_004',
+        'RBAC_005',
+        'RBAC_006',
+        'RBAC_007',
+        'USER_001',
+        'USER_002',
+        'USER_003',
+        'USER_004',
+        'USER_005',
+        'USER_006',
+        'USER_007',
+        'USER_008',
     ];
 
     it.each(required)('defines code %s with code, message, and status', (key) => {

@@ -20,7 +20,7 @@ export default function GroupsList() {
         data: groups,
         isLoading,
         createMutation,
-        deleteMutation
+        deleteMutation,
     } = useEntityList({
         entityKey: 'groups',
         fetchFn: rbacAPI.getGroups,
@@ -31,17 +31,21 @@ export default function GroupsList() {
                 arn: data.arn,
             });
             const groupId = groupResponse.data?.data?.id;
-            
+
             if (groupId) {
                 // Attach users and roles in parallel for efficiency
-                const memberAssignments = data.userIds.map(userId => rbacAPI.addGroupMember(groupId, userId));
-                const roleAttachments = data.roleIds.map(roleId => rbacAPI.attachRoleToGroup(groupId, roleId));
-                
+                const memberAssignments = data.userIds.map((userId) =>
+                    rbacAPI.addGroupMember(groupId, userId),
+                );
+                const roleAttachments = data.roleIds.map((roleId) =>
+                    rbacAPI.attachRoleToGroup(groupId, roleId),
+                );
+
                 await Promise.all([...memberAssignments, ...roleAttachments]);
             }
             return groupResponse;
         },
-        deleteFn: (id) => rbacAPI.deleteGroup(id)
+        deleteFn: (id) => rbacAPI.deleteGroup(id),
     });
 
     const handleCloseForm = () => {
@@ -79,36 +83,36 @@ export default function GroupsList() {
     const handleCreate = (e) => {
         e.preventDefault();
         const newErrors = {};
-        
+
         if (!name.trim()) {
             newErrors.name = 'Group name is required';
         }
-        
+
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             return;
         }
-        
+
         setErrors({});
-        createMutation.mutate({ 
-            name: name.trim(), 
+        createMutation.mutate({
+            name: name.trim(),
             description: description.trim(),
             arn: arn.trim(),
             userIds: selectedUsers,
-            roleIds: selectedRoles
+            roleIds: selectedRoles,
         });
         handleCloseForm();
     };
 
     const toggleUser = (userId) => {
-        setSelectedUsers(prev => 
-            prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
+        setSelectedUsers((prev) =>
+            prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId],
         );
     };
 
     const toggleRole = (roleId) => {
-        setSelectedRoles(prev => 
-            prev.includes(roleId) ? prev.filter(id => id !== roleId) : [...prev, roleId]
+        setSelectedRoles((prev) =>
+            prev.includes(roleId) ? prev.filter((id) => id !== roleId) : [...prev, roleId],
         );
     };
 
@@ -154,7 +158,11 @@ export default function GroupsList() {
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        if (globalThis.confirm(`Are you sure you want to delete "${group.name}"?`)) {
+                                        if (
+                                            globalThis.confirm(
+                                                `Are you sure you want to delete "${group.name}"?`,
+                                            )
+                                        ) {
                                             deleteMutation.mutate(group.id);
                                         }
                                     }}
@@ -178,12 +186,20 @@ export default function GroupsList() {
                         <div className="pt-4 border-t border-[#f1f5f9] flex items-center justify-between">
                             <div className="flex gap-4">
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">Members</span>
-                                    <span className="text-[13px] font-semibold text-[#334155]">{group._count?.userGroups || 0}</span>
+                                    <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">
+                                        Members
+                                    </span>
+                                    <span className="text-[13px] font-semibold text-[#334155]">
+                                        {group._count?.userGroups || 0}
+                                    </span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">Roles</span>
-                                    <span className="text-[13px] font-semibold text-[#334155]">{group._count?.groupRoles || 0}</span>
+                                    <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">
+                                        Roles
+                                    </span>
+                                    <span className="text-[13px] font-semibold text-[#334155]">
+                                        {group._count?.groupRoles || 0}
+                                    </span>
                                 </div>
                             </div>
                             <Link
@@ -205,7 +221,9 @@ export default function GroupsList() {
             <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-[20px] font-semibold text-[#0f1623]">Groups</h1>
-                    <p className="text-[13px] text-[#7a87a8] mt-1">Organize users into groups and assign roles collectively.</p>
+                    <p className="text-[13px] text-[#7a87a8] mt-1">
+                        Organize users into groups and assign roles collectively.
+                    </p>
                 </div>
                 <button
                     type="button"
@@ -224,9 +242,9 @@ export default function GroupsList() {
                         onClick={handleCloseForm}
                         aria-label="Close modal"
                     />
-                    <dialog 
+                    <dialog
                         open
-                        className="relative w-full max-w-3xl overflow-hidden rounded-[2rem] bg-white p-0 shadow-2xl animate-in zoom-in duration-200" 
+                        className="relative w-full max-w-3xl overflow-hidden rounded-[2rem] bg-white p-0 shadow-2xl animate-in zoom-in duration-200"
                         aria-modal="true"
                         aria-labelledby="modal-title"
                     >
@@ -235,7 +253,12 @@ export default function GroupsList() {
                                 <div className="bg-[#4f46e5]/10 rounded-xl p-2 inline-flex">
                                     <Layers size={20} className="text-[#4f46e5]" />
                                 </div>
-                                <h2 id="modal-title" className="text-[20px] font-bold text-[#0f1623]">Create New Group</h2>
+                                <h2
+                                    id="modal-title"
+                                    className="text-[20px] font-bold text-[#0f1623]"
+                                >
+                                    Create New Group
+                                </h2>
                             </div>
                             <button
                                 type="button"
@@ -247,10 +270,18 @@ export default function GroupsList() {
                             </button>
                         </div>
 
-                        <form onSubmit={handleCreate} className="p-8 space-y-6 max-h-[75vh] overflow-y-auto">
+                        <form
+                            onSubmit={handleCreate}
+                            className="p-8 space-y-6 max-h-[75vh] overflow-y-auto"
+                        >
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <div className="col-span-2 sm:col-span-1">
-                                    <label htmlFor="group-name" className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2">Group Name</label>
+                                    <label
+                                        htmlFor="group-name"
+                                        className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2"
+                                    >
+                                        Group Name
+                                    </label>
                                     <input
                                         id="group-name"
                                         type="text"
@@ -270,19 +301,29 @@ export default function GroupsList() {
                                 </div>
 
                                 <div className="col-span-2 sm:col-span-1">
-                                    <label htmlFor="group-arn" className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2">ARN (Optional)</label>
+                                    <label
+                                        htmlFor="group-arn"
+                                        className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2"
+                                    >
+                                        ARN (Optional)
+                                    </label>
                                     <input
                                         id="group-arn"
                                         type="text"
                                         value={arn}
                                         onChange={(e) => setArn(e.target.value)}
-                                        placeholder="arn:aegismesh::group/..."
+                                        placeholder="arn:bastion::group/..."
                                         className="w-full border border-[#d0d7e8] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] text-[#0f1623] placeholder-[#b8c2d8] font-mono"
                                     />
                                 </div>
 
                                 <div className="col-span-2">
-                                    <label htmlFor="group-description" className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2">Description</label>
+                                    <label
+                                        htmlFor="group-description"
+                                        className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2"
+                                    >
+                                        Description
+                                    </label>
                                     <textarea
                                         id="group-description"
                                         value={description}
@@ -300,22 +341,36 @@ export default function GroupsList() {
                                         </legend>
                                         <div className="mt-2 max-h-48 overflow-y-auto space-y-2">
                                             {users.length === 0 ? (
-                                                <p className="text-xs text-[#94a3b8] italic p-2">No users available</p>
-                                            ) : users.map(user => (
-                                                <label key={user.id} aria-label={`${user.firstName} ${user.lastName}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white cursor-pointer transition-colors border border-transparent hover:border-[#d0d7e8]">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedUsers.includes(user.id)}
-                                                        onChange={() => toggleUser(user.id)}
-                                                        aria-label={`Select member ${user.firstName} ${user.lastName}`}
-                                                        className="w-4 h-4 rounded border-[#d0d7e8] text-[#4f46e5] focus:ring-[#4f46e5]/25"
-                                                    />
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-semibold text-[#0f172a] truncate">{user.firstName} {user.lastName}</p>
-                                                        <p className="text-[11px] text-[#7a87a8] truncate">{user.email}</p>
-                                                    </div>
-                                                </label>
-                                            ))}
+                                                <p className="text-xs text-[#94a3b8] italic p-2">
+                                                    No users available
+                                                </p>
+                                            ) : (
+                                                users.map((user) => (
+                                                    <label
+                                                        key={user.id}
+                                                        aria-label={`${user.firstName} ${user.lastName}`}
+                                                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-white cursor-pointer transition-colors border border-transparent hover:border-[#d0d7e8]"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedUsers.includes(
+                                                                user.id,
+                                                            )}
+                                                            onChange={() => toggleUser(user.id)}
+                                                            aria-label={`Select member ${user.firstName} ${user.lastName}`}
+                                                            className="w-4 h-4 rounded border-[#d0d7e8] text-[#4f46e5] focus:ring-[#4f46e5]/25"
+                                                        />
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-semibold text-[#0f172a] truncate">
+                                                                {user.firstName} {user.lastName}
+                                                            </p>
+                                                            <p className="text-[11px] text-[#7a87a8] truncate">
+                                                                {user.email}
+                                                            </p>
+                                                        </div>
+                                                    </label>
+                                                ))
+                                            )}
                                         </div>
                                     </fieldset>
                                 </div>
@@ -327,22 +382,38 @@ export default function GroupsList() {
                                         </legend>
                                         <div className="mt-2 max-h-48 overflow-y-auto space-y-2">
                                             {rolesList.length === 0 ? (
-                                                <p className="text-xs text-[#94a3b8] italic p-2">No roles available</p>
-                                            ) : rolesList.map(role => (
-                                                <label key={role.id} aria-label={`Role ${role.name}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white cursor-pointer transition-colors border border-transparent hover:border-[#d0d7e8]">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedRoles.includes(role.id)}
-                                                        onChange={() => toggleRole(role.id)}
-                                                        aria-label={`Select role ${role.name}`}
-                                                        className="w-4 h-4 rounded border-[#d0d7e8] text-[#4f46e5] focus:ring-[#4f46e5]/25"
-                                                    />
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-semibold text-[#0f172a] truncate">{role.name}</p>
-                                                        <p className="text-[11px] text-[#7a87a8] truncate">{role.isSystem ? 'System' : 'Custom'}</p>
-                                                    </div>
-                                                </label>
-                                            ))}
+                                                <p className="text-xs text-[#94a3b8] italic p-2">
+                                                    No roles available
+                                                </p>
+                                            ) : (
+                                                rolesList.map((role) => (
+                                                    <label
+                                                        key={role.id}
+                                                        aria-label={`Role ${role.name}`}
+                                                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-white cursor-pointer transition-colors border border-transparent hover:border-[#d0d7e8]"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedRoles.includes(
+                                                                role.id,
+                                                            )}
+                                                            onChange={() => toggleRole(role.id)}
+                                                            aria-label={`Select role ${role.name}`}
+                                                            className="w-4 h-4 rounded border-[#d0d7e8] text-[#4f46e5] focus:ring-[#4f46e5]/25"
+                                                        />
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-semibold text-[#0f172a] truncate">
+                                                                {role.name}
+                                                            </p>
+                                                            <p className="text-[11px] text-[#7a87a8] truncate">
+                                                                {role.isSystem
+                                                                    ? 'System'
+                                                                    : 'Custom'}
+                                                            </p>
+                                                        </div>
+                                                    </label>
+                                                ))
+                                            )}
                                         </div>
                                     </fieldset>
                                 </div>

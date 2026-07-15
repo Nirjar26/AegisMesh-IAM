@@ -2,6 +2,7 @@ Backup procedures and scripts for pre-EC2-delete safety
 
 Overview
 --------
+
 This folder contains the following helpers:
 
 - `backup-everything.sh` for Linux/EC2 backup runs
@@ -33,6 +34,7 @@ PowerShell -ExecutionPolicy Bypass -File .\scripts\infra\backup-everything.ps1 -
 
 Pre-requisites
 -------------
+
 - AWS CLI configured with credentials that can describe instances and create snapshots
 - `kubectl` configured and able to access the k3s cluster
 - `pg_dumpall` available inside the Postgres container (standard Postgres images include it)
@@ -40,6 +42,7 @@ Pre-requisites
 
 Important notes
 ---------------
+
 - The scripts create EBS snapshots but do not wait for snapshot completion; verify in the AWS Console.
 - If you use remote Terraform state (S3/remote backend), back it up using your backend's snapshot functionality.
 - If Postgres PVs are EBS-backed and you need consistent DB snapshots, prefer taking a DB dump (`pg_dump`) or stopping DB I/O briefly before snapshotting volumes.
@@ -47,6 +50,7 @@ Important notes
 
 Next recommended actions
 -----------------------
+
 1. Run the script with the correct `--instance-id` and confirm snapshots in AWS.
 2. Copy backups off the machine (S3 or other secure storage).
 3. Only delete the EC2 after verifying backups and snapshot completion.

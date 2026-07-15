@@ -1,14 +1,14 @@
 export const DONUT_COLORS = [
-    '#4f46e5',
-    '#2563eb',
-    '#16a34a',
-    '#d97706',
-    '#dc2626',
-    '#7c3aed',
-    '#0891b2',
-    '#be185d',
-    '#65a30d',
-    '#ea580c',
+    'var(--ds-color-accent)',
+    'var(--ds-color-info)',
+    'var(--ds-color-success)',
+    'var(--ds-color-warning)',
+    'var(--ds-color-danger)',
+    'var(--ds-color-accent-soft)',
+    'var(--ds-color-info)',
+    'var(--ds-color-danger)',
+    'var(--ds-color-success)',
+    'var(--ds-color-warning)',
 ];
 
 export const EMPTY_ARRAY = [];
@@ -83,12 +83,12 @@ export function getActivityData(timeRange, hourlyActivity, dailyActivity) {
 
 export function getSeverityClass(severity) {
     if (severity === 'CRITICAL' || severity === 'HIGH') {
-        return 'bg-[#dc2626]/10 text-[#dc2626]';
+        return 'bg-[var(--ds-color-danger)]/10 text-[var(--ds-color-danger)]';
     }
 
     if (severity === 'MEDIUM') {
-        return 'bg-[#d97706]/10 text-[#d97706]';
+        return 'bg-[var(--ds-color-warning)]/10 text-[var(--ds-color-warning)]';
     }
 
-    return 'bg-[#4f46e5]/8 text-[#4f46e5]';
+    return 'bg-[var(--ds-color-accent)]/8 text-[var(--ds-color-accent)]';
 }

@@ -8,19 +8,21 @@ import AuthLayout from '../components/AuthLayout';
 import InputField from '../components/InputField';
 import PasswordStrengthMeter from '../components/PasswordStrengthMeter';
 
-const resetSchema = z.object({
-    newPassword: z
-        .string()
-        .min(8, 'Password must be at least 8 characters')
-        .regex(/[A-Z]/, 'Must contain an uppercase letter')
-        .regex(/[a-z]/, 'Must contain a lowercase letter')
-        .regex(/\d/, 'Must contain a number')
-        .regex(/[@$!%*?&]/, 'Must contain a special character (@$!%*?&)'),
-    confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-});
+const resetSchema = z
+    .object({
+        newPassword: z
+            .string()
+            .min(8, 'Password must be at least 8 characters')
+            .regex(/[A-Z]/, 'Must contain an uppercase letter')
+            .regex(/[a-z]/, 'Must contain a lowercase letter')
+            .regex(/\d/, 'Must contain a number')
+            .regex(/[@$!%*?&]/, 'Must contain a special character (@$!%*?&)'),
+        confirmPassword: z.string(),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+        message: 'Passwords do not match',
+        path: ['confirmPassword'],
+    });
 
 export default function ResetPassword() {
     const [searchParams] = useSearchParams();
@@ -52,8 +54,18 @@ export default function ResetPassword() {
             <AuthLayout title="Invalid Link" subtitle="This password reset link is invalid">
                 <div className="text-center space-y-4">
                     <div className="w-16 h-16 mx-auto bg-aws-red/10 rounded-2xl flex items-center justify-center">
-                        <svg className="w-8 h-8 text-aws-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                        <svg
+                            className="w-8 h-8 text-aws-red"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                            />
                         </svg>
                     </div>
                     <Link
@@ -82,11 +94,24 @@ export default function ResetPassword() {
 
     if (success) {
         return (
-            <AuthLayout title="Password Reset!" subtitle="Your password has been successfully changed">
+            <AuthLayout
+                title="Password Reset!"
+                subtitle="Your password has been successfully changed"
+            >
                 <div className="text-center space-y-4 animate-fade-in-up">
                     <div className="w-16 h-16 mx-auto bg-green-500/10 rounded-2xl flex items-center justify-center">
-                        <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg
+                            className="w-8 h-8 text-green-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
                         </svg>
                     </div>
                     <p className="text-sm text-aws-text-dim">
@@ -148,5 +173,3 @@ export default function ResetPassword() {
         </AuthLayout>
     );
 }
-
-

@@ -18,7 +18,7 @@ function validate(schema) {
                     ...error.details.map((d) => ({
                         field: d.path.join('.'),
                         message: d.message.replaceAll('"', ''),
-                    }))
+                    })),
                 );
             } else {
                 req.body = value;
@@ -35,7 +35,7 @@ function validate(schema) {
                     ...error.details.map((d) => ({
                         field: d.path.join('.'),
                         message: d.message.replaceAll('"', ''),
-                    }))
+                    })),
                 );
             } else {
                 req.params = value;
@@ -52,7 +52,7 @@ function validate(schema) {
                     ...error.details.map((d) => ({
                         field: d.path.join('.'),
                         message: d.message.replaceAll('"', ''),
-                    }))
+                    })),
                 );
             } else {
                 req.query = value;

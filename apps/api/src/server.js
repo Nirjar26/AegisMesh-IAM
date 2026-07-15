@@ -1,9 +1,9 @@
 require('dotenv').config();
 if (process.env.DD_APM_ENABLED === 'true' || process.env.DD_TRACE_ENABLED === 'true') {
-  require('dd-trace').init({
-    logInjection: true,
-    profiling: true,
-  });
+    require('dd-trace').init({
+        logInjection: true,
+        profiling: true,
+    });
 }
 
 const app = require('./app');
@@ -29,10 +29,9 @@ function maskDatabaseUrl(rawUrl) {
 }
 
 function getServiceUrls(port) {
-    const frontendUrl = process.env.FRONTEND_URL
-        || `http://localhost:3000`;
-    const backendUrl = process.env.BACKEND_PUBLIC_URL
-        || `http://localhost:${process.env.PORT || port}`;
+    const frontendUrl = process.env.FRONTEND_URL || `http://localhost:3000`;
+    const backendUrl =
+        process.env.BACKEND_PUBLIC_URL || `http://localhost:${process.env.PORT || port}`;
     const healthUrl = `${backendUrl}/api/health`;
     const prismaUrl = maskDatabaseUrl(process.env.DATABASE_URL);
 
@@ -56,17 +55,19 @@ const server = app.listen(PORT, BIND_ADDR, () => {
 
     logger.info(`🚀 IAM Auth Server running on port ${PORT}`);
     logger.info(`📋 Environment: ${process.env.NODE_ENV || 'development'}`);
-    logger.info([
-        '',
-        '============================================================',
-        'AegisMesh IAM Service URLs',
-        '------------------------------------------------------------',
-        `Frontend     : ${urls.frontendUrl}`,
-        `Backend API  : ${urls.backendUrl}`,
-        `Health Check : ${urls.healthUrl}`,
-        `Prisma DB URL: ${urls.prismaUrl}`,
-        '============================================================',
-    ].join('\n'));
+    logger.info(
+        [
+            '',
+            '============================================================',
+            'Bastion IAM Service URLs',
+            '------------------------------------------------------------',
+            `Frontend     : ${urls.frontendUrl}`,
+            `Backend API  : ${urls.backendUrl}`,
+            `Health Check : ${urls.healthUrl}`,
+            `Prisma DB URL: ${urls.prismaUrl}`,
+            '============================================================',
+        ].join('\n'),
+    );
     scheduleCleanup();
 });
 

@@ -11,16 +11,26 @@ if (!process.env.DATABASE_URL) {
 // Reuse a global instance in non-production to avoid multiple clients during reloads/tests
 const globalForPrisma = globalThis;
 
-const basePrisma = globalForPrisma.prisma || new PrismaClient({
-    log: [{ emit: 'event', level: 'error' }],
-});
+const basePrisma =
+    globalForPrisma.prisma ||
+    new PrismaClient({
+        log: [{ emit: 'event', level: 'error' }],
+    });
 
 basePrisma.$on('error', (e) => {
     logger.error('Prisma error', { message: e.message });
 });
 
 async function handleCacheInvalidation(model, operation, args) {
-    const writeOperations = ['create', 'update', 'delete', 'upsert', 'createMany', 'updateMany', 'deleteMany'];
+    const writeOperations = [
+        'create',
+        'update',
+        'delete',
+        'upsert',
+        'createMany',
+        'updateMany',
+        'deleteMany',
+    ];
     if (!writeOperations.includes(operation)) {
         return;
     }
@@ -30,58 +40,97 @@ async function handleCacheInvalidation(model, operation, args) {
         return;
     }
 
-    const permissionModels = ['UserRole', 'UserGroup', 'GroupRole', 'RolePolicy', 'Policy', 'Role', 'Group'];
+    const permissionModels = [
+        'UserRole',
+        'UserGroup',
+        'GroupRole',
+        'RolePolicy',
+        'Policy',
+        'Role',
+        'Group',
+    ];
     if (permissionModels.includes(model)) {
-        redis.incr('user:permissions:version').catch(err => logger.warn('Cache invalidation failed', { model: 'permissions', error: err.message }));
+        redis
+            .incr('user:permissions:version')
+            .catch((err) =>
+                logger.warn('Cache invalidation failed', {
+                    model: 'permissions',
+                    error: err.message,
+                }),
+            );
     }
     if (model === 'OrganizationSettings') {
-        redis.del('org:settings').catch(err => logger.warn('Cache invalidation failed', { model: 'org:settings', error: err.message }));
+        redis
+            .del('org:settings')
+            .catch((err) =>
+                logger.warn('Cache invalidation failed', {
+                    model: 'org:settings',
+                    error: err.message,
+                }),
+            );
     }
     if (model === 'User') {
         const userId = args?.where?.id;
         if (userId && typeof userId === 'string') {
             // Invalidating specific user cache
-            redis.del(`user:profile:${userId}`).catch(err => logger.warn('Cache invalidation failed', { model: 'user:profile', userId, error: err.message }));
+            redis
+                .del(`user:profile:${userId}`)
+                .catch((err) =>
+                    logger.warn('Cache invalidation failed', {
+                        model: 'user:profile',
+                        userId,
+                        error: err.message,
+                    }),
+                );
         } else {
             // Invalidate all user profiles on bulk changes
-            redis.incr('user:profile:version').catch(err => logger.warn('Cache invalidation failed', { model: 'user:profile:version', error: err.message }));
+            redis
+                .incr('user:profile:version')
+                .catch((err) =>
+                    logger.warn('Cache invalidation failed', {
+                        model: 'user:profile:version',
+                        error: err.message,
+                    }),
+                );
         }
     }
 }
 
-const prisma = globalForPrisma.prismaExtended || basePrisma.$extends({
-    query: {
-        $allModels: {
-            async $allOperations({ model, operation, args, query }) {
-                const startedAt = process.hrtime.bigint();
+const prisma =
+    globalForPrisma.prismaExtended ||
+    basePrisma.$extends({
+        query: {
+            $allModels: {
+                async $allOperations({ model, operation, args, query }) {
+                    const startedAt = process.hrtime.bigint();
 
-                try {
-                    const result = await query(args);
+                    try {
+                        const result = await query(args);
 
-                    // Auto cache invalidation on successful database modifications
-                    await handleCacheInvalidation(model, operation, args);
+                        // Auto cache invalidation on successful database modifications
+                        await handleCacheInvalidation(model, operation, args);
 
-                    return result;
-                } finally {
-                    const durationSeconds = Number(process.hrtime.bigint() - startedAt) / 1e9;
-                    observeDatabaseQuery(model, operation, durationSeconds);
-                }
+                        return result;
+                    } finally {
+                        const durationSeconds = Number(process.hrtime.bigint() - startedAt) / 1e9;
+                        observeDatabaseQuery(model, operation, durationSeconds);
+                    }
+                },
+            },
+            $rawQuery: {
+                async $allOperations({ operation, args, query }) {
+                    const startedAt = process.hrtime.bigint();
+
+                    try {
+                        return await query(args);
+                    } finally {
+                        const durationSeconds = Number(process.hrtime.bigint() - startedAt) / 1e9;
+                        observeDatabaseQuery('raw', operation, durationSeconds);
+                    }
+                },
             },
         },
-        $rawQuery: {
-            async $allOperations({ operation, args, query }) {
-                const startedAt = process.hrtime.bigint();
-
-                try {
-                    return await query(args);
-                } finally {
-                    const durationSeconds = Number(process.hrtime.bigint() - startedAt) / 1e9;
-                    observeDatabaseQuery('raw', operation, durationSeconds);
-                }
-            },
-        },
-    },
-});
+    });
 
 if (process.env.NODE_ENV !== 'production') {
     globalForPrisma.prisma = basePrisma;

@@ -28,5 +28,3 @@ export default function ProtectedRoute({ children }) {
 ProtectedRoute.propTypes = {
     children: PropTypes.node,
 };
-
-

@@ -1,8 +1,15 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import {
+    createContext,
+    useContext,
+    useState,
+    useEffect,
+    useCallback,
+    useRef,
+    useMemo,
+} from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { authAPI, fetchCsrfToken } from '../services/api';
-import PropTypes from "prop-types";
+import PropTypes from 'prop-types';
 
 const AuthContext = createContext(null);
 const AUTH_EXPIRED_EVENT = 'iam:auth-expired';
@@ -42,24 +49,27 @@ export function AuthProvider({ children }) {
     }, [clearRefreshTimer]);
 
     // Schedule token refresh 1 minute before expiry
-    const scheduleRefresh = useCallback((token) => {
-        clearRefreshTimer();
+    const scheduleRefresh = useCallback(
+        (token) => {
+            clearRefreshTimer();
 
-        if (!token) return;
+            if (!token) return;
 
-        const expiry = getTokenExpiry(token);
-        if (!expiry) return;
+            const expiry = getTokenExpiry(token);
+            if (!expiry) return;
 
-        const timeUntilRefresh = expiry - Date.now() - 60000; // 1 minute before
-        if (timeUntilRefresh <= 0) {
-            refreshTokenFnRef.current?.();
-            return;
-        }
+            const timeUntilRefresh = expiry - Date.now() - 60000; // 1 minute before
+            if (timeUntilRefresh <= 0) {
+                refreshTokenFnRef.current?.();
+                return;
+            }
 
-        refreshTimerRef.current = setTimeout(() => {
-            refreshTokenFnRef.current?.();
-        }, timeUntilRefresh);
-    }, [clearRefreshTimer, getTokenExpiry]);
+            refreshTimerRef.current = setTimeout(() => {
+                refreshTokenFnRef.current?.();
+            }, timeUntilRefresh);
+        },
+        [clearRefreshTimer, getTokenExpiry],
+    );
 
     // Load user profile
     const loadProfile = useCallback(async () => {
@@ -75,20 +85,23 @@ export function AuthProvider({ children }) {
     }, [clearAuthState]);
 
     // Login
-    const login = useCallback(async (credentials) => {
-        const { data } = await authAPI.login(credentials);
-        const { accessToken: token, user: userData } = data.data;
+    const login = useCallback(
+        async (credentials) => {
+            const { data } = await authAPI.login(credentials);
+            const { accessToken: token, user: userData } = data.data;
 
-        if (token) {
-            setAccessToken(token);
-            scheduleRefresh(token);
-        }
+            if (token) {
+                setAccessToken(token);
+                scheduleRefresh(token);
+            }
 
-        setUser(userData);
-        setIsAuthenticated(true);
+            setUser(userData);
+            setIsAuthenticated(true);
 
-        return data;
-    }, [scheduleRefresh]);
+            return data;
+        },
+        [scheduleRefresh],
+    );
 
     // Logout
     const logout = useCallback(async () => {
@@ -126,7 +139,19 @@ export function AuthProvider({ children }) {
     }, [refreshToken]);
 
     const updateUser = useCallback((updates) => {
-        setUser((prev) => (prev ? { ...prev, ...Object.fromEntries(Object.entries(updates).filter(([k]) => k !== '__proto__' && k !== 'constructor' && k !== 'prototype')) } : null));
+        setUser((prev) =>
+            prev
+                ? {
+                      ...prev,
+                      ...Object.fromEntries(
+                          Object.entries(updates).filter(
+                              ([k]) =>
+                                  k !== '__proto__' && k !== 'constructor' && k !== 'prototype',
+                          ),
+                      ),
+                  }
+                : null,
+        );
     }, []);
 
     // Initialize auth state
@@ -138,7 +163,7 @@ export function AuthProvider({ children }) {
 
                 // 2. Attempt to refresh token (using HttpOnly cookie)
                 const token = await refreshToken();
-                
+
                 if (token) {
                     await loadProfile();
                 } else {
@@ -191,7 +216,7 @@ export function AuthProvider({ children }) {
             refreshToken,
             updateUser,
             loadProfile,
-        ]
+        ],
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -199,8 +224,7 @@ export function AuthProvider({ children }) {
 
 AuthProvider.propTypes = {
     children: PropTypes.node.isRequired,
-}
-
+};
 
 export function useAuth() {
     const context = useContext(AuthContext);

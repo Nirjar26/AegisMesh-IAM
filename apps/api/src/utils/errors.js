@@ -46,12 +46,11 @@ function createError(errorCode, details = null) {
         logger.warn('Unknown error code referenced', { errorCode });
         return new AppError('Unknown error', 500, 'UNKNOWN');
     }
-    
+
     // Support message override if provided in details
-    const message = (details && typeof details === 'object' && details.message) 
-        ? details.message 
-        : err.message;
-        
+    const message =
+        details && typeof details === 'object' && details.message ? details.message : err.message;
+
     return new AppError(message, err.status, err.code, details);
 }
 

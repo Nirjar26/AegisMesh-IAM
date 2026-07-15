@@ -60,14 +60,8 @@ export function getPasswordStrength(password) {
     };
 }
 
-export function handleOtpChange({
-    index,
-    value,
-    setOtpDigits,
-}) {
-    const cleanValue = value
-        .replace(/\D/g, '')
-        .slice(-1);
+export function handleOtpChange({ index, value, setOtpDigits }) {
+    const cleanValue = value.replace(/\D/g, '').slice(-1);
 
     setOtpDigits((previousDigits) => {
         const updatedDigits = [...previousDigits];

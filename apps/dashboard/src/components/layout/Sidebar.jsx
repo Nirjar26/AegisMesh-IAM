@@ -1,14 +1,7 @@
 import PropTypes from 'prop-types';
-import {
-    createElement,
-    useMemo,
-    useState,
-} from 'react';
+import { createElement, useMemo, useState } from 'react';
 
-import {
-    Link,
-    useLocation,
-} from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import {
     BarChart2,
@@ -30,22 +23,12 @@ function classNames(...values) {
     return values.filter(Boolean).join(' ');
 }
 
-function NavItem({
-    icon,
-    label,
-    path,
-    active,
-    collapsed,
-    isLast = false,
-    onClose,
-}) {
+function NavItem({ icon, label, path, active, collapsed, isLast = false, onClose }) {
     const iconElement = createElement(icon, {
         size: 15,
         className: classNames(
             'shrink-0 transition-opacity duration-150',
-            active
-                ? 'opacity-100'
-                : 'opacity-70 group-hover:opacity-100'
+            active ? 'opacity-100' : 'opacity-70 group-hover:opacity-100',
         ),
     });
 
@@ -60,7 +43,7 @@ function NavItem({
         isLast ? 'mb-0' : 'mb-0.5',
         active
             ? 'bg-[rgba(99,102,241,0.18)] text-white'
-            : 'bg-transparent text-[rgba(255,255,255,0.55)] hover:bg-[rgba(255,255,255,0.06)] hover:text-[rgba(255,255,255,0.85)]'
+            : 'bg-transparent text-[rgba(255,255,255,0.55)] hover:bg-[rgba(255,255,255,0.06)] hover:text-[rgba(255,255,255,0.85)]',
     );
 
     return (
@@ -72,18 +55,20 @@ function NavItem({
             className={classNames(
                 baseClasses,
                 'flex items-center rounded-lg transition-all duration-200 ease-in-out',
-                collapsed 
-                    ? 'mx-auto h-10 w-10 justify-center px-0 py-0' 
+                collapsed
+                    ? 'mx-auto h-10 w-10 justify-center px-0 py-0'
                     : 'w-full gap-[10px] px-[10px] py-2 text-[13px]',
-                active ? 'font-semibold' : 'font-medium'
+                active ? 'font-semibold' : 'font-medium',
             )}
         >
             {iconElement}
 
-            <span className={classNames(
-                'transition-all duration-200 ease-in-out overflow-hidden whitespace-nowrap',
-                collapsed ? 'w-0 opacity-0 invisible ml-0' : 'w-auto opacity-100 visible'
-            )}>
+            <span
+                className={classNames(
+                    'transition-all duration-200 ease-in-out overflow-hidden whitespace-nowrap',
+                    collapsed ? 'w-0 opacity-0 invisible ml-0' : 'w-auto opacity-100 visible',
+                )}
+            >
                 {label}
             </span>
         </Link>
@@ -100,11 +85,7 @@ NavItem.propTypes = {
     onClose: PropTypes.func,
 };
 
-function SectionToggle({
-    label,
-    expanded,
-    onToggle,
-}) {
+function SectionToggle({ label, expanded, onToggle }) {
     return (
         <button
             type="button"
@@ -128,7 +109,7 @@ function SectionToggle({
             <span
                 className={classNames(
                     'text-[#64748b] transition-transform duration-150',
-                    expanded && 'rotate-180'
+                    expanded && 'rotate-180',
                 )}
             >
                 ▾
@@ -143,11 +124,7 @@ SectionToggle.propTypes = {
     onToggle: PropTypes.func.isRequired,
 };
 
-export default function Sidebar({
-    collapsed: controlledCollapsed,
-    onCollapseToggle,
-    onClose,
-}) {
+export default function Sidebar({ collapsed: controlledCollapsed, onCollapseToggle, onClose }) {
     const { user } = useAuth();
     const location = useLocation();
     const pathname = location.pathname;
@@ -167,7 +144,7 @@ export default function Sidebar({
     }, [user]);
 
     const fullName = useMemo(() => {
-        return `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'AegisMesh User';
+        return `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Bastion User';
     }, [user]);
 
     const roleBadge = useMemo(() => {
@@ -175,9 +152,9 @@ export default function Sidebar({
         if (typeof user?.role === 'string') return user.role;
         if (user?.primaryRole?.name) return user.primaryRole.name;
         if (Array.isArray(user?.roles) && user.roles.length > 0) {
-            return user.roles[0]?.name || 'AegisMesh User';
+            return user.roles[0]?.name || 'Bastion User';
         }
-        return 'AegisMesh User';
+        return 'Bastion User';
     }, [user]);
 
     const identityItems = [
@@ -235,7 +212,12 @@ export default function Sidebar({
     };
 
     return (
-        <aside className={classNames("relative flex h-full shrink-0 flex-col border-r border-[#1f2937] bg-[#0f172a] shadow-2xl lg:shadow-none transition-[width] duration-200 ease-in-out will-change-[width]", collapsed ? "w-16" : "w-64")}>
+        <aside
+            className={classNames(
+                'relative flex h-full shrink-0 flex-col border-r border-[#1f2937] bg-[#0f172a] shadow-2xl lg:shadow-none transition-[width] duration-200 ease-in-out will-change-[width]',
+                collapsed ? 'w-16' : 'w-64',
+            )}
+        >
             <div className="relative border-b border-[#1f2937] px-5 py-5 flex items-center justify-between">
                 {collapsed ? (
                     <span className="text-[15px] font-bold text-[#6366f1] tracking-tight mx-auto">
@@ -243,14 +225,14 @@ export default function Sidebar({
                     </span>
                 ) : (
                     <span className="text-[15px] font-bold text-white tracking-tight">
-                        AegisMesh
+                        Bastion
                     </span>
                 )}
 
                 <button
                     type="button"
                     onClick={handleToggle}
-                    aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                     className="hidden lg:block rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
                 >
                     {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -267,7 +249,12 @@ export default function Sidebar({
             </div>
 
             <div className="mb-1 border-b border-[#1f2937] px-[6px] pb-5 pt-4">
-                <div className={classNames('flex items-center', collapsed ? 'justify-center' : 'gap-3')}>
+                <div
+                    className={classNames(
+                        'flex items-center',
+                        collapsed ? 'justify-center' : 'gap-3',
+                    )}
+                >
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#4f46e5] text-sm font-bold text-white">
                         {initials}
                     </div>
@@ -305,8 +292,17 @@ export default function Sidebar({
                             onToggle={() => toggleSection('identity')}
                         />
                     )}
-                    <div className={classNames('transition-all duration-200 overflow-hidden', (identityExpanded || collapsed) ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0')}>
-                        {identityItems.map((item, index) => renderItem(item, index === identityItems.length - 1))}
+                    <div
+                        className={classNames(
+                            'transition-all duration-200 overflow-hidden',
+                            identityExpanded || collapsed
+                                ? 'max-h-96 opacity-100'
+                                : 'max-h-0 opacity-0',
+                        )}
+                    >
+                        {identityItems.map((item, index) =>
+                            renderItem(item, index === identityItems.length - 1),
+                        )}
                     </div>
                 </div>
 
@@ -318,8 +314,17 @@ export default function Sidebar({
                             onToggle={() => toggleSection('monitoring')}
                         />
                     )}
-                    <div className={classNames('transition-all duration-200 overflow-hidden', (monitoringExpanded || collapsed) ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0')}>
-                        {monitoringItems.map((item, index) => renderItem(item, index === monitoringItems.length - 1))}
+                    <div
+                        className={classNames(
+                            'transition-all duration-200 overflow-hidden',
+                            monitoringExpanded || collapsed
+                                ? 'max-h-96 opacity-100'
+                                : 'max-h-0 opacity-0',
+                        )}
+                    >
+                        {monitoringItems.map((item, index) =>
+                            renderItem(item, index === monitoringItems.length - 1),
+                        )}
                     </div>
                 </div>
             </div>

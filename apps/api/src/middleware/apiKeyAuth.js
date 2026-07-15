@@ -16,7 +16,7 @@ const SCOPE_MAP = [
 function getRequiredScope(method, fullPath) {
     const path = (fullPath || '').toLowerCase();
     const verb = (method || 'GET').toUpperCase();
-    const entry = SCOPE_MAP.find(s => path.startsWith(s.prefix));
+    const entry = SCOPE_MAP.find((s) => path.startsWith(s.prefix));
     return entry ? (verb === 'GET' ? entry.read : entry.write) : null;
 }
 
@@ -73,7 +73,12 @@ async function matchToken(token, req, rawToken) {
 }
 
 async function authenticateApiKeyToken(req, rawToken) {
-    if (typeof rawToken !== 'string' || rawToken.length < 16 || rawToken.length > 4096 || !rawToken.startsWith('iam_')) {
+    if (
+        typeof rawToken !== 'string' ||
+        rawToken.length < 16 ||
+        rawToken.length > 4096 ||
+        !rawToken.startsWith('iam_')
+    ) {
         return null;
     }
 

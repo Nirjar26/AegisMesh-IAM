@@ -19,16 +19,10 @@ export default function AppLayout() {
     }, [navigate]);
 
     useEffect(() => {
-        globalThis.addEventListener(
-            'iam:open-settings',
-            handleOpenSettings
-        );
+        globalThis.addEventListener('iam:open-settings', handleOpenSettings);
 
         return () => {
-            globalThis.removeEventListener(
-                'iam:open-settings',
-                handleOpenSettings
-            );
+            globalThis.removeEventListener('iam:open-settings', handleOpenSettings);
         };
     }, [handleOpenSettings]);
 
@@ -69,7 +63,9 @@ export default function AppLayout() {
                     onSignOut={handleSignOut}
                 />
 
-                <main className={`flex-1 overflow-y-auto p-4 md:p-6 ${isDashboard ? 'dashboard-scrollbar-hidden' : ''}`}>
+                <main
+                    className={`flex-1 overflow-y-auto p-4 md:p-6 ${isDashboard ? 'dashboard-scrollbar-hidden' : ''}`}
+                >
                     <Outlet />
                 </main>
             </div>

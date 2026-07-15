@@ -2,7 +2,15 @@ const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
 const prisma = require('../src/config/database');
 const { IP_POOL } = require('./seed.config');
-const { USER_AGENTS, COUNTRY_CITY, now, hoursAgo, daysAgo, hoursFrom, toIso } = require('./seed.common');
+const {
+    USER_AGENTS,
+    COUNTRY_CITY,
+    now,
+    hoursAgo,
+    daysAgo,
+    hoursFrom,
+    toIso,
+} = require('./seed.common');
 
 const roleSeeds = [
     {
@@ -130,12 +138,13 @@ const roleDistribution = [
 ];
 
 const users = userProfiles.map(([firstName, lastName], idx) => {
-    const emailLocal = idx === 0
-        ? 'admin'
-        : `${firstName}.${lastName}`
-            .toLowerCase()
-            .replace(/[^a-z.]/g, '')
-            .replace(/\.{2,}/g, '.');
+    const emailLocal =
+        idx === 0
+            ? 'admin'
+            : `${firstName}.${lastName}`
+                  .toLowerCase()
+                  .replace(/[^a-z.]/g, '')
+                  .replace(/\.{2,}/g, '.');
 
     let status;
     if (idx < 18) {
@@ -216,7 +225,11 @@ const policies = [
         actions: ['*:Describe*', '*:List*', '*:Get*'],
         resources: ['*'],
         type: 'aws_managed',
-        attachedToRoles: [roleIdByName.ReadOnlyAccess, roleIdByName.SecurityAuditor, roleIdByName.BillingViewer],
+        attachedToRoles: [
+            roleIdByName.ReadOnlyAccess,
+            roleIdByName.SecurityAuditor,
+            roleIdByName.BillingViewer,
+        ],
         createdAt: toIso(daysAgo(325)),
         updatedAt: toIso(daysAgo(6)),
     },
@@ -273,7 +286,12 @@ const policies = [
         name: 'PolicyManagement',
         description: 'Create, update and attach custom IAM policies',
         effect: 'Allow',
-        actions: ['iam:CreatePolicy', 'iam:DeletePolicy', 'iam:AttachUserPolicy', 'iam:ListPolicies'],
+        actions: [
+            'iam:CreatePolicy',
+            'iam:DeletePolicy',
+            'iam:AttachUserPolicy',
+            'iam:ListPolicies',
+        ],
         resources: ['arn:aws:iam::*:policy/*'],
         type: 'custom',
         attachedToRoles: [roleIdByName.PolicyManager, roleIdByName.SuperAdmin],
@@ -324,7 +342,11 @@ const policies = [
         actions: ['iam:*Root*'],
         resources: ['*'],
         type: 'custom',
-        attachedToRoles: [roleIdByName.SuperAdmin, roleIdByName.IAMUserAdmin, roleIdByName.DevOpsEngineer],
+        attachedToRoles: [
+            roleIdByName.SuperAdmin,
+            roleIdByName.IAMUserAdmin,
+            roleIdByName.DevOpsEngineer,
+        ],
         createdAt: toIso(daysAgo(182)),
         updatedAt: toIso(daysAgo(2)),
     },
@@ -336,7 +358,11 @@ const policies = [
         actions: ['iam:DeletePolicy', 'iam:DetachRolePolicy'],
         resources: ['arn:aws:iam::*:policy/*'],
         type: 'custom',
-        attachedToRoles: [roleIdByName.SecurityAuditor, roleIdByName.GroupManager, roleIdByName.BillingViewer],
+        attachedToRoles: [
+            roleIdByName.SecurityAuditor,
+            roleIdByName.GroupManager,
+            roleIdByName.BillingViewer,
+        ],
         createdAt: toIso(daysAgo(171)),
         updatedAt: toIso(daysAgo(1)),
     },
@@ -347,7 +373,16 @@ const groups = [
         id: uuidv4(),
         name: 'Engineering',
         description: 'Core engineering team with dev access',
-        memberIds: [users[4].id, users[5].id, users[6].id, users[7].id, users[18].id, users[19].id, users[20].id, users[21].id],
+        memberIds: [
+            users[4].id,
+            users[5].id,
+            users[6].id,
+            users[7].id,
+            users[18].id,
+            users[19].id,
+            users[20].id,
+            users[21].id,
+        ],
         attachedRoleIds: [roleIdByName.DevOpsEngineer],
         createdAt: toIso(daysAgo(250)),
         updatedAt: toIso(daysAgo(4)),
@@ -425,18 +460,59 @@ const sessions = Array.from({ length: 8 }, (_, idx) => {
 });
 
 const actionPlan = [
-    { action: 'LOGIN', category: 'Authentication', results: ['success', 'success', 'success', 'success', 'success', 'success', 'success', 'failure'] },
-    { action: 'LOGOUT', category: 'Authentication', results: ['success', 'success', 'success', 'success', 'success'] },
-    { action: 'LOGIN_FAILED', category: 'Authentication', results: ['failure', 'failure', 'failure', 'failure'] },
-    { action: 'USER_CREATED', category: 'UserMgmt', results: ['success', 'success', 'success', 'success'] },
+    {
+        action: 'LOGIN',
+        category: 'Authentication',
+        results: [
+            'success',
+            'success',
+            'success',
+            'success',
+            'success',
+            'success',
+            'success',
+            'failure',
+        ],
+    },
+    {
+        action: 'LOGOUT',
+        category: 'Authentication',
+        results: ['success', 'success', 'success', 'success', 'success'],
+    },
+    {
+        action: 'LOGIN_FAILED',
+        category: 'Authentication',
+        results: ['failure', 'failure', 'failure', 'failure'],
+    },
+    {
+        action: 'USER_CREATED',
+        category: 'UserMgmt',
+        results: ['success', 'success', 'success', 'success'],
+    },
     { action: 'USER_UPDATED', category: 'UserMgmt', results: ['success', 'success', 'success'] },
     { action: 'USER_DELETED', category: 'UserMgmt', results: ['success', 'success'] },
-    { action: 'ROLE_ASSIGNED', category: 'RoleMgmt', results: ['success', 'success', 'success', 'success'] },
-    { action: 'POLICY_ATTACHED', category: 'PolicyMgmt', results: ['success', 'success', 'success'] },
+    {
+        action: 'ROLE_ASSIGNED',
+        category: 'RoleMgmt',
+        results: ['success', 'success', 'success', 'success'],
+    },
+    {
+        action: 'POLICY_ATTACHED',
+        category: 'PolicyMgmt',
+        results: ['success', 'success', 'success'],
+    },
     { action: 'POLICY_DETACHED', category: 'PolicyMgmt', results: ['success', 'success'] },
     { action: 'GROUP_CREATED', category: 'GroupMgmt', results: ['success', 'success'] },
-    { action: 'GROUP_MEMBER_ADDED', category: 'GroupMgmt', results: ['success', 'success', 'success', 'success'] },
-    { action: 'PERMISSION_CHECKED', category: 'Authorization', results: ['success', 'success', 'success', 'success', 'success', 'denied'] },
+    {
+        action: 'GROUP_MEMBER_ADDED',
+        category: 'GroupMgmt',
+        results: ['success', 'success', 'success', 'success'],
+    },
+    {
+        action: 'PERMISSION_CHECKED',
+        category: 'Authorization',
+        results: ['success', 'success', 'success', 'success', 'success', 'denied'],
+    },
     { action: 'SESSION_REVOKED', category: 'SessionMgmt', results: ['success', 'success'] },
     { action: 'MFA_ENABLED', category: 'System', results: ['success'] },
 ];
@@ -513,7 +589,7 @@ const rolePolicyRows = policies.flatMap((policy) =>
         id: uuidv4(),
         roleId,
         policyId: policy.id,
-    }))
+    })),
 );
 
 const userRoleRows = users
@@ -532,7 +608,7 @@ const userGroupRows = groups.flatMap((group) =>
         userId,
         groupId: group.id,
         joinedAt: new Date(daysAgo(160 - idx * 2)),
-    }))
+    })),
 );
 
 const groupRoleRows = groups.flatMap((group) =>
@@ -541,7 +617,7 @@ const groupRoleRows = groups.flatMap((group) =>
         groupId: group.id,
         roleId,
         assignedAt: new Date(daysAgo(120)),
-    }))
+    })),
 );
 
 const toPrismaUserStatus = (status) => {
@@ -641,13 +717,13 @@ async function seedDatabase() {
             mfaSecret: user.mfaEnabled ? `JBSWY3DPEHPK3PXP${idx}` : null,
             mfaBackupCodes: user.mfaEnabled
                 ? JSON.stringify([
-                    `${(100000 + idx * 11).toString()}`,
-                    `${(200000 + idx * 13).toString()}`,
-                    `${(300000 + idx * 17).toString()}`,
-                    `${(400000 + idx * 19).toString()}`,
-                    `${(500000 + idx * 23).toString()}`,
-                    `${(600000 + idx * 29).toString()}`,
-                ])
+                      `${(100000 + idx * 11).toString()}`,
+                      `${(200000 + idx * 13).toString()}`,
+                      `${(300000 + idx * 17).toString()}`,
+                      `${(400000 + idx * 19).toString()}`,
+                      `${(500000 + idx * 23).toString()}`,
+                      `${(600000 + idx * 29).toString()}`,
+                  ])
                 : null,
             passwordChangedAt: user.lastLoginAt ? new Date(user.lastLoginAt) : null,
             failedLoginCount: user.loginAttempts,
@@ -728,9 +804,7 @@ async function seedDatabase() {
             city: log.city,
             result: toPrismaAuditResult(log.result),
             duration: 30 + randomInt(0, 300),
-            errorCode: log.result === 'failure'
-                ? 'AUTH_INVALID_CREDENTIALS'
-                : null,
+            errorCode: log.result === 'failure' ? 'AUTH_INVALID_CREDENTIALS' : null,
             metadata: {
                 ...log.metadata,
                 actorEmail: log.actorEmail,
@@ -846,7 +920,10 @@ async function seedDatabase() {
                 userId: actor.id,
                 action: actionInfo.action,
                 category: toPrismaAuditCategory(actionInfo.category),
-                resource: actionInfo.action === 'PERMISSION_CHECKED' ? 'arn:aws:iam::987654321098:policy/ReadOnlyAccess' : '/api/system/health',
+                resource:
+                    actionInfo.action === 'PERMISSION_CHECKED'
+                        ? 'arn:aws:iam::987654321098:policy/ReadOnlyAccess'
+                        : '/api/system/health',
                 result: toPrismaAuditResult(actionInfo.result),
                 ipAddress: ip,
                 userAgent: USER_AGENTS[randomInt(0, USER_AGENTS.length)],

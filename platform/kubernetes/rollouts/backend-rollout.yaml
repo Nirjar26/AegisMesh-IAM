@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
   name: backend-rollout
-  namespace: aegismesh
+  namespace: Bastion
 spec:
   replicas: 1
   selector:
@@ -22,7 +22,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: backend
-        image: aegismesh/backend:REPLACE_WITH_TAG
+        image: 654654364687.dkr.ecr.us-east-1.amazonaws.com/bastion-backend:REPLACE_WITH_TAG
         imagePullPolicy: Always
         ports:
         - containerPort: 5000

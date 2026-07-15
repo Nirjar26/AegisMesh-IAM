@@ -12,7 +12,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: aegismesh
+  namespace: Bastion
 spec:
   template:
     spec:
@@ -41,7 +41,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
-  namespace: aegismesh
+  namespace: Bastion
 spec:
   template:
     spec:

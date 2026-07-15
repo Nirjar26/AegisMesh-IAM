@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - ../../manifests
   - ../../networkpolicies
-  - sealedsecret-aegismesh.yaml
+  - sealedsecret-Bastion.yaml
 
 patches:
   - path: patch-backend-image.yaml
@@ -11,6 +11,6 @@ patches:
   - path: patch-resources.yaml
 
 images:
-  - name: aegismesh-security-engine
-    newName: aegismesh-security-engine
+  - name: Bastion-security-engine
+    newName: Bastion-security-engine
     newTag: latest

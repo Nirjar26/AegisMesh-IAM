@@ -46,7 +46,7 @@ export default function PoliciesList() {
     const effectFilter = filters.effect || '';
 
     const setEffectFilter = (val) => {
-        setFilters(prev => ({ ...prev, effect: val }));
+        setFilters((prev) => ({ ...prev, effect: val }));
     };
 
     const handleCloseCreateModal = () => {
@@ -76,11 +76,14 @@ export default function PoliciesList() {
         e.preventDefault();
         const errors = {};
         if (!createForm.name.trim()) errors.name = 'Policy name is required';
-        
+
         setFormErrors(errors);
         if (Object.keys(errors).length > 0) return;
 
-        const actions = actionInput.split(',').map(a => a.trim()).filter(Boolean);
+        const actions = actionInput
+            .split(',')
+            .map((a) => a.trim())
+            .filter(Boolean);
         if (actions.length === 0) {
             setFormErrors({ actions: 'At least one action is required' });
             return;
@@ -97,8 +100,8 @@ export default function PoliciesList() {
 
     const filteredPolicies = useMemo(() => {
         if (!typeFilter) return policies;
-        if (typeFilter === 'SYSTEM') return policies.filter(p => p.isSystem);
-        return policies.filter(p => !p.isSystem);
+        if (typeFilter === 'SYSTEM') return policies.filter((p) => p.isSystem);
+        return policies.filter((p) => !p.isSystem);
     }, [policies, typeFilter]);
 
     const total = filteredPolicies.length;
@@ -120,7 +123,11 @@ export default function PoliciesList() {
         }
 
         if (isError) {
-            return <div className="py-16 text-center text-sm text-red-500">Failed to load policies.</div>;
+            return (
+                <div className="py-16 text-center text-sm text-red-500">
+                    Failed to load policies.
+                </div>
+            );
         }
 
         if (visiblePolicies.length === 0) {
@@ -180,14 +187,22 @@ export default function PoliciesList() {
                                         {policy.name}
                                     </h3>
                                     <div className="flex gap-1.5">
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                                            policy.effect === 'ALLOW' ? 'bg-[#dcfce7] text-[#16a34a]' : 'bg-[#fee2e2] text-[#dc2626]'
-                                        }`}>
+                                        <span
+                                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                                policy.effect === 'ALLOW'
+                                                    ? 'bg-[#dcfce7] text-[#16a34a]'
+                                                    : 'bg-[#fee2e2] text-[#dc2626]'
+                                            }`}
+                                        >
                                             {policy.effect}
                                         </span>
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                                            policy.isSystem ? 'bg-[#dbeafe] text-[#1d4ed8]' : 'bg-[#f1f5f9] text-[#475569]'
-                                        }`}>
+                                        <span
+                                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                                policy.isSystem
+                                                    ? 'bg-[#dbeafe] text-[#1d4ed8]'
+                                                    : 'bg-[#f1f5f9] text-[#475569]'
+                                            }`}
+                                        >
                                             {policy.isSystem ? 'System' : 'Custom'}
                                         </span>
                                     </div>
@@ -200,12 +215,20 @@ export default function PoliciesList() {
                             <div className="pt-4 border-t border-[#f1f5f9] flex items-center justify-between">
                                 <div className="flex gap-4">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">Actions</span>
-                                        <span className="text-[13px] font-semibold text-[#334155]">{policy.actions?.length || 0}</span>
+                                        <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">
+                                            Actions
+                                        </span>
+                                        <span className="text-[13px] font-semibold text-[#334155]">
+                                            {policy.actions?.length || 0}
+                                        </span>
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">Attached</span>
-                                        <span className="text-[13px] font-semibold text-[#334155]">{policy._count?.rolePolicies || 0}</span>
+                                        <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-tight">
+                                            Attached
+                                        </span>
+                                        <span className="text-[13px] font-semibold text-[#334155]">
+                                            {policy._count?.rolePolicies || 0}
+                                        </span>
                                     </div>
                                 </div>
                                 <Link
@@ -222,13 +245,15 @@ export default function PoliciesList() {
                 {/* Pagination */}
                 <div className="mt-8 flex items-center justify-between">
                     <p className="text-sm text-[#64748b]">
-                        Showing page <span className="font-semibold text-[#0f172a]">{safePage}</span> of <span className="font-semibold text-[#0f172a]">{totalPages}</span>
+                        Showing page{' '}
+                        <span className="font-semibold text-[#0f172a]">{safePage}</span> of{' '}
+                        <span className="font-semibold text-[#0f172a]">{totalPages}</span>
                     </p>
                     <div className="flex items-center gap-2">
                         <button
                             type="button"
                             disabled={safePage <= 1}
-                            onClick={() => setPage(p => p - 1)}
+                            onClick={() => setPage((p) => p - 1)}
                             className="rounded-xl border border-[#d0d7e8] px-4 py-2 text-sm font-medium text-[#3a4560] transition-all hover:bg-[#f4f6fb] disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                             Previous
@@ -236,7 +261,7 @@ export default function PoliciesList() {
                         <button
                             type="button"
                             disabled={safePage >= totalPages}
-                            onClick={() => setPage(p => p + 1)}
+                            onClick={() => setPage((p) => p + 1)}
                             className="rounded-xl border border-[#d0d7e8] px-4 py-2 text-sm font-medium text-[#3a4560] transition-all hover:bg-[#f4f6fb] disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                             Next
@@ -262,16 +287,20 @@ export default function PoliciesList() {
                     onClick={() => setIsCreateOpen(true)}
                     className="flex items-center justify-center gap-2 rounded-xl bg-[#4f46e5] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#3730a3]"
                 >
-                    <Plus size={15} />
-                    + New Policy
+                    <Plus size={15} />+ New Policy
                 </button>
             </div>
 
             {/* Filters */}
             <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-[#d0d7e8] bg-white px-5 py-4 shadow-sm lg:flex-nowrap">
                 <div className="relative min-w-[260px] flex-1">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7a87a8]" />
-                    <label htmlFor="policy-search" className="sr-only">Search policies</label>
+                    <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7a87a8]"
+                    />
+                    <label htmlFor="policy-search" className="sr-only">
+                        Search policies
+                    </label>
                     <input
                         id="policy-search"
                         type="text"
@@ -286,7 +315,9 @@ export default function PoliciesList() {
                 </div>
 
                 <div className="relative">
-                    <label htmlFor="effect-filter" className="sr-only">Filter by effect</label>
+                    <label htmlFor="effect-filter" className="sr-only">
+                        Filter by effect
+                    </label>
                     <select
                         id="effect-filter"
                         value={effectFilter}
@@ -300,11 +331,16 @@ export default function PoliciesList() {
                         <option value="ALLOW">Allow</option>
                         <option value="DENY">Deny</option>
                     </select>
-                    <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a87a8]" />
+                    <ChevronDown
+                        size={14}
+                        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a87a8]"
+                    />
                 </div>
 
                 <div className="relative">
-                    <label htmlFor="type-filter" className="sr-only">Filter by type</label>
+                    <label htmlFor="type-filter" className="sr-only">
+                        Filter by type
+                    </label>
                     <select
                         id="type-filter"
                         value={typeFilter}
@@ -318,14 +354,15 @@ export default function PoliciesList() {
                         <option value="SYSTEM">System</option>
                         <option value="CUSTOM">Custom</option>
                     </select>
-                    <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a87a8]" />
+                    <ChevronDown
+                        size={14}
+                        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a87a8]"
+                    />
                 </div>
             </div>
 
             {/* Grid */}
-            <div className="w-full">
-                {renderPoliciesContent()}
-            </div>
+            <div className="w-full">{renderPoliciesContent()}</div>
 
             {/* Create Policy Modal */}
             {isCreateOpen && (
@@ -336,7 +373,7 @@ export default function PoliciesList() {
                         onClick={handleCloseCreateModal}
                         aria-label="Close modal"
                     />
-                    <dialog 
+                    <dialog
                         open
                         className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-[#dbe4f0] bg-white p-0 shadow-2xl animate-in zoom-in duration-200"
                         aria-modal="true"
@@ -348,9 +385,14 @@ export default function PoliciesList() {
                                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#4f46e5]/10 text-[#4f46e5]">
                                         <FileText size={20} />
                                     </div>
-                                    <h2 id="create-policy-title" className="text-[20px] font-bold text-[#0f172a]">Create New Policy</h2>
+                                    <h2
+                                        id="create-policy-title"
+                                        className="text-[20px] font-bold text-[#0f172a]"
+                                    >
+                                        Create New Policy
+                                    </h2>
                                 </div>
-                                <button 
+                                <button
                                     type="button"
                                     onClick={handleCloseCreateModal}
                                     className="rounded-lg p-2 text-[#94a3b8] hover:bg-[#f1f5f9] hover:text-[#0f172a] transition-all"
@@ -364,24 +406,48 @@ export default function PoliciesList() {
                         <form onSubmit={handleCreate} className="p-8 space-y-6">
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <div className="col-span-2">
-                                    <label htmlFor="policy-name" className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2">Policy Name</label>
+                                    <label
+                                        htmlFor="policy-name"
+                                        className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2"
+                                    >
+                                        Policy Name
+                                    </label>
                                     <input
                                         id="policy-name"
                                         type="text"
                                         value={createForm.name}
-                                        onChange={(e) => setCreateForm(prev => ({ ...prev, name: e.target.value }))}
+                                        onChange={(e) =>
+                                            setCreateForm((prev) => ({
+                                                ...prev,
+                                                name: e.target.value,
+                                            }))
+                                        }
                                         placeholder="e.g. S3ReadOnlyAccess"
                                         className={`w-full rounded-xl border ${formErrors.name ? 'border-red-300' : 'border-[#d0d7e8]'} px-4 py-2.5 text-sm focus:border-[#4f46e5] focus:ring-2 focus:ring-[#4f46e5]/25 outline-none`}
                                     />
-                                    {formErrors.name && <p className="mt-1.5 text-xs font-medium text-red-500">{formErrors.name}</p>}
+                                    {formErrors.name && (
+                                        <p className="mt-1.5 text-xs font-medium text-red-500">
+                                            {formErrors.name}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="col-span-2">
-                                    <label htmlFor="policy-description" className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2">Description</label>
+                                    <label
+                                        htmlFor="policy-description"
+                                        className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2"
+                                    >
+                                        Description
+                                    </label>
                                     <textarea
                                         id="policy-description"
                                         value={createForm.description}
-                                        onChange={(e) => setCreateForm(prev => ({ ...prev, description: e.target.value }))}
+                                        onChange={(e) =>
+                                            setCreateForm((prev) => ({
+                                                ...prev,
+                                                description: e.target.value,
+                                            }))
+                                        }
                                         placeholder="Brief description..."
                                         rows={3}
                                         className="w-full rounded-xl border border-[#d0d7e8] px-4 py-2.5 text-sm focus:border-[#4f46e5] focus:ring-2 focus:ring-[#4f46e5]/25 outline-none resize-none"
@@ -390,18 +456,30 @@ export default function PoliciesList() {
 
                                 <div className="col-span-2">
                                     <fieldset className="border-none p-0 m-0">
-                                        <legend className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2">Effect</legend>
+                                        <legend className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2">
+                                            Effect
+                                        </legend>
                                         <div className="flex gap-2">
                                             <button
                                                 type="button"
-                                                onClick={() => setCreateForm(prev => ({ ...prev, effect: 'ALLOW' }))}
+                                                onClick={() =>
+                                                    setCreateForm((prev) => ({
+                                                        ...prev,
+                                                        effect: 'ALLOW',
+                                                    }))
+                                                }
                                                 className={`flex-1 rounded-xl border py-2.5 text-sm font-bold transition-all ${createForm.effect === 'ALLOW' ? 'border-[#16a34a] bg-[#dcfce7] text-[#16a34a]' : 'border-[#d0d7e8] bg-white text-[#64748b] hover:bg-[#f8faff]'}`}
                                             >
                                                 Allow
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => setCreateForm(prev => ({ ...prev, effect: 'DENY' }))}
+                                                onClick={() =>
+                                                    setCreateForm((prev) => ({
+                                                        ...prev,
+                                                        effect: 'DENY',
+                                                    }))
+                                                }
                                                 className={`flex-1 rounded-xl border py-2.5 text-sm font-bold transition-all ${createForm.effect === 'DENY' ? 'border-[#dc2626] bg-[#fee2e2] text-[#dc2626]' : 'border-[#d0d7e8] bg-white text-[#64748b] hover:bg-[#f8faff]'}`}
                                             >
                                                 Deny
@@ -411,7 +489,12 @@ export default function PoliciesList() {
                                 </div>
 
                                 <div className="col-span-2">
-                                    <label htmlFor="policy-actions" className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2">Actions (Comma separated)</label>
+                                    <label
+                                        htmlFor="policy-actions"
+                                        className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2"
+                                    >
+                                        Actions (Comma separated)
+                                    </label>
                                     <textarea
                                         id="policy-actions"
                                         value={actionInput}
@@ -420,7 +503,11 @@ export default function PoliciesList() {
                                         rows={2}
                                         className={`w-full rounded-xl border ${formErrors.actions ? 'border-red-300' : 'border-[#d0d7e8]'} px-4 py-2.5 font-mono text-sm focus:border-[#4f46e5] focus:ring-2 focus:ring-[#4f46e5]/25 outline-none resize-none`}
                                     />
-                                    {formErrors.actions && <p className="mt-1.5 text-xs font-medium text-red-500">{formErrors.actions}</p>}
+                                    {formErrors.actions && (
+                                        <p className="mt-1.5 text-xs font-medium text-red-500">
+                                            {formErrors.actions}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 

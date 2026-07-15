@@ -14,21 +14,21 @@ describe('Auth API (/api/auth)', () => {
     describe('POST /api/auth/login', () => {
         it('returns 200 and tokens on successful login', async () => {
             console.log('Running successful login test...');
-            const mockUser = { 
-                id: 'u1', 
-                email: 'test@example.com', 
-                passwordHash: 'hashed', 
-                status: 'ACTIVE', 
+            const mockUser = {
+                id: 'u1',
+                email: 'test@example.com',
+                passwordHash: 'hashed',
+                status: 'ACTIVE',
                 emailVerified: true,
                 firstName: 'Test',
                 lastName: 'User',
-                userRoles: []
+                userRoles: [],
             };
-            
+
             prisma.user.findUnique.mockResolvedValue(mockUser);
             prisma.organizationSettings.findFirst.mockResolvedValue({ maxFailedAttempts: 5 });
             prisma.session.create.mockResolvedValue({ id: 's1' });
-            
+
             tokenService.generateAccessToken.mockReturnValue('access-token');
             tokenService.generateRefreshToken.mockReturnValue('refresh-token');
 
@@ -59,14 +59,12 @@ describe('Auth API (/api/auth)', () => {
             prisma.user.findUnique.mockResolvedValue(null);
             prisma.user.create.mockResolvedValue({ id: 'u2', email: 'new@example.com' });
 
-            const response = await request
-                .post('/api/auth/register')
-                .send({ 
-                    email: 'new@example.com', 
-                    password: TEST_CREDENTIAL, 
-                    firstName: 'New', 
-                    lastName: 'User' 
-                });
+            const response = await request.post('/api/auth/register').send({
+                email: 'new@example.com',
+                password: TEST_CREDENTIAL,
+                firstName: 'New',
+                lastName: 'User',
+            });
 
             expect(response.status).toBe(201);
             expect(response.body.success).toBe(true);
@@ -77,7 +75,12 @@ describe('Auth API (/api/auth)', () => {
 
             const response = await request
                 .post('/api/auth/register')
-                .send({ email: 'existing@example.com', password: TEST_CREDENTIAL, firstName: 'E', lastName: 'X' });
+                .send({
+                    email: 'existing@example.com',
+                    password: TEST_CREDENTIAL,
+                    firstName: 'E',
+                    lastName: 'X',
+                });
 
             expect(response.status).toBe(409);
         });
@@ -86,12 +89,18 @@ describe('Auth API (/api/auth)', () => {
     describe('POST /api/auth/logout', () => {
         it('returns 200 on logout', async () => {
             const { authenticatedRequest } = require('../helpers/apiSetup');
-            const user = { id: 'u1', email: 'test@example.com', status: 'ACTIVE', emailVerified: true };
-            
+            const user = {
+                id: 'u1',
+                email: 'test@example.com',
+                status: 'ACTIVE',
+                emailVerified: true,
+            };
+
             prisma.session.findUnique.mockResolvedValue({ id: 's1' });
 
-            const response = await authenticatedRequest('post', '/api/auth/logout', user)
-                .send({ refreshToken: 'some-refresh-token' });
+            const response = await authenticatedRequest('post', '/api/auth/logout', user).send({
+                refreshToken: 'some-refresh-token',
+            });
 
             expect(response.status).toBe(200);
             expect(response.body.success).toBe(true);

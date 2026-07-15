@@ -18,21 +18,15 @@ function formatRelativeTime(value) {
         return 'Just now';
     }
 
-    const timestamp =
-        new Date(value).getTime();
+    const timestamp = new Date(value).getTime();
 
     if (Number.isNaN(timestamp)) {
         return 'Just now';
     }
 
-    const diffMs = Math.max(
-        0,
-        Date.now() - timestamp
-    );
+    const diffMs = Math.max(0, Date.now() - timestamp);
 
-    const minutes = Math.floor(
-        diffMs / 60000
-    );
+    const minutes = Math.floor(diffMs / 60000);
 
     if (minutes < 1) {
         return 'Just now';
@@ -42,198 +36,132 @@ function formatRelativeTime(value) {
         return `${minutes}m ago`;
     }
 
-    const hours = Math.floor(
-        minutes / 60
-    );
+    const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
         return `${hours}h ago`;
     }
 
-    const days = Math.floor(
-        hours / 24
-    );
+    const days = Math.floor(hours / 24);
 
     if (days < 30) {
         return `${days}d ago`;
     }
 
-    const months = Math.floor(
-        days / 30
-    );
+    const months = Math.floor(days / 30);
 
     return `${months}mo ago`;
 }
 
 function getAppearance(notification) {
-    const action =
-        notification?.metadata?.action;
+    const action = notification?.metadata?.action;
 
-    const severity =
-        notification?.metadata
-            ?.severity || 'info';
+    const severity = notification?.metadata?.severity || 'info';
 
-    if (
-        action ===
-        'PASSWORD_CHANGED'
-    ) {
+    if (action === 'PASSWORD_CHANGED') {
         return {
             icon: Lock,
             chipLabel: 'Security',
-            iconClassName:
-                'bg-indigo-500/10 text-indigo-400',
-            chipClassName:
-                'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20',
+            iconClassName: 'bg-indigo-500/10 text-indigo-400',
+            chipClassName: 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20',
         };
     }
 
-    if (
-        action ===
-        'ROLE_ASSIGNED'
-    ) {
+    if (action === 'ROLE_ASSIGNED') {
         return {
             icon: ShieldCheck,
             chipLabel: 'Role',
-            iconClassName:
-                'bg-violet-500/10 text-violet-400',
-            chipClassName:
-                'bg-violet-500/10 text-violet-400 border border-violet-500/20',
+            iconClassName: 'bg-violet-500/10 text-violet-400',
+            chipClassName: 'bg-violet-500/10 text-violet-400 border border-violet-500/20',
         };
     }
 
-    if (
-        action === 'USER_CREATED'
-    ) {
+    if (action === 'USER_CREATED') {
         return {
             icon: UserPlus,
             chipLabel: 'Account',
-            iconClassName:
-                'bg-blue-500/10 text-blue-400',
-            chipClassName:
-                'bg-blue-500/10 text-blue-400 border border-blue-500/20',
+            iconClassName: 'bg-blue-500/10 text-blue-400',
+            chipClassName: 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
         };
     }
 
-    if (
-        action ===
-            'API_KEY_CREATED' ||
-        action ===
-            'API_KEY_REVOKED'
-    ) {
+    if (action === 'API_KEY_CREATED' || action === 'API_KEY_REVOKED') {
         return {
             icon: KeyRound,
             chipLabel: 'Access',
-            iconClassName:
-                'bg-amber-500/10 text-amber-400',
-            chipClassName:
-                'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+            iconClassName: 'bg-amber-500/10 text-amber-400',
+            chipClassName: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
         };
     }
 
-    if (
-        action ===
-        'CONNECTED_APP_REVOKED'
-    ) {
+    if (action === 'CONNECTED_APP_REVOKED') {
         return {
             icon: AppWindow,
             chipLabel: 'Access',
-            iconClassName:
-                'bg-amber-500/10 text-amber-400',
-            chipClassName:
-                'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+            iconClassName: 'bg-amber-500/10 text-amber-400',
+            chipClassName: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
         };
     }
 
     if (
-        action ===
-            'TRUSTED_DEVICE_REVOKED' ||
-        action ===
-            'ALL_TRUSTED_DEVICES_REVOKED' ||
-        action ===
-            'SESSION_REVOKED' ||
-        action ===
-            'ALL_OTHER_SESSIONS_REVOKED' ||
-        action ===
-            'ALL_SESSIONS_REVOKED' ||
+        action === 'TRUSTED_DEVICE_REVOKED' ||
+        action === 'ALL_TRUSTED_DEVICES_REVOKED' ||
+        action === 'SESSION_REVOKED' ||
+        action === 'ALL_OTHER_SESSIONS_REVOKED' ||
+        action === 'ALL_SESSIONS_REVOKED' ||
         action === 'LOGIN'
     ) {
         return {
             icon: Monitor,
             chipLabel: 'Activity',
-            iconClassName:
-                'bg-white/5 text-white/60',
-            chipClassName:
-                'bg-white/5 text-white/60 border border-white/10',
+            iconClassName: 'bg-white/5 text-white/60',
+            chipClassName: 'bg-white/5 text-white/60 border border-white/10',
         };
     }
 
     if (
-        action ===
-            'POLICY_CREATED' ||
-        action ===
-            'POLICY_UPDATED' ||
-        action ===
-            'POLICY_DELETED' ||
-        action ===
-            'POLICY_ATTACHED' ||
-        action ===
-            'POLICY_DETACHED' ||
-        action ===
-            'DATA_EXPORTED'
+        action === 'POLICY_CREATED' ||
+        action === 'POLICY_UPDATED' ||
+        action === 'POLICY_DELETED' ||
+        action === 'POLICY_ATTACHED' ||
+        action === 'POLICY_DETACHED' ||
+        action === 'DATA_EXPORTED'
     ) {
         return {
             icon: FileText,
             chipLabel: 'System',
-            iconClassName:
-                'bg-cyan-500/10 text-cyan-400',
-            chipClassName:
-                'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20',
+            iconClassName: 'bg-cyan-500/10 text-cyan-400',
+            chipClassName: 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20',
         };
     }
 
-    if (
-        action ===
-        'MFA_DISABLED'
-    ) {
+    if (action === 'MFA_DISABLED') {
         return {
             icon: ShieldAlert,
             chipLabel: 'Security',
-            iconClassName:
-                'bg-red-500/10 text-red-400',
-            chipClassName:
-                'bg-red-500/10 text-red-400 border border-red-500/20',
+            iconClassName: 'bg-red-500/10 text-red-400',
+            chipClassName: 'bg-red-500/10 text-red-400 border border-red-500/20',
         };
     }
 
-    if (
-        severity === 'critical'
-    ) {
+    if (severity === 'critical') {
         return {
             icon: AlertTriangle,
             chipLabel: 'Critical',
-            iconClassName:
-                'bg-red-500/10 text-red-400',
-            chipClassName:
-                'bg-red-500/10 text-red-400 border border-red-500/20',
+            iconClassName: 'bg-red-500/10 text-red-400',
+            chipClassName: 'bg-red-500/10 text-red-400 border border-red-500/20',
         };
     }
 
-    const typeLabel =
-        notification?.type
-            ? `${notification.type.charAt(
-                  0
-              ).toUpperCase()}${notification.type.slice(
-                  1
-              )}`
-            : 'Update';
+    const typeLabel = notification?.type
+        ? `${notification.type.charAt(0).toUpperCase()}${notification.type.slice(1)}`
+        : 'Update';
 
     return {
         icon: ShieldCheck,
         chipLabel: typeLabel,
-        iconClassName:
-            'bg-emerald-500/10 text-emerald-400',
-        chipClassName:
-            'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+        iconClassName: 'bg-emerald-500/10 text-emerald-400',
+        chipClassName: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
     };
 }
 
@@ -245,18 +173,15 @@ export default function NotificationItem({
     isMarkingRead,
     isDeleting,
 }) {
-    const appearance =
-        getAppearance(notification);
+    const appearance = getAppearance(notification);
 
     const Icon = appearance.icon;
 
-    const containerClasses =
-        notification.read
-            ? 'border-white/5 bg-[#161B26]/30'
-            : 'border-indigo-500/20 bg-[#161B26]/80 shadow-lg shadow-indigo-500/5';
+    const containerClasses = notification.read
+        ? 'border-white/5 bg-[#161B26]/30'
+        : 'border-indigo-500/20 bg-[#161B26]/80 shadow-lg shadow-indigo-500/5';
 
-    const isUnread =
-        !notification.read;
+    const isUnread = !notification.read;
 
     return (
         <div
@@ -265,11 +190,7 @@ export default function NotificationItem({
             <div className="flex items-start gap-3">
                 <button
                     type="button"
-                    onClick={() =>
-                        onOpen?.(
-                            notification
-                        )
-                    }
+                    onClick={() => onOpen?.(notification)}
                     className="flex min-w-0 flex-1 cursor-pointer items-start gap-3 text-left"
                 >
                     <div
@@ -282,27 +203,19 @@ export default function NotificationItem({
                         <div className="flex items-start gap-2">
                             <div className="min-w-0 flex-1">
                                 <p className="text-xs font-bold text-white/90 group-hover:text-indigo-400 transition-colors">
-                                    {
-                                        notification.title
-                                    }
+                                    {notification.title}
                                 </p>
 
                                 <p
                                     className="mt-1 text-[11px] leading-relaxed text-white/40"
                                     style={{
-                                        display:
-                                            '-webkit-box',
-                                        WebkitLineClamp:
-                                            2,
-                                        WebkitBoxOrient:
-                                            'vertical',
-                                        overflow:
-                                            'hidden',
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: 'vertical',
+                                        overflow: 'hidden',
                                     }}
                                 >
-                                    {
-                                        notification.message
-                                    }
+                                    {notification.message}
                                 </p>
                             </div>
 
@@ -315,15 +228,11 @@ export default function NotificationItem({
                             <span
                                 className={`rounded-md px-1.5 py-0.5 text-[9px] font-black uppercase tracking-tighter ${appearance.chipClassName}`}
                             >
-                                {
-                                    appearance.chipLabel
-                                }
+                                {appearance.chipLabel}
                             </span>
 
                             <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">
-                                {formatRelativeTime(
-                                    notification.createdAt
-                                )}
+                                {formatRelativeTime(notification.createdAt)}
                             </span>
                         </div>
                     </div>
@@ -331,14 +240,8 @@ export default function NotificationItem({
 
                 <button
                     type="button"
-                    onClick={() =>
-                        onDelete?.(
-                            notification
-                        )
-                    }
-                    disabled={
-                        isDeleting
-                    }
+                    onClick={() => onDelete?.(notification)}
+                    disabled={isDeleting}
                     aria-label="Delete notification"
                     className="rounded-lg p-1.5 text-white/20 transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-30"
                 >
@@ -350,19 +253,11 @@ export default function NotificationItem({
                 <div className="mt-3 flex justify-end border-t border-white/5 pt-3">
                     <button
                         type="button"
-                        onClick={() =>
-                            onMarkRead?.(
-                                notification
-                            )
-                        }
-                        disabled={
-                            isMarkingRead
-                        }
+                        onClick={() => onMarkRead?.(notification)}
+                        disabled={isMarkingRead}
                         className="text-[10px] font-black uppercase tracking-widest text-indigo-400/60 hover:text-indigo-400 disabled:cursor-not-allowed transition-colors"
                     >
-                        {isMarkingRead
-                            ? 'Processing...'
-                            : 'Mark Resolved'}
+                        {isMarkingRead ? 'Processing...' : 'Mark Resolved'}
                     </button>
                 </div>
             )}
@@ -371,54 +266,26 @@ export default function NotificationItem({
 }
 
 NotificationItem.propTypes = {
-    notification:
-        PropTypes.shape({
-            id: PropTypes.oneOfType(
-                [
-                    PropTypes.string,
-                    PropTypes.number,
-                ]
-            ),
-            title:
-                PropTypes.string
-                    .isRequired,
-            message:
-                PropTypes.string
-                    .isRequired,
-            read:
-                PropTypes.bool
-                    .isRequired,
-            createdAt:
-                PropTypes.oneOfType(
-                    [
-                        PropTypes.string,
-                        PropTypes.instanceOf(
-                            Date
-                        ),
-                    ]
-                ),
-            type: PropTypes.string,
-            metadata:
-                PropTypes.shape({
-                    action:
-                        PropTypes.string,
-                    severity:
-                        PropTypes.string,
-                }),
-        }).isRequired,
+    notification: PropTypes.shape({
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        title: PropTypes.string.isRequired,
+        message: PropTypes.string.isRequired,
+        read: PropTypes.bool.isRequired,
+        createdAt: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+        type: PropTypes.string,
+        metadata: PropTypes.shape({
+            action: PropTypes.string,
+            severity: PropTypes.string,
+        }),
+    }).isRequired,
 
     onOpen: PropTypes.func,
 
-    onMarkRead:
-        PropTypes.func,
+    onMarkRead: PropTypes.func,
 
     onDelete: PropTypes.func,
 
-    isMarkingRead:
-        PropTypes.bool
-            .isRequired,
+    isMarkingRead: PropTypes.bool.isRequired,
 
-    isDeleting:
-        PropTypes.bool
-            .isRequired,
+    isDeleting: PropTypes.bool.isRequired,
 };

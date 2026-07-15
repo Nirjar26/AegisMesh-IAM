@@ -4,9 +4,9 @@ const logger = require('../utils/logger');
 const VALID_RANGES = new Set(['24h', '30d', '1y']);
 
 function timeBucketExpr(range) {
-    if (range === '24h') return "date_trunc('hour', a.\"createdAt\")";
-    if (range === '30d') return "date_trunc('day', a.\"createdAt\")";
-    return "date_trunc('month', a.\"createdAt\")";
+    if (range === '24h') return 'date_trunc(\'hour\', a."createdAt")';
+    if (range === '30d') return 'date_trunc(\'day\', a."createdAt")';
+    return 'date_trunc(\'month\', a."createdAt")';
 }
 
 function bucketFormat(range, labelExpr) {
@@ -25,14 +25,16 @@ async function getUserStats(now) {
     const [totalUsers, mfaUsers, lockedUsers] = await Promise.all([
         prisma.user.count(),
         prisma.user.count({ where: { mfaEnabled: true } }),
-        prisma.user.count({ where: { status: 'LOCKED' } })
+        prisma.user.count({ where: { status: 'LOCKED' } }),
     ]);
     const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
     const recentPasswordChangeCount = await prisma.user.count({
-        where: { OR: [
-            { passwordChangedAt: { gte: ninetyDaysAgo } },
-            { createdAt: { gte: ninetyDaysAgo } }
-        ]}
+        where: {
+            OR: [
+                { passwordChangedAt: { gte: ninetyDaysAgo } },
+                { createdAt: { gte: ninetyDaysAgo } },
+            ],
+        },
     });
     return { total: totalUsers, mfa: mfaUsers, locked: lockedUsers, recentPasswordChangeCount };
 }
@@ -53,14 +55,20 @@ exports.getOverviewMetrics = async (req, res, next) => {
         const range = validateRange(req.query.range || '1y');
 
         const userStats = await getUserStats(now);
-        const { total: totalUsers, mfa: mfaUsers, locked: lockedUsers, recentPasswordChangeCount } = userStats;
+        const {
+            total: totalUsers,
+            mfa: mfaUsers,
+            locked: lockedUsers,
+            recentPasswordChangeCount,
+        } = userStats;
 
         const rangeStart = getRangeStart(now, range);
 
         const bucketExpr = timeBucketExpr(range);
         const fmtExpr = bucketFormat(range, bucketExpr);
 
-        const timeBuckets = await prisma.$queryRawUnsafe(`
+        const timeBuckets = await prisma.$queryRawUnsafe(
+            `
             SELECT ${fmtExpr} AS label,
                    COUNT(*)::int AS requests,
                    AVG(COALESCE((a.metadata->>'risk_score')::numeric, 0.1)) AS avg_risk,
@@ -71,9 +79,11 @@ exports.getOverviewMetrics = async (req, res, next) => {
             WHERE a."createdAt" >= $1
             GROUP BY ${bucketExpr}
             ORDER BY ${bucketExpr}
-        `, rangeStart);
+        `,
+            rangeStart,
+        );
 
-        const buckets = timeBuckets.map(b => ({
+        const buckets = timeBuckets.map((b) => ({
             label: b.label,
             requests: Number(b.requests),
             avgRisk: b.avg_risk ? Math.round(Number(b.avg_risk) * 100) / 100 : 0,
@@ -81,12 +91,20 @@ exports.getOverviewMetrics = async (req, res, next) => {
             revocations: Number(b.revocations),
         }));
 
-        const pulse = buckets.map(b => ({ timestamp: b.label, requests: b.requests, avgRisk: b.avgRisk }));
-        const denyTrends = buckets.map(b => ({ timestamp: b.label, denies: b.denies }));
-        const revocationTrends = buckets.map(b => ({ timestamp: b.label, revocations: b.revocations }));
+        const pulse = buckets.map((b) => ({
+            timestamp: b.label,
+            requests: b.requests,
+            avgRisk: b.avgRisk,
+        }));
+        const denyTrends = buckets.map((b) => ({ timestamp: b.label, denies: b.denies }));
+        const revocationTrends = buckets.map((b) => ({
+            timestamp: b.label,
+            revocations: b.revocations,
+        }));
 
         // Geo distribution (SQL aggregation instead of JS)
-        const ipAgg = await prisma.$queryRawUnsafe(`
+        const ipAgg = await prisma.$queryRawUnsafe(
+            `
             SELECT COALESCE(a."ipAddress", 'Unknown') AS "ipAddress",
                    COUNT(*) FILTER (WHERE a.result = 'BLOCKED')::int AS blocked,
                    COUNT(*) FILTER (WHERE a.result != 'BLOCKED')::int AS success,
@@ -96,9 +114,11 @@ exports.getOverviewMetrics = async (req, res, next) => {
             GROUP BY a."ipAddress"
             ORDER BY total DESC
             LIMIT 5
-        `, rangeStart);
+        `,
+            rangeStart,
+        );
 
-        const geoDist = ipAgg.map(r => ({
+        const geoDist = ipAgg.map((r) => ({
             ipAddress: r.ipAddress,
             blocked: Number(r.blocked),
             success: Number(r.success),
@@ -106,7 +126,8 @@ exports.getOverviewMetrics = async (req, res, next) => {
         }));
 
         // Aggregated counts for stats
-        const aggCounts = await prisma.$queryRawUnsafe(`
+        const aggCounts = await prisma.$queryRawUnsafe(
+            `
             SELECT
               COUNT(*)::int AS total_events,
               COUNT(*) FILTER (WHERE a.result IN ('FAILURE','BLOCKED','ERROR'))::int AS anomaly_events,
@@ -114,9 +135,10 @@ exports.getOverviewMetrics = async (req, res, next) => {
               COUNT(*) FILTER (WHERE a.result = 'BLOCKED' AND a."createdAt" >= $3)::int AS threats_30d
             FROM "AuditLog" a
             WHERE a."createdAt" >= $1
-        `, rangeStart,
+        `,
+            rangeStart,
             new Date(now.getTime() - 24 * 60 * 60 * 1000),
-            new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+            new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
         );
         const aggs = aggCounts[0];
         const totalEvents = Number(aggs.total_events);
@@ -149,12 +171,9 @@ exports.getOverviewMetrics = async (req, res, next) => {
             prisma.role.count(),
             prisma.policy.count({
                 where: {
-                    OR: [
-                        { actions: { has: '*' } },
-                        { resources: { has: '*' } }
-                    ]
-                }
-            })
+                    OR: [{ actions: { has: '*' } }, { resources: { has: '*' } }],
+                },
+            }),
         ]);
 
         const [activeSessionsCount, inactiveActiveSessions] = await Promise.all([
@@ -162,59 +181,87 @@ exports.getOverviewMetrics = async (req, res, next) => {
             prisma.session.count({
                 where: {
                     expiresAt: { gte: now },
-                    lastActiveAt: { lt: new Date(now.getTime() - 4 * 60 * 60 * 1000) }
-                }
-            })
+                    lastActiveAt: { lt: new Date(now.getTime() - 4 * 60 * 60 * 1000) },
+                },
+            }),
         ]);
 
         const mfaPercentage = totalUsers ? Math.round((mfaUsers / totalUsers) * 100) : 0;
-        const activeUsersPct = totalUsers ? Math.round(((totalUsers - lockedUsers) / totalUsers) * 100) : 100;
-        const pwdHygienePct = totalUsers ? Math.round((recentPasswordChangeCount / totalUsers) * 100) : 100;
-        
+        const activeUsersPct = totalUsers
+            ? Math.round(((totalUsers - lockedUsers) / totalUsers) * 100)
+            : 100;
+        const pwdHygienePct = totalUsers
+            ? Math.round((recentPasswordChangeCount / totalUsers) * 100)
+            : 100;
+
         const credentialHealth = Math.round((mfaPercentage + activeUsersPct + pwdHygienePct) / 3);
-        const sessionHygiene = activeSessionsCount ? Math.round(((activeSessionsCount - inactiveActiveSessions) / activeSessionsCount) * 100) : 100;
-        const anomalyIndex = totalEvents ? Math.round(((totalEvents - anomalyEvents) / totalEvents) * 100) : 100;
+        const sessionHygiene = activeSessionsCount
+            ? Math.round(
+                  ((activeSessionsCount - inactiveActiveSessions) / activeSessionsCount) * 100,
+              )
+            : 100;
+        const anomalyIndex = totalEvents
+            ? Math.round(((totalEvents - anomalyEvents) / totalEvents) * 100)
+            : 100;
 
         const radarData = [
             { axis: 'MFA Coverage', value: mfaPercentage },
-            { axis: 'Least Privilege', value: totalRoles ? Math.round(((totalRoles - wildcardPolicies) / totalRoles) * 100) : 100 },
+            {
+                axis: 'Least Privilege',
+                value: totalRoles
+                    ? Math.round(((totalRoles - wildcardPolicies) / totalRoles) * 100)
+                    : 100,
+            },
             { axis: 'Credential Health', value: credentialHealth },
             { axis: 'Session Hygiene', value: sessionHygiene },
-            { axis: 'Anomaly Index', value: anomalyIndex }
+            { axis: 'Anomaly Index', value: anomalyIndex },
         ];
 
         // 5. Overprivileged Roles & Wildcard Policies Alerts
-        const wildcardPolicyIds = wildcardPolicies > 0
-            ? await prisma.policy.findMany({
-                where: { OR: [{ actions: { has: '*' } }, { resources: { has: '*' } }] },
-                select: { id: true }
-              }).then(r => r.map(p => p.id))
-            : [];
+        const wildcardPolicyIds =
+            wildcardPolicies > 0
+                ? await prisma.policy
+                      .findMany({
+                          where: { OR: [{ actions: { has: '*' } }, { resources: { has: '*' } }] },
+                          select: { id: true },
+                      })
+                      .then((r) => r.map((p) => p.id))
+                : [];
 
-        const [overprivilegedRolesCount, overprivilegedUsersCount] = wildcardPolicyIds.length > 0
-            ? await Promise.all([
-                prisma.rolePolicy.count({ where: { policyId: { in: wildcardPolicyIds } } }),
-                prisma.userRole.findMany({
-                    where: { role: { rolePolicies: { some: { policyId: { in: wildcardPolicyIds } } } } },
-                    select: { userId: true }
-                }).then(r => new Set(r.map(ur => ur.userId)).size)
-              ])
-            : [0, 0];
+        const [overprivilegedRolesCount, overprivilegedUsersCount] =
+            wildcardPolicyIds.length > 0
+                ? await Promise.all([
+                      prisma.rolePolicy.count({ where: { policyId: { in: wildcardPolicyIds } } }),
+                      prisma.userRole
+                          .findMany({
+                              where: {
+                                  role: {
+                                      rolePolicies: {
+                                          some: { policyId: { in: wildcardPolicyIds } },
+                                      },
+                                  },
+                              },
+                              select: { userId: true },
+                          })
+                          .then((r) => new Set(r.map((ur) => ur.userId)).size),
+                  ])
+                : [0, 0];
 
         // 7. Authentication Type Distribution
-        const [oauthGoogleCount, oauthGithubCount, localMfaCount, localNoMfaCount] = await Promise.all([
-            prisma.user.count({ where: { oauthAccounts: { some: { provider: 'google' } } } }),
-            prisma.user.count({ where: { oauthAccounts: { some: { provider: 'github' } } } }),
-            prisma.user.count({ where: { passwordHash: { not: null }, mfaEnabled: true } }),
-            prisma.user.count({ where: { passwordHash: { not: null }, mfaEnabled: false } })
-        ]);
+        const [oauthGoogleCount, oauthGithubCount, localMfaCount, localNoMfaCount] =
+            await Promise.all([
+                prisma.user.count({ where: { oauthAccounts: { some: { provider: 'google' } } } }),
+                prisma.user.count({ where: { oauthAccounts: { some: { provider: 'github' } } } }),
+                prisma.user.count({ where: { passwordHash: { not: null }, mfaEnabled: true } }),
+                prisma.user.count({ where: { passwordHash: { not: null }, mfaEnabled: false } }),
+            ]);
 
         const authDist = [
             { name: 'Google OAuth', value: oauthGoogleCount },
             { name: 'GitHub OAuth', value: oauthGithubCount },
             { name: 'Local + TOTP', value: localMfaCount },
-            { name: 'Local (No MFA)', value: localNoMfaCount }
-        ].filter(item => item.value > 0);
+            { name: 'Local (No MFA)', value: localNoMfaCount },
+        ].filter((item) => item.value > 0);
 
         if (authDist.length === 0) {
             authDist.push({ name: 'Local (No MFA)', value: 1 });
@@ -224,26 +271,32 @@ exports.getOverviewMetrics = async (req, res, next) => {
         const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         const [users30dAgo, mfaUsers30d] = await Promise.all([
             prisma.user.count({ where: { createdAt: { lte: monthAgo } } }),
-            prisma.user.count({ where: { mfaEnabled: true, createdAt: { lte: monthAgo } } })
+            prisma.user.count({ where: { mfaEnabled: true, createdAt: { lte: monthAgo } } }),
         ]);
-        const activeIdentitiesTrend = users30dAgo ? Math.round(((totalUsers - users30dAgo) / users30dAgo) * 100) : 0;
+        const activeIdentitiesTrend = users30dAgo
+            ? Math.round(((totalUsers - users30dAgo) / users30dAgo) * 100)
+            : 0;
         const mfaPercentage30d = users30dAgo ? Math.round((mfaUsers30d / users30dAgo) * 100) : 0;
         const mfaAdoptionTrend = mfaPercentage - mfaPercentage30d;
 
         const [sessionsLast12h, sessionsPrior12h] = await Promise.all([
-            prisma.session.count({ where: { lastActiveAt: { gte: new Date(now.getTime() - 12 * 60 * 60 * 1000) } } }),
+            prisma.session.count({
+                where: { lastActiveAt: { gte: new Date(now.getTime() - 12 * 60 * 60 * 1000) } },
+            }),
             prisma.session.count({
                 where: {
                     lastActiveAt: {
                         gte: new Date(now.getTime() - 24 * 60 * 60 * 1000),
-                        lt: new Date(now.getTime() - 12 * 60 * 60 * 1000)
-                    }
-                }
-            })
+                        lt: new Date(now.getTime() - 12 * 60 * 60 * 1000),
+                    },
+                },
+            }),
         ]);
         let activeSessionsTrend = 0;
         if (sessionsPrior12h) {
-            activeSessionsTrend = Math.round(((sessionsLast12h - sessionsPrior12h) / sessionsPrior12h) * 100);
+            activeSessionsTrend = Math.round(
+                ((sessionsLast12h - sessionsPrior12h) / sessionsPrior12h) * 100,
+            );
         } else if (sessionsLast12h > 0) {
             activeSessionsTrend = 100;
         }
@@ -252,21 +305,23 @@ exports.getOverviewMetrics = async (req, res, next) => {
             where: {
                 createdAt: {
                     gte: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000),
-                    lt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+                    lt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
                 },
-                result: 'BLOCKED'
-            }
+                result: 'BLOCKED',
+            },
         });
         let blockedThreatsTrend = 0;
         if (threatsPrior30d) {
-            blockedThreatsTrend = Math.round(((threatsLast30d - threatsPrior30d) / threatsPrior30d) * 100);
+            blockedThreatsTrend = Math.round(
+                ((threatsLast30d - threatsPrior30d) / threatsPrior30d) * 100,
+            );
         } else if (threatsLast30d > 0) {
             blockedThreatsTrend = 100;
         }
 
         // System Load Evaluation (24h request rate)
         const requestsLast24h = await prisma.auditLog.count({
-            where: { createdAt: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) } }
+            where: { createdAt: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) } },
         });
         let systemLoad = 'Stable';
         if (requestsLast24h > 10) {
@@ -288,7 +343,7 @@ exports.getOverviewMetrics = async (req, res, next) => {
                 warnings: {
                     wildcardPolicies: wildcardPolicyIds.length,
                     overprivilegedRoles: overprivilegedRolesCount,
-                    overprivilegedUsers: overprivilegedUsersCount
+                    overprivilegedUsers: overprivilegedUsersCount,
                 },
                 stats: {
                     totalUsers,
@@ -301,10 +356,10 @@ exports.getOverviewMetrics = async (req, res, next) => {
                         activeIdentities: activeIdentitiesTrend,
                         mfaAdoption: mfaAdoptionTrend,
                         activeSessions: activeSessionsTrend,
-                        blockedThreats: blockedThreatsTrend
-                    }
-                }
-            }
+                        blockedThreats: blockedThreatsTrend,
+                    },
+                },
+            },
         });
     } catch (error) {
         logger.error('Failed to fetch analytics overview', { error: error.message });

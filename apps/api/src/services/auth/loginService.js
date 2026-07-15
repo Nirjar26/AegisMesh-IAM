@@ -24,8 +24,7 @@ async function login({ email, password, totpCode, req }) {
         getOrganizationSettings(),
         findUserByEmail(email),
     ]);
-    const maxFailedAttempts =
-        orgSettings?.maxFailedAttempts || MAX_FAILED_ATTEMPTS;
+    const maxFailedAttempts = orgSettings?.maxFailedAttempts || MAX_FAILED_ATTEMPTS;
 
     if (!user?.passwordHash) {
         await bcrypt.compare(password, '$2a$12$00000000000000000000000000000000000000000000000');
@@ -35,10 +34,7 @@ async function login({ email, password, totpCode, req }) {
 
     await validateUserAccess(user, req, email);
 
-    const isPasswordValid = await bcrypt.compare(
-        password,
-        user.passwordHash
-    );
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
         await handleFailedPassword({
@@ -79,25 +75,17 @@ async function validateUserAccess(user, req, email) {
     }
 
     const isLocked =
-        user.status === 'LOCKED' ||
-        (user.lockedUntil && new Date(user.lockedUntil) > new Date());
+        user.status === 'LOCKED' || (user.lockedUntil && new Date(user.lockedUntil) > new Date());
 
     if (isLocked) {
-        await auditAuth.loginFailed(
-            req,
-            email,
-            'Account locked',
-            'AUTH_002'
-        );
+        await auditAuth.loginFailed(req, email, 'Account locked', 'AUTH_002');
 
         throw createError('AUTH_002', {
             unlockTime: user.lockedUntil,
         });
     }
 
-    const lockExpired =
-        user.lockedUntil &&
-        new Date(user.lockedUntil) <= new Date();
+    const lockExpired = user.lockedUntil && new Date(user.lockedUntil) <= new Date();
 
     if (lockExpired) {
         await resetUserLockState(user.id);
@@ -108,20 +96,14 @@ async function validateUserAccess(user, req, email) {
     }
 }
 
-async function handleFailedPassword({
-    user,
-    req,
-    email,
-    maxFailedAttempts,
-}) {
+async function handleFailedPassword({ user, req, email, maxFailedAttempts }) {
     const newFailedCount = user.failedLoginCount + 1;
 
     const updateData = {
         failedLoginCount: newFailedCount,
     };
 
-    const shouldLock =
-        newFailedCount >= maxFailedAttempts;
+    const shouldLock = newFailedCount >= maxFailedAttempts;
 
     const lockDuration = getLockDuration(newFailedCount);
     const doLock = shouldLock || lockDuration > 0;
@@ -129,7 +111,8 @@ async function handleFailedPassword({
     if (doLock) {
         const lockUntil = new Date();
         lockUntil.setMinutes(
-            lockUntil.getMinutes() + (shouldLock ? Math.max(LOCK_DURATION_MINUTES, lockDuration) : lockDuration)
+            lockUntil.getMinutes() +
+                (shouldLock ? Math.max(LOCK_DURATION_MINUTES, lockDuration) : lockDuration),
         );
 
         updateData.lockedUntil = lockUntil;
@@ -138,7 +121,7 @@ async function handleFailedPassword({
         }
 
         logger.warn(
-            `Account locked for user ${user.email} (${newFailedCount} failures). Unlock at ${lockUntil}`
+            `Account locked for user ${user.email} (${newFailedCount} failures). Unlock at ${lockUntil}`,
         );
     }
 
@@ -147,19 +130,10 @@ async function handleFailedPassword({
         data: updateData,
     });
 
-    await auditAuth.loginFailed(
-        req,
-        email,
-        'Invalid password',
-        'AUTH_001'
-    );
+    await auditAuth.loginFailed(req, email, 'Invalid password', 'AUTH_001');
 
     if (shouldLock) {
-        await auditSecurity.accountLocked(
-            req,
-            user.id,
-            email
-        );
+        await auditSecurity.accountLocked(req, user.id, email);
 
         throw createError('AUTH_002', {
             unlockTime: updateData.lockedUntil,
@@ -181,57 +155,44 @@ async function resetUserLockState(userId) {
 }
 
 async function createLoginResponse({ user, req }) {
-    const refreshToken =
-        tokenService.generateRefreshToken(user);
+    const refreshToken = tokenService.generateRefreshToken(user);
 
-    const deviceInfo =
-        req?.headers?.['user-agent'];
+    const deviceInfo = req?.headers?.['user-agent'];
 
-    const ipAddress =
-        req?.ip || req?.socket?.remoteAddress;
+    const ipAddress = req?.ip || req?.socket?.remoteAddress;
 
     const [session] = await Promise.all([
-        tokenService.createSession(
-            user.id,
-            refreshToken,
-            deviceInfo,
-            ipAddress
-        ),
-        upsertTrustedDevice(
-            user.id,
-            deviceInfo,
-            ipAddress
-        ),
+        tokenService.createSession(user.id, refreshToken, deviceInfo, ipAddress),
+        upsertTrustedDevice(user.id, deviceInfo, ipAddress),
     ]);
 
-    const accessToken =
-        tokenService.generateAccessToken(
-            user,
-            session.id
-        );
+    const accessToken = tokenService.generateAccessToken(user, session.id);
 
-    auditAuth.loginSuccess(
-        req,
-        user.id,
-        session.id
-    ).catch((err) =>
+    auditAuth.loginSuccess(req, user.id, session.id).catch((err) =>
         logger.error('Login audit failed', {
             error: err.message,
-        })
+        }),
     );
 
-    const roleNames = (user.userRoles || [])
-        .map((ur) => ur.role?.name)
-        .filter(Boolean);
+    const roleNames = (user.userRoles || []).map((ur) => ur.role?.name).filter(Boolean);
 
-    const role = roleNames.includes('SuperAdmin')
-        ? 'SuperAdmin'
-        : (roleNames[0] || null);
+    const role = roleNames.includes('SuperAdmin') ? 'SuperAdmin' : roleNames[0] || null;
 
     const hasBackupCodes = hasConfiguredBackupCodes(user);
     const hasPassword = Boolean(user.passwordHash);
-    const sensitiveKeys = ['passwordHash', 'mfaSecret', 'mfaBackupCodes', 'backupCodes', 'emailVerifyToken', 'passwordResetToken', 'passwordResetExpires', 'userRoles'];
-    const safeUser = Object.fromEntries(Object.entries(user).filter(([k]) => !sensitiveKeys.includes(k)));
+    const sensitiveKeys = [
+        'passwordHash',
+        'mfaSecret',
+        'mfaBackupCodes',
+        'backupCodes',
+        'emailVerifyToken',
+        'passwordResetToken',
+        'passwordResetExpires',
+        'userRoles',
+    ];
+    const safeUser = Object.fromEntries(
+        Object.entries(user).filter(([k]) => !sensitiveKeys.includes(k)),
+    );
 
     return {
         accessToken,

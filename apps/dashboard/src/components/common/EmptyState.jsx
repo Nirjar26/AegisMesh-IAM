@@ -2,13 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Plus } from 'lucide-react';
 
-export default function EmptyState({ 
-    icon: Icon, 
-    title, 
-    description, 
-    actionLabel, 
-    onAction 
-}) {
+export default function EmptyState({ icon: Icon, title, description, actionLabel, onAction }) {
     return (
         <div className="py-16 flex flex-col items-center gap-3 text-center px-4 bg-white border border-[#d0d7e8] rounded-2xl shadow-sm">
             <div className="bg-[#f4f6fb] rounded-2xl p-4 text-[#7a87a8]">

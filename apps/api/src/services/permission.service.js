@@ -29,7 +29,9 @@ function matchPattern(pattern, value) {
 
 function matchesPolicy(policy, action, resource) {
     const isActionMatch = policy.actions.some((policyAction) => matchPattern(policyAction, action));
-    const isResourceMatch = policy.resources.some((policyResource) => matchPattern(policyResource, resource));
+    const isResourceMatch = policy.resources.some((policyResource) =>
+        matchPattern(policyResource, resource),
+    );
 
     return isActionMatch && isResourceMatch;
 }
@@ -37,17 +39,20 @@ function matchesPolicy(policy, action, resource) {
 function splitPoliciesByEffect(policies) {
     return policies.reduce(
         (accumulator, policy) => {
-            const target = policy.effect === 'DENY' ? accumulator.denyPolicies : accumulator.allowPolicies;
+            const target =
+                policy.effect === 'DENY' ? accumulator.denyPolicies : accumulator.allowPolicies;
             target.push(policy);
             return accumulator;
         },
-        { allowPolicies: [], denyPolicies: [] }
+        { allowPolicies: [], denyPolicies: [] },
     );
 }
 
 function extractUniqueRoles(userRoles, userGroups) {
     const roleMap = new Map();
-    const addRole = (role) => { if (role) roleMap.set(role.id, role); };
+    const addRole = (role) => {
+        if (role) roleMap.set(role.id, role);
+    };
 
     userRoles.forEach((ur) => addRole(ur.role));
     userGroups.forEach((ug) => ug.group?.groupRoles?.forEach((gr) => addRole(gr.role)));
@@ -75,7 +80,7 @@ function extractPolicies(roleMap) {
 
 function isUserSuperAdmin(userRoles, userGroups) {
     const check = (role) => role?.name?.toLowerCase() === SUPER_ADMIN_ROLE.toLowerCase();
-    
+
     if (userRoles.some((ur) => check(ur.role))) return true;
     return userGroups.some((ug) => ug.group?.groupRoles?.some((gr) => check(gr.role)));
 }
@@ -94,12 +99,12 @@ async function fetchFullUserAccessContext(userId) {
                     include: {
                         rolePolicies: {
                             include: {
-                                policy: true
-                            }
-                        }
-                    }
-                }
-            }
+                                policy: true,
+                            },
+                        },
+                    },
+                },
+            },
         }),
         prisma.userGroup.findMany({
             where: { userId },
@@ -109,32 +114,33 @@ async function fetchFullUserAccessContext(userId) {
                     select: {
                         id: true,
                         name: true,
-                        description: true
-                    }
-                }
-            }
+                        description: true,
+                    },
+                },
+            },
         }),
     ]);
 
     const groupIds = userGroups.map((ug) => ug.groupId);
 
     // 3. Fetch roles attached to those groups and their policies
-    const groupRoles = groupIds.length > 0
-        ? await prisma.groupRole.findMany({
-            where: { groupId: { in: groupIds } },
-            include: {
-                role: {
-                    include: {
-                        rolePolicies: {
-                            include: {
-                                policy: true
-                            }
-                        }
-                    }
-                }
-            }
-        })
-        : [];
+    const groupRoles =
+        groupIds.length > 0
+            ? await prisma.groupRole.findMany({
+                  where: { groupId: { in: groupIds } },
+                  include: {
+                      role: {
+                          include: {
+                              rolePolicies: {
+                                  include: {
+                                      policy: true,
+                                  },
+                              },
+                          },
+                      },
+                  },
+              })
+            : [];
 
     // Map groupRoles back into a format compatible with existing extraction logic
     const enrichedUserGroups = userGroups.map((ug) => {
@@ -146,8 +152,8 @@ async function fetchFullUserAccessContext(userId) {
             ...ug,
             group: {
                 ...ug.group,
-                groupRoles: rolesForThisGroup
-            }
+                groupRoles: rolesForThisGroup,
+            },
         };
     });
 
@@ -227,7 +233,7 @@ async function checkPermission(userId, action, resource) {
             resource,
             result: 'SUCCESS',
             metadata: { checkedAction: action, checkedResource: resource },
-        }).catch(err => logger.warn('SuperAdmin audit log failed', { error: err.message }));
+        }).catch((err) => logger.warn('SuperAdmin audit log failed', { error: err.message }));
         return { allowed: true, reason: 'SuperAdmin', matchedPolicies: [], deniedBy: null };
     }
 
@@ -236,12 +242,22 @@ async function checkPermission(userId, action, resource) {
     // Deny takes precedence
     const deniedBy = denyPolicies.find((p) => matchesPolicy(p, action, resource));
     if (deniedBy) {
-        return { allowed: false, reason: `Explicitly denied by policy: ${deniedBy.name}`, matchedPolicies: [deniedBy], deniedBy };
+        return {
+            allowed: false,
+            reason: `Explicitly denied by policy: ${deniedBy.name}`,
+            matchedPolicies: [deniedBy],
+            deniedBy,
+        };
     }
 
     const matchedAllowPolicies = allowPolicies.filter((p) => matchesPolicy(p, action, resource));
     if (matchedAllowPolicies.length > 0) {
-        return { allowed: true, reason: 'Allowed by policy', matchedPolicies: matchedAllowPolicies, deniedBy: null };
+        return {
+            allowed: true,
+            reason: 'Allowed by policy',
+            matchedPolicies: matchedAllowPolicies,
+            deniedBy: null,
+        };
     }
 
     return { allowed: false, reason: 'No matching policy', matchedPolicies: [], deniedBy: null };

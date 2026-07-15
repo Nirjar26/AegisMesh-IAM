@@ -41,7 +41,9 @@ async function login(req, res, next) {
 async function logout(req, res, next) {
     try {
         const rawRefreshToken = req.body.refreshToken || req.cookies?.refreshToken;
-        const refreshToken = rawRefreshToken ? (decryptText(rawRefreshToken) || rawRefreshToken) : null;
+        const refreshToken = rawRefreshToken
+            ? decryptText(rawRefreshToken) || rawRefreshToken
+            : null;
         const result = await authService.logout({
             refreshToken,
             userId: req.user.id,
@@ -63,7 +65,7 @@ async function logout(req, res, next) {
 async function refreshToken(req, res, next) {
     try {
         const rawToken = req.body.refreshToken || req.cookies?.refreshToken;
-        const token = rawToken ? (decryptText(rawToken) || rawToken) : null;
+        const token = rawToken ? decryptText(rawToken) || rawToken : null;
         if (!token) {
             return res.status(400).json({
                 success: false,

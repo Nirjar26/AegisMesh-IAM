@@ -13,4 +13,6 @@ async function verify() {
     await getStats({}, res, next);
 }
 
-verify().catch(console.error).finally(() => prisma.$disconnect());
+verify()
+    .catch(console.error)
+    .finally(() => prisma.$disconnect());

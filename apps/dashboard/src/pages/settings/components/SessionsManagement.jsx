@@ -108,12 +108,8 @@ export default function SessionsManagement() {
                     )}
                 </div>
 
-                <div className="space-y-4">
-                    {sessionsContent}
-                </div>
+                <div className="space-y-4">{sessionsContent}</div>
             </div>
         </div>
     );
 }
-
-

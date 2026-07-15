@@ -149,7 +149,7 @@ describe('getUserSessions', () => {
         const result = await tokenService.getUserSessions('user-1');
         expect(result).toEqual({ sessions: mockSessions, nextCursor: null });
         expect(prisma.session.findMany).toHaveBeenCalledWith(
-            expect.objectContaining({ where: { userId: 'user-1' } })
+            expect.objectContaining({ where: { userId: 'user-1' } }),
         );
     });
 });
@@ -170,7 +170,7 @@ describe('blacklistToken', () => {
                 create: expect.objectContaining({
                     jti: payload.jti,
                 }),
-            })
+            }),
         );
     });
 

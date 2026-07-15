@@ -70,19 +70,17 @@ function getResultBadge(result = '') {
 }
 
 function getInitials(log) {
-    return getInitialsFromUser(log.user?.firstName, log.user?.lastName) || log.user?.email?.[0]?.toUpperCase() || 'U';
+    return (
+        getInitialsFromUser(log.user?.firstName, log.user?.lastName) ||
+        log.user?.email?.[0]?.toUpperCase() ||
+        'U'
+    );
 }
 
 function getRequestPath(log) {
     const metadata = log.metadata || {};
 
-    return (
-        metadata.path ||
-        metadata.endpoint ||
-        metadata.resource ||
-        log.resource ||
-        '-'
-    );
+    return metadata.path || metadata.endpoint || metadata.resource || log.resource || '-';
 }
 
 function getResponseCode(log) {
@@ -92,33 +90,28 @@ function getResponseCode(log) {
     if (metadata.statusCode) return String(metadata.statusCode);
 
     switch (log.result) {
-        case 'SUCCESS': return '200';
-        case 'BLOCKED': return '403';
-        case 'FAILURE': return '401';
-        default: return '-';
+        case 'SUCCESS':
+            return '200';
+        case 'BLOCKED':
+            return '403';
+        case 'FAILURE':
+            return '401';
+        default:
+            return '-';
     }
 }
 
-function AuditLogRow({
-    log,
-    expandedLogId,
-    setExpandedLogId,
-}) {
+function AuditLogRow({ log, expandedLogId, setExpandedLogId }) {
     const category = getCategoryBadge(log.category);
 
     const result = getResultBadge(log.result);
 
     const isExpanded = expandedLogId === log.id;
 
-    const email =
-        log.user?.email ||
-        log.userId?.slice(0, 8) ||
-        '-';
+    const email = log.user?.email || log.userId?.slice(0, 8) || '-';
 
     const handleToggle = () => {
-        setExpandedLogId((prev) => (
-            prev === log.id ? null : log.id
-        ));
+        setExpandedLogId((prev) => (prev === log.id ? null : log.id));
     };
 
     return (
@@ -137,9 +130,7 @@ function AuditLogRow({
                             {getInitials(log)}
                         </div>
 
-                        <span className="truncate text-[12px] text-[#374151]">
-                            {email}
-                        </span>
+                        <span className="truncate text-[12px] text-[#374151]">{email}</span>
                     </div>
                 </td>
 
@@ -181,9 +172,7 @@ function AuditLogRow({
                                     Event ID
                                 </p>
 
-                                <p className="mt-1 break-all font-mono text-[#0f1623]">
-                                    {log.id}
-                                </p>
+                                <p className="mt-1 break-all font-mono text-[#0f1623]">{log.id}</p>
                             </div>
 
                             <div>
@@ -221,9 +210,7 @@ function AuditLogRow({
                                     Response Code
                                 </p>
 
-                                <p className="mt-1 text-[#0f1623]">
-                                    {getResponseCode(log)}
-                                </p>
+                                <p className="mt-1 text-[#0f1623]">{getResponseCode(log)}</p>
                             </div>
                         </div>
                     </td>
@@ -260,22 +247,18 @@ export default function AuditLogsPage() {
 
     const [searchInput, setSearchInput] = useState('');
 
-    const debouncedSearch = useDebounce(
-        searchInput,
-        400,
+    const debouncedSearch = useDebounce(searchInput, 400);
+
+    const queryParams = useMemo(
+        () => ({
+            search: debouncedSearch,
+            page: 1,
+            limit: 25,
+        }),
+        [debouncedSearch],
     );
 
-    const queryParams = useMemo(() => ({
-        search: debouncedSearch,
-        page: 1,
-        limit: 25,
-    }), [debouncedSearch]);
-
-    const {
-        data,
-        isLoading,
-        isError,
-    } = useQuery({
+    const { data, isLoading, isError } = useQuery({
         queryKey: ['audit-logs', queryParams],
         queryFn: async () => {
             const response = await auditAPI.getLogs(queryParams);
@@ -291,10 +274,7 @@ export default function AuditLogsPage() {
     if (isLoading) {
         tableContent = (
             <tr>
-                <td
-                    colSpan={7}
-                    className="py-16 text-center text-sm text-[#7a87a8]"
-                >
+                <td colSpan={7} className="py-16 text-center text-sm text-[#7a87a8]">
                     Loading audit logs...
                 </td>
             </tr>
@@ -302,10 +282,7 @@ export default function AuditLogsPage() {
     } else if (isError) {
         tableContent = (
             <tr>
-                <td
-                    colSpan={7}
-                    className="py-16 text-center text-sm text-red-500"
-                >
+                <td colSpan={7} className="py-16 text-center text-sm text-red-500">
                     Failed to load audit logs.
                 </td>
             </tr>
@@ -313,10 +290,7 @@ export default function AuditLogsPage() {
     } else if (logs.length === 0) {
         tableContent = (
             <tr>
-                <td
-                    colSpan={7}
-                    className="py-16 text-center text-sm text-[#7a87a8]"
-                >
+                <td colSpan={7} className="py-16 text-center text-sm text-[#7a87a8]">
                     No audit logs found.
                 </td>
             </tr>
@@ -338,9 +312,7 @@ export default function AuditLogsPage() {
                 <input
                     type="text"
                     value={searchInput}
-                    onChange={(event) => (
-                        setSearchInput(event.target.value)
-                    )}
+                    onChange={(event) => setSearchInput(event.target.value)}
                     placeholder="Search audit logs..."
                     className="w-full rounded-lg border border-[#dbe3f0] px-4 py-2 text-sm outline-none"
                 />
@@ -380,9 +352,7 @@ export default function AuditLogsPage() {
                         </tr>
                     </thead>
 
-                    <tbody>
-                        {tableContent}
-                    </tbody>
+                    <tbody>{tableContent}</tbody>
                 </table>
             </div>
         </div>

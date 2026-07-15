@@ -6,7 +6,15 @@ const mfaController = require('../controllers/mfa.controller');
 const { authenticate } = require('../middleware/authenticate');
 const { requireReauth, SENSITIVE_ACTIONS } = require('../middleware/requireReauth');
 const { validate } = require('../middleware/validate');
-const { loginLimiter, registerLimiter, passwordResetLimiter, mfaSetupLimiter, tokenRefreshLimiter, sessionRevokeLimiter, verifyEmailLimiter } = require('../middleware/rateLimiter');
+const {
+    loginLimiter,
+    registerLimiter,
+    passwordResetLimiter,
+    mfaSetupLimiter,
+    tokenRefreshLimiter,
+    sessionRevokeLimiter,
+    verifyEmailLimiter,
+} = require('../middleware/rateLimiter');
 const schemas = require('../config/validationSchemas');
 const tokenService = require('../services/token.service');
 const { auditAuth } = require('../utils/auditLog');
@@ -39,7 +47,7 @@ function handleOAuthCallback(providerName, auditProviderName) {
                 user.id,
                 refreshToken,
                 req.headers['user-agent'],
-                req.ip
+                req.ip,
             );
 
             const accessToken = tokenService.generateAccessToken(user, session.id);
@@ -78,7 +86,10 @@ function validateOAuthState(token) {
     const parts = token.split('.');
     if (parts.length !== 2) return false;
     const [state, hmac] = parts;
-    const expectedHmac = crypto.createHmac('sha256', OAUTH_STATE_SECRET).update(state).digest('hex');
+    const expectedHmac = crypto
+        .createHmac('sha256', OAUTH_STATE_SECRET)
+        .update(state)
+        .digest('hex');
     return crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(expectedHmac));
 }
 
@@ -105,34 +116,20 @@ async function enforceOAuthAllowed(req, res, next) {
 // ═══════════════════════════════════════
 
 // Register
-router.post(
-    '/register',
-    registerLimiter,
-    validate(schemas.register),
-    authController.register
-);
+router.post('/register', registerLimiter, validate(schemas.register), authController.register);
 
 // Login
-router.post(
-    '/login',
-    loginLimiter,
-    validate(schemas.login),
-    authController.login
-);
+router.post('/login', loginLimiter, validate(schemas.login), authController.login);
 
 // Logout (protected)
-router.post(
-    '/logout',
-    authenticate,
-    authController.logout
-);
+router.post('/logout', authenticate, authController.logout);
 
 // Refresh token
 router.post(
     '/refresh-token',
     tokenRefreshLimiter,
     validate(schemas.refreshToken),
-    authController.refreshToken
+    authController.refreshToken,
 );
 
 // Forgot password
@@ -140,7 +137,7 @@ router.post(
     '/forgot-password',
     passwordResetLimiter,
     validate(schemas.forgotPassword),
-    authController.forgotPassword
+    authController.forgotPassword,
 );
 
 // Reset password
@@ -148,7 +145,7 @@ router.post(
     '/reset-password',
     verifyEmailLimiter,
     validate(schemas.resetPassword),
-    authController.resetPassword
+    authController.resetPassword,
 );
 
 // Verify email
@@ -156,29 +153,21 @@ router.post(
     '/verify-email',
     verifyEmailLimiter,
     validate(schemas.verifyEmail),
-    authController.verifyEmail
+    authController.verifyEmail,
 );
 
 // Get current user profile (protected)
-router.get(
-    '/me',
-    authenticate,
-    authController.getProfile
-);
+router.get('/me', authenticate, authController.getProfile);
 
 // Get sessions (protected)
-router.get(
-    '/sessions',
-    authenticate,
-    authController.getSessions
-);
+router.get('/sessions', authenticate, authController.getSessions);
 
 // Revoke session (protected)
 router.delete(
     '/sessions/:sessionId',
     sessionRevokeLimiter,
     authenticate,
-    authController.revokeSession
+    authController.revokeSession,
 );
 
 // ═══════════════════════════════════════
@@ -191,7 +180,7 @@ router.post(
     mfaSetupLimiter,
     authenticate,
     requireReauth(SENSITIVE_ACTIONS.SETUP_MFA),
-    mfaController.setupMFA
+    mfaController.setupMFA,
 );
 
 // Verify MFA setup (protected)
@@ -200,7 +189,7 @@ router.post(
     mfaSetupLimiter,
     authenticate,
     validate(schemas.mfaVerifySetup),
-    mfaController.verifySetup
+    mfaController.verifySetup,
 );
 
 // Disable MFA (protected)
@@ -209,7 +198,7 @@ router.post(
     mfaSetupLimiter,
     authenticate,
     validate(schemas.mfaDisable),
-    mfaController.disableMFA
+    mfaController.disableMFA,
 );
 
 // ═══════════════════════════════════════
@@ -217,16 +206,12 @@ router.post(
 // ═══════════════════════════════════════
 
 // Google OAuth
-router.get(
-    '/oauth/google',
-    enforceOAuthAllowed,
-    (req, res, next) => {
-        passport.authenticate('google', {
-            scope: ['profile', 'email'],
-            state: generateOAuthState(),
-        })(req, res, next);
-    }
-);
+router.get('/oauth/google', enforceOAuthAllowed, (req, res, next) => {
+    passport.authenticate('google', {
+        scope: ['profile', 'email'],
+        state: generateOAuthState(),
+    })(req, res, next);
+});
 
 router.get(
     '/oauth/google/callback',
@@ -240,20 +225,16 @@ router.get(
         session: false,
         failureRedirect: getOAuthFailureUrl(),
     }),
-    handleOAuthCallback('Google', 'google')
+    handleOAuthCallback('Google', 'google'),
 );
 
 // GitHub OAuth
-router.get(
-    '/oauth/github',
-    enforceOAuthAllowed,
-    (req, res, next) => {
-        passport.authenticate('github', {
-            scope: ['user:email'],
-            state: generateOAuthState(),
-        })(req, res, next);
-    }
-);
+router.get('/oauth/github', enforceOAuthAllowed, (req, res, next) => {
+    passport.authenticate('github', {
+        scope: ['user:email'],
+        state: generateOAuthState(),
+    })(req, res, next);
+});
 
 router.get(
     '/oauth/github/callback',
@@ -267,7 +248,7 @@ router.get(
         session: false,
         failureRedirect: getOAuthFailureUrl(),
     }),
-    handleOAuthCallback('GitHub', 'github')
+    handleOAuthCallback('GitHub', 'github'),
 );
 
 module.exports = router;

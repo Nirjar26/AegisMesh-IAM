@@ -35,7 +35,7 @@ export const AUDIT_ACTIONS = {
     MFA_ENABLE: 'mfa_enable',
     MFA_DISABLE: 'mfa_disable',
     PASSWORD_CHANGE: 'password_change', // NOSONAR
-    PASSWORD_RESET: 'password_reset',   // NOSONAR
+    PASSWORD_RESET: 'password_reset', // NOSONAR
     ROLE_ASSIGN: 'role_assign',
     ROLE_REVOKE: 'role_revoke',
     SESSION_REVOKE: 'session_revoke',

@@ -15,16 +15,12 @@ const schemas = {
                 'string.email': 'Please provide a valid email address',
                 'any.required': 'Email is required',
             }),
-            password: Joi.string()
-                .min(8)
-                .pattern(passwordPattern)
-                .required()
-                .messages({
-                    'string.min': 'Password must be at least 8 characters',
-                    'string.pattern.base':
-                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)',
-                    'any.required': 'Password is required',
-                }),
+            password: Joi.string().min(8).pattern(passwordPattern).required().messages({
+                'string.min': 'Password must be at least 8 characters',
+                'string.pattern.base':
+                    'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)',
+                'any.required': 'Password is required',
+            }),
             firstName: Joi.string().min(1).max(50).required().messages({
                 'any.required': 'First name is required',
             }),
@@ -64,16 +60,12 @@ const schemas = {
             token: Joi.string().required().messages({
                 'any.required': 'Reset token is required',
             }),
-            newPassword: Joi.string()
-                .min(8)
-                .pattern(passwordPattern)
-                .required()
-                .messages({
-                    'string.min': 'Password must be at least 8 characters',
-                    'string.pattern.base':
-                        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
-                    'any.required': 'New password is required',
-                }),
+            newPassword: Joi.string().min(8).pattern(passwordPattern).required().messages({
+                'string.min': 'Password must be at least 8 characters',
+                'string.pattern.base':
+                    'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+                'any.required': 'New password is required',
+            }),
         }),
     },
 
@@ -200,12 +192,10 @@ const schemas = {
             email: Joi.string().email().required(),
             firstName: Joi.string().min(2).max(50).required(),
             lastName: Joi.string().min(2).max(50).required(),
-            password: Joi.string().min(8)
-                .pattern(passwordPattern)
-                .required()
-                .messages({
-                    'string.pattern.base': 'Password must have uppercase, lowercase, number and special char',
-                }),
+            password: Joi.string().min(8).pattern(passwordPattern).required().messages({
+                'string.pattern.base':
+                    'Password must have uppercase, lowercase, number and special char',
+            }),
             status: Joi.string().valid('ACTIVE', 'INACTIVE', 'LOCKED').default('ACTIVE'),
             roleIds: Joi.array().items(Joi.string().uuid()).optional(),
             sendWelcomeEmail: Joi.boolean().default(false),
@@ -297,13 +287,11 @@ const schemas = {
     settingsChangePassword: {
         body: Joi.object({
             currentPassword: Joi.string().allow('', null),
-            newPassword: Joi.string().min(8)
-                .pattern(passwordPattern)
-                .required()
-                .messages({
-                    'string.min': 'Password must be at least 8 characters',
-                    'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
-                }),
+            newPassword: Joi.string().min(8).pattern(passwordPattern).required().messages({
+                'string.min': 'Password must be at least 8 characters',
+                'string.pattern.base':
+                    'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+            }),
             confirmPassword: Joi.string().required(),
             mfaToken: Joi.string().min(6).max(8).allow('', null),
         }),
@@ -381,7 +369,10 @@ const schemas = {
             requireUppercase: Joi.boolean(),
             requireNumber: Joi.boolean(),
             requireSymbol: Joi.boolean(),
-            passwordExpiryDays: Joi.alternatives().try(Joi.number().integer().min(1).max(365), Joi.valid(null)),
+            passwordExpiryDays: Joi.alternatives().try(
+                Joi.number().integer().min(1).max(365),
+                Joi.valid(null),
+            ),
             maxFailedAttempts: Joi.number().integer().min(1).max(20),
             sessionTimeoutMinutes: Joi.number().integer().min(15).max(10080),
             requireMfaForAll: Joi.boolean(),
@@ -400,7 +391,10 @@ const schemas = {
         body: Joi.object({
             name: Joi.string().max(80).required(),
             scopes: Joi.array().items(Joi.string()).min(1).required(),
-            expiresIn: Joi.alternatives().try(Joi.number().integer().min(1).max(3650), Joi.valid(null)),
+            expiresIn: Joi.alternatives().try(
+                Joi.number().integer().min(1).max(3650),
+                Joi.valid(null),
+            ),
             password: Joi.string().allow('', null),
             mfaToken: Joi.string().min(6).max(8).allow('', null),
         }),

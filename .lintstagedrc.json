@@ -1,0 +1,6 @@
+{
+  "apps/dashboard/**/*.{js,jsx,ts,tsx}": [
+    "eslint --config apps/dashboard/eslint.config.js --fix"
+  ],
+  "*.{js,jsx,ts,tsx,json,css,md}": ["prettier --write"]
+}

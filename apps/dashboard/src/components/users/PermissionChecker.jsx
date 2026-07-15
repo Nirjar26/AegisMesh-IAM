@@ -1,17 +1,8 @@
-import React, {
-    useId,
-    useMemo,
-    useState,
-} from 'react';
+import React, { useId, useMemo, useState } from 'react';
 
 import PropTypes from 'prop-types';
 
-import {
-    CheckCircle2,
-    Loader2,
-    ShieldCheck,
-    XCircle,
-} from 'lucide-react';
+import { CheckCircle2, Loader2, ShieldCheck, XCircle } from 'lucide-react';
 
 import toast from 'react-hot-toast';
 
@@ -23,141 +14,79 @@ export default function PermissionChecker({
     resource: initialResource = 'users/*',
     onResult,
 }) {
-    const [
-        actionInput,
-        setActionInput,
-    ] = useState(null);
+    const [actionInput, setActionInput] = useState(null);
 
-    const [
-        resourceInput,
-        setResourceInput,
-    ] = useState(null);
+    const [resourceInput, setResourceInput] = useState(null);
 
-    const [result, setResult] =
-        useState(null);
+    const [result, setResult] = useState(null);
 
-    const [status, setStatus] =
-        useState('idle');
+    const [status, setStatus] = useState('idle');
 
-    const action =
-        actionInput ??
-        initialAction;
+    const action = actionInput ?? initialAction;
 
-    const resource =
-        resourceInput ??
-        initialResource;
+    const resource = resourceInput ?? initialResource;
 
-    const loading =
-        status === 'loading';
+    const loading = status === 'loading';
 
-    const statusCard =
-        useMemo(() => {
-            if (!result) {
-                return null;
-            }
+    const statusCard = useMemo(() => {
+        if (!result) {
+            return null;
+        }
 
-            const allowed =
-                Boolean(
-                    result.allowed
-                );
+        const allowed = Boolean(result.allowed);
 
-            return {
-                allowed,
+        return {
+            allowed,
 
-                title: allowed
-                    ? 'Access Granted'
-                    : 'Access Denied',
+            title: allowed ? 'Access Granted' : 'Access Denied',
 
-                subtitle: allowed
-                    ? `This user CAN perform ${action} on ${resource}`
-                    : `This user CANNOT perform ${action} on ${resource}`,
+            subtitle: allowed
+                ? `This user CAN perform ${action} on ${resource}`
+                : `This user CANNOT perform ${action} on ${resource}`,
 
-                className: allowed
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
-                    : 'border-red-200 bg-red-50 text-red-900',
+            className: allowed
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
+                : 'border-red-200 bg-red-50 text-red-900',
 
-                subClass:
-                    allowed
-                        ? 'text-emerald-800'
-                        : 'text-red-900',
+            subClass: allowed ? 'text-emerald-800' : 'text-red-900',
 
-                icon: allowed ? (
-                    <CheckCircle2
-                        size={18}
-                        className="mt-0.5 shrink-0 text-emerald-500"
-                    />
-                ) : (
-                    <XCircle
-                        size={18}
-                        className="mt-0.5 shrink-0 text-red-500"
-                    />
-                ),
-            };
-        }, [
-            action,
-            resource,
-            result,
-        ]);
+            icon: allowed ? (
+                <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-500" />
+            ) : (
+                <XCircle size={18} className="mt-0.5 shrink-0 text-red-500" />
+            ),
+        };
+    }, [action, resource, result]);
 
     async function handleCheck() {
-        if (
-            !action ||
-            !resource
-        ) {
-            toast.error(
-                'Action and Resource are required'
-            );
+        if (!action || !resource) {
+            toast.error('Action and Resource are required');
 
             return;
         }
 
-        setStatus(
-            'loading'
-        );
+        setStatus('loading');
 
         try {
-            const response =
-                await rbacAPI.simulatePolicy(
-                    {
-                        userId,
-                        action,
-                        resource,
-                    }
-                );
+            const response = await rbacAPI.simulatePolicy({
+                userId,
+                action,
+                resource,
+            });
 
-            const simulation =
-                response.data
-                    ?.data;
+            const simulation = response.data?.data;
 
-            setResult(
-                simulation
-            );
+            setResult(simulation);
 
-            setStatus(
-                'result'
-            );
+            setStatus('result');
 
-            onResult?.(
-                Boolean(
-                    simulation?.allowed
-                )
-            );
-        } catch (
-            error
-        ) {
-            toast.error(
-                error.response
-                    ?.data
-                    ?.error
-                    ?.message ||
-                    'Failed to check permissions'
-            );
+            onResult?.(Boolean(simulation?.allowed));
+        } catch (error) {
+            toast.error(error.response?.data?.error?.message || 'Failed to check permissions');
 
             setResult(null);
 
-            setStatus(
-                'idle'
-            );
+            setStatus('idle');
         }
     }
 
@@ -169,39 +98,23 @@ export default function PermissionChecker({
         <div className="rounded-xl border border-slate-200 bg-white p-5">
             <h3 className="mb-4 flex items-center gap-2 font-medium text-slate-900">
                 <ShieldCheck className="h-4 w-4 text-indigo-600" />
-
-                Permission
-                Simulator
+                Permission Simulator
             </h3>
 
             <div className="mb-4 flex flex-col gap-3 sm:flex-row">
                 <div className="flex-1">
                     <label
-                        htmlFor={
-                            actionId
-                        }
+                        htmlFor={actionId}
                         className="mb-1 block text-xs font-medium text-slate-500"
                     >
                         Action
                     </label>
 
                     <input
-                        id={
-                            actionId
-                        }
+                        id={actionId}
                         type="text"
-                        value={
-                            action
-                        }
-                        onChange={(
-                            event
-                        ) =>
-                            setActionInput(
-                                event
-                                    .target
-                                    .value
-                            )
-                        }
+                        value={action}
+                        onChange={(event) => setActionInput(event.target.value)}
                         placeholder="e.g. users:read"
                         className="w-full rounded-lg border border-slate-200 bg-white p-2 text-sm text-slate-900"
                     />
@@ -209,31 +122,17 @@ export default function PermissionChecker({
 
                 <div className="flex-1">
                     <label
-                        htmlFor={
-                            resourceId
-                        }
+                        htmlFor={resourceId}
                         className="mb-1 block text-xs font-medium text-slate-500"
                     >
                         Resource
                     </label>
 
                     <input
-                        id={
-                            resourceId
-                        }
+                        id={resourceId}
                         type="text"
-                        value={
-                            resource
-                        }
-                        onChange={(
-                            event
-                        ) =>
-                            setResourceInput(
-                                event
-                                    .target
-                                    .value
-                            )
-                        }
+                        value={resource}
+                        onChange={(event) => setResourceInput(event.target.value)}
                         placeholder="e.g. users/*"
                         className="w-full rounded-lg border border-slate-200 bg-white p-2 text-sm text-slate-900"
                     />
@@ -242,55 +141,28 @@ export default function PermissionChecker({
                 <div className="flex items-end pt-1">
                     <button
                         type="button"
-                        onClick={
-                            handleCheck
-                        }
-                        disabled={
-                            loading ||
-                            !action ||
-                            !resource
-                        }
+                        onClick={handleCheck}
+                        disabled={loading || !action || !resource}
                         className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 sm:w-auto"
                     >
-                        {loading ? (
-                            <Loader2
-                                size={
-                                    14
-                                }
-                                className="animate-spin"
-                            />
-                        ) : null}
+                        {loading ? <Loader2 size={14} className="animate-spin" /> : null}
 
-                        {loading
-                            ? 'Checking...'
-                            : 'Check'}
+                        {loading ? 'Checking...' : 'Check'}
                     </button>
                 </div>
             </div>
 
-            {statusCard &&
-            status ===
-                'result' ? (
+            {statusCard && status === 'result' ? (
                 <div
                     className={`mt-4 flex items-start gap-3 rounded-lg border p-4 ${statusCard.className}`}
                 >
-                    {
-                        statusCard.icon
-                    }
+                    {statusCard.icon}
 
                     <div>
-                        <h4 className="text-[14px] font-bold">
-                            {
-                                statusCard.title
-                            }
-                        </h4>
+                        <h4 className="text-[14px] font-bold">{statusCard.title}</h4>
 
-                        <p
-                            className={`mt-1 text-[12px] ${statusCard.subClass}`}
-                        >
-                            {
-                                statusCard.subtitle
-                            }
+                        <p className={`mt-1 text-[12px] ${statusCard.subClass}`}>
+                            {statusCard.subtitle}
                         </p>
                     </div>
                 </div>
@@ -300,29 +172,19 @@ export default function PermissionChecker({
 }
 
 PermissionChecker.propTypes = {
-    userId:
-        PropTypes.oneOfType([
-            PropTypes.string,
-            PropTypes.number,
-        ]).isRequired,
+    userId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 
-    action:
-        PropTypes.string,
+    action: PropTypes.string,
 
-    resource:
-        PropTypes.string,
+    resource: PropTypes.string,
 
-    onResult:
-        PropTypes.func,
+    onResult: PropTypes.func,
 };
 
 PermissionChecker.defaultProps = {
-    action:
-        'users:read',
+    action: 'users:read',
 
-    resource:
-        'users/*',
+    resource: 'users/*',
 
-    onResult:
-        undefined,
+    onResult: undefined,
 };

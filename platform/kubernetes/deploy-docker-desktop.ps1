@@ -14,11 +14,11 @@ if ($currentContext -ne "docker-desktop") {
 }
 
 Write-Host "[1/5] Building backend image..."
-docker build -t aegismesh-backend:local-v2 ./backend
+docker build -t Bastion-backend:local-v2 ./backend
 Assert-LastExitCode "Backend image build"
 
 Write-Host "[2/5] Building frontend image..."
-docker build -t aegismesh-frontend:local ./frontend
+docker build -t Bastion-frontend:local ./frontend
 Assert-LastExitCode "Frontend image build"
 
 Write-Host "[3/5] Applying Kubernetes manifests..."
@@ -26,22 +26,22 @@ kubectl apply -k ./k8s
 Assert-LastExitCode "kubectl apply"
 
 Write-Host "[4/5] Waiting for deployments..."
-kubectl -n aegismesh rollout status statefulset/postgres --timeout=180s
+kubectl -n Bastion rollout status statefulset/postgres --timeout=180s
 Assert-LastExitCode "Postgres rollout"
-kubectl -n aegismesh rollout status deployment/backend --timeout=180s
+kubectl -n Bastion rollout status deployment/backend --timeout=180s
 Assert-LastExitCode "Backend rollout"
-kubectl -n aegismesh rollout status deployment/frontend --timeout=180s
+kubectl -n Bastion rollout status deployment/frontend --timeout=180s
 Assert-LastExitCode "Frontend rollout"
 
 Write-Host "[5/5] Current status"
-kubectl get pods -n aegismesh
+kubectl get pods -n Bastion
 Assert-LastExitCode "Get pods"
-kubectl get svc -n aegismesh
+kubectl get svc -n Bastion
 Assert-LastExitCode "Get services"
 
 Write-Host ""
 Write-Host "Run these in separate terminals to access services on localhost:"
-Write-Host "kubectl -n aegismesh port-forward svc/frontend 3000:3000"
-Write-Host "kubectl -n aegismesh port-forward svc/backend 5000:5000"
+Write-Host "kubectl -n Bastion port-forward svc/frontend 3000:3000"
+Write-Host "kubectl -n Bastion port-forward svc/backend 5000:5000"
 Write-Host "kubectl -n monitoring port-forward svc/grafana 3010:3010"
 Write-Host "kubectl -n monitoring port-forward svc/prometheus 9090:9090"

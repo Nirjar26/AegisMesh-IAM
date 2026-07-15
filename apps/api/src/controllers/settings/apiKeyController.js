@@ -2,9 +2,7 @@ const crypto = require('node:crypto');
 const bcrypt = require('bcryptjs');
 const prisma = require('../../config/database');
 const { createAuditLog } = require('../../utils/auditLog');
-const {
-    normalizeScopes,
-} = require('./helpers');
+const { normalizeScopes } = require('./helpers');
 
 exports.getApiKeys = async (req, res, next) => {
     try {
@@ -35,12 +33,22 @@ exports.createApiKey = async (req, res, next) => {
         const { name, scopes, expiresIn } = req.body || {};
 
         if (!name || String(name).trim().length === 0) {
-            return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Token name is required' } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: { code: 'VALIDATION_ERROR', message: 'Token name is required' },
+                });
         }
 
         const parsedScopes = normalizeScopes(scopes);
         if (parsedScopes.length === 0) {
-            return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'At least one scope is required' } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: { code: 'VALIDATION_ERROR', message: 'At least one scope is required' },
+                });
         }
 
         const rawToken = `iam_${crypto.randomBytes(20).toString('hex')}`;
@@ -51,7 +59,15 @@ exports.createApiKey = async (req, res, next) => {
         if (expiresIn !== null && expiresIn !== undefined && expiresIn !== '') {
             const days = Number(expiresIn);
             if (Number.isNaN(days) || days < 1 || days > 3650) {
-                return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'expiresIn must be null or between 1 and 3650 days' } });
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+                        error: {
+                            code: 'VALIDATION_ERROR',
+                            message: 'expiresIn must be null or between 1 and 3650 days',
+                        },
+                    });
             }
             expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
         }
@@ -101,7 +117,12 @@ exports.revokeApiKey = async (req, res, next) => {
 
         const token = await prisma.apiToken.findUnique({ where: { id: tokenId } });
         if (!token || token.userId !== req.user.id) {
-            return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'API key not found' } });
+            return res
+                .status(404)
+                .json({
+                    success: false,
+                    error: { code: 'NOT_FOUND', message: 'API key not found' },
+                });
         }
 
         const updated = await prisma.apiToken.update({

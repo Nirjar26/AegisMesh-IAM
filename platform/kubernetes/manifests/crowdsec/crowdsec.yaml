@@ -7,7 +7,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: crowdsec-db-pvc
-  namespace: aegismesh
+  namespace: Bastion
 spec:
   accessModes:
     - ReadWriteOnce
@@ -19,7 +19,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: crowdsec-config
-  namespace: aegismesh
+  namespace: Bastion
 data:
   acquis.yaml: |
     filenames:
@@ -33,7 +33,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: crowdsec
-  namespace: aegismesh
+  namespace: Bastion
 spec:
   replicas: 1
   selector:

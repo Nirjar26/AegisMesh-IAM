@@ -5,11 +5,7 @@ const QRCode = require('qrcode');
 const prisma = require('../../config/database');
 const { createAuditLog } = require('../../utils/auditLog');
 const { encryptText } = require('../../utils/crypto');
-const {
-    mfaSetupState,
-    generateBackupCodes,
-    fieldError: _fieldError,
-} = require('./helpers');
+const { mfaSetupState, generateBackupCodes, fieldError: _fieldError } = require('./helpers');
 
 exports.getMfaSetup = async (req, res, next) => {
     try {
@@ -57,12 +53,25 @@ exports.verifyMfa = async (req, res, next) => {
         }
 
         if (!effectiveSecret) {
-            return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Secret is required' } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: { code: 'VALIDATION_ERROR', message: 'Secret is required' },
+                });
         }
 
-        const isValid = authenticator.verify({ token: String(token || ''), secret: effectiveSecret });
+        const isValid = authenticator.verify({
+            token: String(token || ''),
+            secret: effectiveSecret,
+        });
         if (!isValid) {
-            return res.status(400).json({ success: false, error: { code: 'AUTH_005', message: 'Invalid MFA token' } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: { code: 'AUTH_005', message: 'Invalid MFA token' },
+                });
         }
 
         const hashedCodes = await Promise.all(backupCodes.map((code) => bcrypt.hash(code, 8)));
@@ -102,11 +111,18 @@ exports.disableMfa = async (req, res, next) => {
         });
 
         if (!user) {
-            return res.status(404).json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
+            return res
+                .status(404)
+                .json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
         }
 
         if (!user.mfaEnabled) {
-            return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'MFA is not enabled' } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: { code: 'VALIDATION_ERROR', message: 'MFA is not enabled' },
+                });
         }
 
         await prisma.user.update({
@@ -144,11 +160,21 @@ exports.regenerateBackupCodes = async (req, res, next) => {
         });
 
         if (!user) {
-            return res.status(404).json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
+            return res
+                .status(404)
+                .json({ success: false, error: { code: 'USER_001', message: 'User not found' } });
         }
 
         if (!user.mfaEnabled) {
-            return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Enable MFA before generating backup codes' } });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: {
+                        code: 'VALIDATION_ERROR',
+                        message: 'Enable MFA before generating backup codes',
+                    },
+                });
         }
 
         const backupCodes = generateBackupCodes(8);

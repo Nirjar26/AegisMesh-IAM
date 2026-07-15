@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: aegismesh
+  name: Bastion
   namespace: argocd
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/nirjxr26/AegisMesh-IAM'
+    repoURL: 'https://github.com/nirjxr26/Bastion-IAM'
     targetRevision: main
     path: platform/kubernetes/overlays/prod
   destination:
     server: 'https://kubernetes.default.svc'
-    namespace: aegismesh
+    namespace: Bastion
   syncPolicy:
     automated:
       prune: true

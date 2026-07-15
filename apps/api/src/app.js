@@ -30,10 +30,7 @@ function extractRequestToken(req) {
     return null;
 }
 
-const {
-    generateCsrfToken,
-    doubleCsrfProtection,
-} = doubleCsrf({
+const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
     getSecret: (_req) => csrfSecret,
     getSessionIdentifier: (req) => {
         const token = extractRequestToken(req);
@@ -54,6 +51,7 @@ const {
         secure: process.env.NODE_ENV === 'production',
     },
     getTokenFromRequest: (req) => req.headers['x-csrf-token'],
+    skipCsrfProtection: (req) => csrfExemptPaths.has(req.path),
 });
 
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
@@ -97,20 +95,22 @@ const ALLOWED_ORIGINS = process.env.FRONTEND_URL
     ? process.env.FRONTEND_URL.split(',').map((s) => s.trim())
     : ['http://localhost:3000'];
 
-app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin) {
-            callback(null, true);
-        } else if (ALLOWED_ORIGINS.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
-}));
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            if (!origin) {
+                callback(null, true);
+            } else if (ALLOWED_ORIGINS.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+    }),
+);
 
 // ═══════════════════════════════════════
 // PARSING MIDDLEWARE
@@ -135,15 +135,7 @@ const csrfExemptPaths = new Set([
     '/api/auth/oauth/github/callback',
 ]);
 
-const csrfProtection = (req, res, next) => {
-    const isMutating = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
-    if (!isMutating || csrfExemptPaths.has(req.path)) {
-        return next();
-    }
-    doubleCsrfProtection(req, res, next);
-};
-
-app.use(csrfProtection);
+app.use(doubleCsrfProtection);
 
 // ═══════════════════════════════════════
 // RATE LIMITING
@@ -192,16 +184,48 @@ app.get('/api/health', (req, res) => {
 
 function isInternalIP(req) {
     const ip = req.ip || req.connection?.remoteAddress || '';
-    const internalRanges = ['127.0.0.1', '::1', '::ffff:127.0.0.1', '10.', '172.16.', '172.17.', '172.18.', '172.19.', '172.20.', '172.21.', '172.22.', '172.23.', '172.24.', '172.25.', '172.26.', '172.27.', '172.28.', '172.29.', '172.30.', '172.31.', '192.168.'];  // NOSONAR
+    const internalRanges = [
+        '127.0.0.1',
+        '::1',
+        '::ffff:127.0.0.1',
+        '10.',
+        '172.16.',
+        '172.17.',
+        '172.18.',
+        '172.19.',
+        '172.20.',
+        '172.21.',
+        '172.22.',
+        '172.23.',
+        '172.24.',
+        '172.25.',
+        '172.26.',
+        '172.27.',
+        '172.28.',
+        '172.29.',
+        '172.30.',
+        '172.31.',
+        '192.168.',
+    ]; // NOSONAR
     return internalRanges.some((range) => ip.startsWith(range));
 }
 
-app.get('/metrics', (req, res, next) => {
-    if (!isInternalIP(req)) {
-        return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'Metrics accessible only from internal network' } });
-    }
-    next();
-}, metricsHandler);
+app.get(
+    '/metrics',
+    (req, res, next) => {
+        if (!isInternalIP(req)) {
+            return res.status(403).json({
+                success: false,
+                error: {
+                    code: 'FORBIDDEN',
+                    message: 'Metrics accessible only from internal network',
+                },
+            });
+        }
+        next();
+    },
+    metricsHandler,
+);
 
 app.get('/api/csrf-token', (req, res) => {
     res.json({
@@ -221,7 +245,12 @@ app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/analytics', analyticsRoutes);
-app.use('/uploads', generalLimiter, authenticate, express.static(path.join(__dirname, '../../uploads')));
+app.use(
+    '/uploads',
+    generalLimiter,
+    authenticate,
+    express.static(path.join(__dirname, '../../uploads')),
+);
 
 // ═══════════════════════════════════════
 // ERROR HANDLING

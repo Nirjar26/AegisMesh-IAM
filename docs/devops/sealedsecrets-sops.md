@@ -9,7 +9,7 @@ Recommended default:
 1. Convert `k8s/manifests/secret.yaml` into a sealed manifest:
 
 ```bash
-bash scripts/seal/create-sealedsecret.sh .archive/secrets/secret.yaml k8s/overlays/prod/sealedsecret-aegismesh.yaml
+bash scripts/seal/create-sealedsecret.sh .archive/secrets/secret.yaml k8s/overlays/prod/sealedsecret-Bastion.yaml
 ```
 
 Alternative: SOPS + age

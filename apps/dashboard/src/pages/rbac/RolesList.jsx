@@ -32,7 +32,7 @@ export default function RolesList() {
         search,
         setSearch,
         createMutation,
-        deleteMutation
+        deleteMutation,
     } = useEntityList({
         entityKey: 'roles',
         fetchFn: rbacAPI.getRoles,
@@ -43,16 +43,20 @@ export default function RolesList() {
                 arn: data.arn,
             });
             const roleId = roleResponse.data?.data?.id;
-            
+
             if (roleId) {
-                const userAssignments = data.userIds.map(userId => rbacAPI.assignUserRole(userId, roleId));
-                const policyAttachments = data.policyIds.map(policyId => rbacAPI.attachPolicyToRole(roleId, policyId));
-                
+                const userAssignments = data.userIds.map((userId) =>
+                    rbacAPI.assignUserRole(userId, roleId),
+                );
+                const policyAttachments = data.policyIds.map((policyId) =>
+                    rbacAPI.attachPolicyToRole(roleId, policyId),
+                );
+
                 await Promise.all([...userAssignments, ...policyAttachments]);
             }
             return roleResponse;
         },
-        deleteFn: (id) => rbacAPI.deleteRole(id)
+        deleteFn: (id) => rbacAPI.deleteRole(id),
     });
 
     const handleCloseCreateModal = useCallback(() => {
@@ -124,14 +128,14 @@ export default function RolesList() {
     };
 
     const toggleUser = (userId) => {
-        setSelectedUsers(prev => 
-            prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
+        setSelectedUsers((prev) =>
+            prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId],
         );
     };
 
     const togglePolicy = (policyId) => {
-        setSelectedPolicies(prev => 
-            prev.includes(policyId) ? prev.filter(id => id !== policyId) : [...prev, policyId]
+        setSelectedPolicies((prev) =>
+            prev.includes(policyId) ? prev.filter((id) => id !== policyId) : [...prev, policyId],
         );
     };
 
@@ -154,7 +158,9 @@ export default function RolesList() {
         }
 
         if (isError) {
-            return <div className="py-16 text-center text-sm text-red-500">Failed to load roles.</div>;
+            return (
+                <div className="py-16 text-center text-sm text-red-500">Failed to load roles.</div>
+            );
         }
 
         if (filteredRoles.length === 0) {
@@ -183,42 +189,39 @@ export default function RolesList() {
             <div className="w-full">
                 <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                            <h1 className="text-[20px] font-semibold text-[#0f1623]">Roles</h1>
-                            <p className="text-[13px] text-[#7a87a8] mt-1">
-                                Define permission sets and assign them to users or groups.
-                            </p>
-                        </div>
-                        <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap">
-                            <button
-                                type="button"
-                                onClick={() => setIsTemplatesOpen(true)}
-                                className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[#d0d7e8] bg-white px-4 py-2 text-sm font-medium text-[#3a4560] transition-colors hover:border-[#4f46e5]/40 hover:bg-[#f4f6ff] sm:min-h-0 sm:flex-none"
-                            >
-                                <Sparkles size={15} />
-                                Use Template
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleOpenCreateModal}
-                                className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#4f46e5] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#3730a3] sm:min-h-0 sm:flex-none"
-                            >
-                                <Plus size={15} />
-                                + New Role
-                            </button>
-                        </div>
+                        <h1 className="text-[20px] font-semibold text-[#0f1623]">Roles</h1>
+                        <p className="text-[13px] text-[#7a87a8] mt-1">
+                            Define permission sets and assign them to users or groups.
+                        </p>
                     </div>
-
-                    <RoleFilters
-                        search={search}
-                        onSearchChange={setSearch}
-                        typeFilter={typeFilter}
-                        onTypeFilterChange={setTypeFilter}
-                    />
-
-                    <div className="w-full">
-                        {renderRolesContent()}
+                    <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap">
+                        <button
+                            type="button"
+                            onClick={() => setIsTemplatesOpen(true)}
+                            className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[#d0d7e8] bg-white px-4 py-2 text-sm font-medium text-[#3a4560] transition-colors hover:border-[#4f46e5]/40 hover:bg-[#f4f6ff] sm:min-h-0 sm:flex-none"
+                        >
+                            <Sparkles size={15} />
+                            Use Template
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleOpenCreateModal}
+                            className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#4f46e5] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#3730a3] sm:min-h-0 sm:flex-none"
+                        >
+                            <Plus size={15} />+ New Role
+                        </button>
                     </div>
                 </div>
+
+                <RoleFilters
+                    search={search}
+                    onSearchChange={setSearch}
+                    typeFilter={typeFilter}
+                    onTypeFilterChange={setTypeFilter}
+                />
+
+                <div className="w-full">{renderRolesContent()}</div>
+            </div>
 
             {isCreateOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -246,7 +249,12 @@ export default function RolesList() {
                                     <div className="bg-[#4f46e5]/10 rounded-xl p-2 text-[#4f46e5]">
                                         <KeyRound size={20} />
                                     </div>
-                                    <h2 id="create-role-title" className="text-[20px] font-bold text-[#0f172a]">Create New Role</h2>
+                                    <h2
+                                        id="create-role-title"
+                                        className="text-[20px] font-bold text-[#0f172a]"
+                                    >
+                                        Create New Role
+                                    </h2>
                                 </div>
                                 <button
                                     type="button"
@@ -259,10 +267,17 @@ export default function RolesList() {
                             </div>
                         </div>
 
-                        <form onSubmit={handleCreate} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto" noValidate>
+                        <form
+                            onSubmit={handleCreate}
+                            className="p-8 space-y-6 max-h-[70vh] overflow-y-auto"
+                            noValidate
+                        >
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <div className="col-span-2 sm:col-span-1">
-                                    <label htmlFor="role-name" className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2">
+                                    <label
+                                        htmlFor="role-name"
+                                        className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2"
+                                    >
                                         Role Name
                                     </label>
                                     <input
@@ -278,11 +293,18 @@ export default function RolesList() {
                                         placeholder="e.g. DeveloperRole"
                                         className={`w-full rounded-xl border ${formErrors.name ? 'border-red-300' : 'border-[#d0d7e8]'} px-4 py-2.5 text-sm focus:border-[#4f46e5] focus:ring-2 focus:ring-[#4f46e5]/25 outline-none`}
                                     />
-                                    {formErrors.name && <p className="mt-1.5 text-xs font-medium text-red-500">{formErrors.name}</p>}
+                                    {formErrors.name && (
+                                        <p className="mt-1.5 text-xs font-medium text-red-500">
+                                            {formErrors.name}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="col-span-2 sm:col-span-1">
-                                    <label htmlFor="role-arn" className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2">
+                                    <label
+                                        htmlFor="role-arn"
+                                        className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2"
+                                    >
                                         ARN (Optional)
                                     </label>
                                     <input
@@ -290,13 +312,16 @@ export default function RolesList() {
                                         type="text"
                                         value={arn}
                                         onChange={(e) => setArn(e.target.value)}
-                                        placeholder="arn:aegismesh::role/..."
+                                        placeholder="arn:bastion::role/..."
                                         className="w-full rounded-xl border border-[#d0d7e8] px-4 py-2.5 text-sm focus:border-[#4f46e5] focus:ring-2 focus:ring-[#4f46e5]/25 outline-none font-mono"
                                     />
                                 </div>
 
                                 <div className="col-span-2">
-                                    <label htmlFor="role-description" className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2">
+                                    <label
+                                        htmlFor="role-description"
+                                        className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-2"
+                                    >
                                         Description
                                     </label>
                                     <textarea
@@ -316,22 +341,36 @@ export default function RolesList() {
                                         </legend>
                                         <div className="mt-2 max-h-48 overflow-y-auto space-y-2">
                                             {users.length === 0 ? (
-                                                <p className="text-xs text-[#94a3b8] italic p-2">No users available</p>
-                                            ) : users.map(user => (
-                                                <label key={user.id} aria-label={`${user.firstName} ${user.lastName}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white cursor-pointer transition-colors border border-transparent hover:border-[#d0d7e8]">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedUsers.includes(user.id)}
-                                                        onChange={() => toggleUser(user.id)}
-                                                        aria-label={`Select user ${user.firstName} ${user.lastName}`}
-                                                        className="w-4 h-4 rounded border-[#d0d7e8] text-[#4f46e5] focus:ring-[#4f46e5]/25"
-                                                    />
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-semibold text-[#0f172a] truncate">{user.firstName} {user.lastName}</p>
-                                                        <p className="text-[11px] text-[#7a87a8] truncate">{user.email}</p>
-                                                    </div>
-                                                </label>
-                                            ))}
+                                                <p className="text-xs text-[#94a3b8] italic p-2">
+                                                    No users available
+                                                </p>
+                                            ) : (
+                                                users.map((user) => (
+                                                    <label
+                                                        key={user.id}
+                                                        aria-label={`${user.firstName} ${user.lastName}`}
+                                                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-white cursor-pointer transition-colors border border-transparent hover:border-[#d0d7e8]"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedUsers.includes(
+                                                                user.id,
+                                                            )}
+                                                            onChange={() => toggleUser(user.id)}
+                                                            aria-label={`Select user ${user.firstName} ${user.lastName}`}
+                                                            className="w-4 h-4 rounded border-[#d0d7e8] text-[#4f46e5] focus:ring-[#4f46e5]/25"
+                                                        />
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-semibold text-[#0f172a] truncate">
+                                                                {user.firstName} {user.lastName}
+                                                            </p>
+                                                            <p className="text-[11px] text-[#7a87a8] truncate">
+                                                                {user.email}
+                                                            </p>
+                                                        </div>
+                                                    </label>
+                                                ))
+                                            )}
                                         </div>
                                     </fieldset>
                                 </div>
@@ -343,22 +382,36 @@ export default function RolesList() {
                                         </legend>
                                         <div className="mt-2 max-h-48 overflow-y-auto space-y-2">
                                             {policies.length === 0 ? (
-                                                <p className="text-xs text-[#94a3b8] italic p-2">No policies available</p>
-                                            ) : policies.map(policy => (
-                                                <label key={policy.id} aria-label={`Policy ${policy.name}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white cursor-pointer transition-colors border border-transparent hover:border-[#d0d7e8]">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedPolicies.includes(policy.id)}
-                                                        onChange={() => togglePolicy(policy.id)}
-                                                        aria-label={`Select policy ${policy.name}`}
-                                                        className="w-4 h-4 rounded border-[#d0d7e8] text-[#4f46e5] focus:ring-[#4f46e5]/25"
-                                                    />
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-semibold text-[#0f172a] truncate">{policy.name}</p>
-                                                        <p className="text-[11px] text-[#7a87a8] truncate">{policy.effect}</p>
-                                                    </div>
-                                                </label>
-                                            ))}
+                                                <p className="text-xs text-[#94a3b8] italic p-2">
+                                                    No policies available
+                                                </p>
+                                            ) : (
+                                                policies.map((policy) => (
+                                                    <label
+                                                        key={policy.id}
+                                                        aria-label={`Policy ${policy.name}`}
+                                                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-white cursor-pointer transition-colors border border-transparent hover:border-[#d0d7e8]"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedPolicies.includes(
+                                                                policy.id,
+                                                            )}
+                                                            onChange={() => togglePolicy(policy.id)}
+                                                            aria-label={`Select policy ${policy.name}`}
+                                                            className="w-4 h-4 rounded border-[#d0d7e8] text-[#4f46e5] focus:ring-[#4f46e5]/25"
+                                                        />
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-semibold text-[#0f172a] truncate">
+                                                                {policy.name}
+                                                            </p>
+                                                            <p className="text-[11px] text-[#7a87a8] truncate">
+                                                                {policy.effect}
+                                                            </p>
+                                                        </div>
+                                                    </label>
+                                                ))
+                                            )}
                                         </div>
                                     </fieldset>
                                 </div>

@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/root/.npm \
 
 # Copy and build shared package first
 COPY --chown=root:root --chmod=555 packages/shared ./packages/shared
-RUN npx turbo run build --filter=@aegismesh/shared
+RUN npx turbo run build --filter=@bastion/types
 
 # Copy dashboard config and source
 COPY --chown=root:root --chmod=555 apps/dashboard/eslint.config.js ./apps/dashboard/

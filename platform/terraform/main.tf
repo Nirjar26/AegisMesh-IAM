@@ -13,7 +13,7 @@ provider "aws" {
 }
 
 resource "aws_ecr_repository" "backend" {
-  name                 = "aegismesh-backend"
+  name                 = "bastion-backend"
   image_tag_mutability = "MUTABLE"
 }
 
@@ -52,8 +52,47 @@ resource "aws_ecr_lifecycle_policy" "backend" {
 }
 
 resource "aws_ecr_repository" "frontend" {
-  name                 = "aegismesh-frontend"
+  name                 = "bastion-frontend"
   image_tag_mutability = "MUTABLE"
+}
+
+resource "aws_ecr_repository" "security_engine" {
+  name                 = "bastion-security-engine"
+  image_tag_mutability = "MUTABLE"
+}
+
+resource "aws_ecr_lifecycle_policy" "security_engine" {
+  repository = aws_ecr_repository.security_engine.name
+
+  policy = jsonencode({
+    rules = [
+      {
+        rulePriority = 1
+        description  = "Keep the most recent 50 tagged security-engine images"
+        selection = {
+          tagStatus   = "tagged"
+          countType   = "imageCountMoreThan"
+          countNumber = 50
+        }
+        action = {
+          type = "expire"
+        }
+      },
+      {
+        rulePriority = 2
+        description  = "Remove untagged security-engine images after 7 days"
+        selection = {
+          tagStatus   = "untagged"
+          countType   = "sinceImagePushed"
+          countUnit   = "days"
+          countNumber = 7
+        }
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
 }
 
 resource "aws_ecr_lifecycle_policy" "frontend" {

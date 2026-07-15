@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, CheckCheck } from 'lucide-react';
 import NotificationItem from './NotificationItem';
 
 const FILTERS = [
@@ -9,12 +9,7 @@ const FILTERS = [
     { id: 'critical', label: 'Critical' },
 ];
 
-function FilterPill({
-    active,
-    label,
-    count,
-    onClick,
-}) {
+function FilterPill({ active, label, count, onClick }) {
     const activeClasses = active
         ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
         : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/80';
@@ -39,27 +34,18 @@ FilterPill.propTypes = {
 
 function EmptyState({ activeFilter }) {
     const emptyStateCopyMap = {
-        unread:
-            'Unread alerts will appear here when something important changes.',
-        critical:
-            'No critical notifications are active right now.',
-        all:
-            'Important security, role, and access events will appear here.',
+        unread: 'Unread alerts will appear here when something important changes.',
+        critical: 'No critical notifications are active right now.',
+        all: 'Important security, role, and access events will appear here.',
     };
 
-    const copy =
-        emptyStateCopyMap[activeFilter] ||
-        emptyStateCopyMap.all;
+    const copy = emptyStateCopyMap[activeFilter] || emptyStateCopyMap.all;
 
     return (
         <div className="rounded-2xl border border-dashed border-white/10 bg-[#0F1117]/50 px-5 py-10 text-center">
-            <p className="text-sm font-semibold text-white/90">
-                No notifications yet
-            </p>
+            <p className="text-sm font-semibold text-white/90">No notifications yet</p>
 
-            <p className="mt-2 text-xs leading-5 text-white/40">
-                {copy}
-            </p>
+            <p className="mt-2 text-xs leading-5 text-white/40">{copy}</p>
         </div>
     );
 }
@@ -121,25 +107,15 @@ export default function NotificationCenter({
         return () => globalThis.removeEventListener('keydown', handleKeyDown);
     }, [onOpen]);
 
-    const sourceNotifications =
-        allNotifications || notifications;
+    const sourceNotifications = allNotifications || notifications;
 
-    const allCount =
-        sourceNotifications.length;
+    const allCount = sourceNotifications.length;
 
-    const unreadOnlyCount =
-        sourceNotifications.filter(
-            (notification) =>
-                !notification.read
-        ).length;
+    const unreadOnlyCount = sourceNotifications.filter((notification) => !notification.read).length;
 
-    const criticalCount =
-        sourceNotifications.filter(
-            (notification) =>
-                notification.metadata
-                    ?.severity ===
-                'critical'
-        ).length;
+    const criticalCount = sourceNotifications.filter(
+        (notification) => notification.metadata?.severity === 'critical',
+    ).length;
 
     const filterCountMap = {
         all: allCount,
@@ -152,21 +128,20 @@ export default function NotificationCenter({
             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
             : 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
 
-    const hasNotifications =
-        notifications.length > 0;
+    const hasNotifications = notifications.length > 0;
 
     return (
         <>
             {/* Backdrop */}
-            <button 
+            <button
                 type="button"
                 className="fixed inset-0 z-[60] bg-[#0f1623]/40 backdrop-blur-sm animate-in fade-in duration-200 cursor-default"
                 onClick={() => onOpen?.(null)}
                 aria-label="Close notification center"
             />
-            
+
             {/* Centered Modal */}
-            <dialog 
+            <dialog
                 open
                 className="fixed left-1/2 top-1/2 z-[70] w-[min(46rem,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[2.5rem] border border-[#dbe4f0] bg-white p-0 shadow-[0_40px_100px_rgba(15,23,42,0.25)] animate-in fade-in zoom-in duration-200"
                 aria-live="polite"
@@ -176,7 +151,10 @@ export default function NotificationCenter({
                 <div className="border-b border-[#eef2f7] bg-[linear-gradient(135deg,#f8faff_0%,#ffffff_65%)] px-8 py-6">
                     <div className="flex items-start justify-between gap-4">
                         <div>
-                            <h2 id="notification-center-title" className="text-[20px] font-bold text-[#0f172a] tracking-tight">
+                            <h2
+                                id="notification-center-title"
+                                className="text-[20px] font-bold text-[#0f172a] tracking-tight"
+                            >
                                 Notification Center
                             </h2>
 
@@ -260,9 +238,7 @@ export default function NotificationCenter({
                 <div className="max-h-[34rem] overflow-y-auto bg-[#f8fafc] px-8 py-8">
                     {isLoading && <LoadingState />}
 
-                    {!isLoading && !hasNotifications && (
-                        <EmptyState activeFilter={activeFilter} />
-                    )}
+                    {!isLoading && !hasNotifications && <EmptyState activeFilter={activeFilter} />}
 
                     {!isLoading && hasNotifications && (
                         <div className="space-y-4">
@@ -306,86 +282,47 @@ export default function NotificationCenter({
 }
 
 NotificationCenter.propTypes = {
-    notifications:
-        PropTypes.arrayOf(
-            PropTypes.shape({
-                id: PropTypes.oneOfType(
-                    [
-                        PropTypes.string,
-                        PropTypes.number,
-                    ]
-                ).isRequired,
-                read: PropTypes.bool,
-                metadata:
-                    PropTypes.object,
-            })
-        ).isRequired,
+    notifications: PropTypes.arrayOf(
+        PropTypes.shape({
+            id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+            read: PropTypes.bool,
+            metadata: PropTypes.object,
+        }),
+    ).isRequired,
 
-    allNotifications:
-        PropTypes.arrayOf(
-            PropTypes.shape({
-                id: PropTypes.oneOfType(
-                    [
-                        PropTypes.string,
-                        PropTypes.number,
-                    ]
-                ),
-                read: PropTypes.bool,
-                metadata:
-                    PropTypes.object,
-            })
-        ),
+    allNotifications: PropTypes.arrayOf(
+        PropTypes.shape({
+            id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+            read: PropTypes.bool,
+            metadata: PropTypes.object,
+        }),
+    ),
 
-    unreadCount:
-        PropTypes.number
-            .isRequired,
+    unreadCount: PropTypes.number.isRequired,
 
-    activeFilter:
-        PropTypes.string
-            .isRequired,
+    activeFilter: PropTypes.string.isRequired,
 
-    connectionMode:
-        PropTypes.string
-            .isRequired,
+    connectionMode: PropTypes.string.isRequired,
 
-    isLoading:
-        PropTypes.bool
-            .isRequired,
+    isLoading: PropTypes.bool.isRequired,
 
-    isMarkingAllRead:
-        PropTypes.bool
-            .isRequired,
+    isMarkingAllRead: PropTypes.bool.isRequired,
 
-    pendingReadId:
-        PropTypes.oneOfType([
-            PropTypes.string,
-            PropTypes.number,
-        ]),
+    pendingReadId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 
-    pendingDeleteId:
-        PropTypes.oneOfType([
-            PropTypes.string,
-            PropTypes.number,
-        ]),
+    pendingDeleteId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 
-    onFilterChange:
-        PropTypes.func,
+    onFilterChange: PropTypes.func,
 
-    onMarkAllRead:
-        PropTypes.func,
+    onMarkAllRead: PropTypes.func,
 
-    onMarkRead:
-        PropTypes.func,
+    onMarkRead: PropTypes.func,
 
-    onDelete:
-        PropTypes.func,
+    onDelete: PropTypes.func,
 
-    onOpen:
-        PropTypes.func,
+    onOpen: PropTypes.func,
 
-    onOpenPreferences:
-        PropTypes.func,
+    onOpenPreferences: PropTypes.func,
 
-    onOpenSecurity:
-        PropTypes.func,
+    onOpenSecurity: PropTypes.func,
 };

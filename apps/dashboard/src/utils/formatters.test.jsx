@@ -120,7 +120,7 @@ describe('getInitials', () => {
 describe('getAvatarColor', () => {
     it('returns a color string', () => {
         const color = getAvatarColor('John', 'Doe');
-        expect(color).toMatch(/^#[0-9a-f]{6}$/);
+        expect(color).toMatch(/^var\(--ds-/);
     });
 
     it('is deterministic for same input', () => {
@@ -129,7 +129,16 @@ describe('getAvatarColor', () => {
 
     it('returns a valid color from the palette', () => {
         const color = getAvatarColor('Alice', 'Smith');
-        const palette = ['#4f46e5', '#0284c7', '#16a34a', '#e11d48', '#ca8a04', '#9333ea', '#2563eb', '#0891b2'];
+        const palette = [
+            'var(--ds-color-accent)',
+            'var(--ds-color-info)',
+            'var(--ds-color-success)',
+            'var(--ds-color-danger)',
+            'var(--ds-color-warning)',
+            'var(--ds-color-accent-soft)',
+            'var(--ds-color-info)',
+            'var(--ds-color-info)',
+        ];
         expect(palette).toContain(color);
     });
 });
@@ -263,5 +272,3 @@ describe('getStatusMeta', () => {
         expect(meta.className).toContain('bg-amber');
     });
 });
-
-

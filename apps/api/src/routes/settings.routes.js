@@ -45,11 +45,28 @@ router.post('/profile/avatar', upload.single('avatar'), settingsController.uploa
 router.delete('/profile/avatar', settingsController.deleteAvatar);
 
 // Security
-router.post('/security/change-password', requireReauth(SENSITIVE_ACTIONS.CHANGE_PASSWORD), validate(schemas.settingsChangePassword), settingsController.changePassword);
+router.post(
+    '/security/change-password',
+    requireReauth(SENSITIVE_ACTIONS.CHANGE_PASSWORD),
+    validate(schemas.settingsChangePassword),
+    settingsController.changePassword,
+);
 router.get('/security/mfa/setup', settingsController.getMfaSetup);
-router.post('/security/mfa/verify', validate(schemas.settingsMfaVerify), settingsController.verifyMfa);
-router.delete('/security/mfa', requireReauth(SENSITIVE_ACTIONS.DISABLE_MFA), settingsController.disableMfa);
-router.post('/security/mfa/backup-codes/regenerate', requireReauth(SENSITIVE_ACTIONS.VIEW_BACKUP_CODES), settingsController.regenerateBackupCodes);
+router.post(
+    '/security/mfa/verify',
+    validate(schemas.settingsMfaVerify),
+    settingsController.verifyMfa,
+);
+router.delete(
+    '/security/mfa',
+    requireReauth(SENSITIVE_ACTIONS.DISABLE_MFA),
+    settingsController.disableMfa,
+);
+router.post(
+    '/security/mfa/backup-codes/regenerate',
+    requireReauth(SENSITIVE_ACTIONS.VIEW_BACKUP_CODES),
+    settingsController.regenerateBackupCodes,
+);
 router.get('/security/login-history', settingsController.getLoginHistory);
 router.get('/security/trusted-devices', settingsController.getTrustedDevices);
 router.delete('/security/trusted-devices/:deviceId', settingsController.revokeTrustedDevice);
@@ -60,21 +77,49 @@ router.delete('/connected-apps/:appId', settingsController.revokeConnectedApp);
 // Sessions
 router.get('/sessions', settingsController.getSessions);
 router.delete('/sessions/:sessionId', settingsController.revokeSession);
-router.delete('/sessions', requireReauth(SENSITIVE_ACTIONS.REVOKE_ALL_SESSIONS), settingsController.revokeAllOtherSessions);
+router.delete(
+    '/sessions',
+    requireReauth(SENSITIVE_ACTIONS.REVOKE_ALL_SESSIONS),
+    settingsController.revokeAllOtherSessions,
+);
 
 // Notifications
 router.get('/notifications', settingsController.getNotifications);
-router.patch('/notifications', validate(schemas.settingsNotificationsUpdate), settingsController.updateNotifications);
+router.patch(
+    '/notifications',
+    validate(schemas.settingsNotificationsUpdate),
+    settingsController.updateNotifications,
+);
 
 // Organization (SuperAdmin)
 router.get('/organization', requireSuperAdmin, settingsController.getOrganization);
-router.patch('/organization', requireSuperAdmin, validate(schemas.settingsOrganizationUpdate), settingsController.updateOrganization);
-router.post('/organization/export', requireSuperAdmin, requireReauth(SENSITIVE_ACTIONS.EXPORT_DATA), settingsController.exportOrganizationData);
-router.post('/organization/reset-policies', requireSuperAdmin, requireReauth(SENSITIVE_ACTIONS.RESET_POLICIES), settingsController.resetOrganizationPolicies);
+router.patch(
+    '/organization',
+    requireSuperAdmin,
+    validate(schemas.settingsOrganizationUpdate),
+    settingsController.updateOrganization,
+);
+router.post(
+    '/organization/export',
+    requireSuperAdmin,
+    requireReauth(SENSITIVE_ACTIONS.EXPORT_DATA),
+    settingsController.exportOrganizationData,
+);
+router.post(
+    '/organization/reset-policies',
+    requireSuperAdmin,
+    requireReauth(SENSITIVE_ACTIONS.RESET_POLICIES),
+    settingsController.resetOrganizationPolicies,
+);
 
 // API Keys
 router.get('/api-keys', settingsController.getApiKeys);
-router.post('/api-keys', validate(schemas.settingsCreateApiKey), requirePrivilegedApiKeyReauth, settingsController.createApiKey);
+router.post(
+    '/api-keys',
+    validate(schemas.settingsCreateApiKey),
+    requirePrivilegedApiKeyReauth,
+    settingsController.createApiKey,
+);
 router.delete('/api-keys/:tokenId', settingsController.revokeApiKey);
 
 module.exports = router;

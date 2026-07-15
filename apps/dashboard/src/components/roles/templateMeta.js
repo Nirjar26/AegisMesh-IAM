@@ -1,11 +1,4 @@
-import {
-    Code2,
-    CreditCard,
-    Eye,
-    Headphones,
-    ShieldCheck,
-    Users,
-} from 'lucide-react';
+import { Code2, CreditCard, Eye, Headphones, ShieldCheck, Users } from 'lucide-react';
 
 export const COLOR_MAP = {
     blue: {
