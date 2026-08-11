@@ -20,7 +20,7 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Resolve image SHA
         id: tags
@@ -52,7 +52,7 @@ jobs:
       - name: Create or update deploy PR
         if: steps.check.outputs.skip != 'true'
         id: pr
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ github.token }}
           commit-message: "ci: deploy ${{ steps.tags.outputs.sha }} [skip ci]"
@@ -75,7 +75,7 @@ jobs:
 
       - name: Create GitHub deployment
         if: steps.pr.outputs.pull-request-number
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             github.rest.repos.createDeployment({
