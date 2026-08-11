@@ -19,8 +19,8 @@
     "format:check": "prettier --check \"**/*.{js,jsx,json,css,md}\" --ignore-path .gitignore"
   },
   "devDependencies": {
-    "prettier": "^3.5.0",
-    "turbo": "^2.10.0",
+    "prettier": "^3.9.6",
+    "turbo": "^2.10.9",
     "typescript": "^6.0.3"
   },
   "optionalDependencies": {
